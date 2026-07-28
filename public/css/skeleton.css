@@ -1,0 +1,229 @@
+/* ══════════════════════════════════════════════════════════════════
+   DITC HMS — Skeleton Loading System
+   Version: 1.0
+   Design: Matches the app's design tokens (--ink, --paper, --signal)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Core shimmer keyframe ── */
+@keyframes sk-shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position:  600px 0; }
+}
+
+@keyframes sk-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @keyframes sk-shimmer { from { opacity: .6; } to { opacity: .6; } }
+    @keyframes sk-fade-in { from { opacity: 0; } to { opacity: 1; } }
+}
+
+/* ── Base skeleton element ── */
+.sk {
+    display: block;
+    border-radius: 6px;
+    background: linear-gradient(
+        90deg,
+        #E6E2D6 25%,
+        #F0EDE6 50%,
+        #E6E2D6 75%
+    );
+    background-size: 600px 100%;
+    animation: sk-shimmer 1.6s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Dark variant (for sidebar / dark surfaces) */
+.sk-dark {
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,.06) 25%,
+        rgba(255,255,255,.12) 50%,
+        rgba(255,255,255,.06) 75%
+    );
+    background-size: 600px 100%;
+    animation: sk-shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Size utilities ── */
+.sk-xs  { height: 8px; }
+.sk-sm  { height: 12px; }
+.sk-md  { height: 16px; }
+.sk-lg  { height: 20px; }
+.sk-xl  { height: 28px; }
+.sk-2xl { height: 36px; }
+.sk-3xl { height: 48px; }
+.sk-4xl { height: 64px; }
+
+/* ── Width utilities ── */
+.sk-w-25  { width: 25%; }
+.sk-w-33  { width: 33%; }
+.sk-w-50  { width: 50%; }
+.sk-w-66  { width: 66%; }
+.sk-w-75  { width: 75%; }
+.sk-w-100 { width: 100%; }
+
+/* ── Shape variants ── */
+.sk-circle  { border-radius: 50%; }
+.sk-pill    { border-radius: 100px; }
+.sk-rounded { border-radius: 10px; }
+.sk-square  { border-radius: 4px; }
+
+/* ── Avatar sizes ── */
+.sk-avatar-sm  { width: 32px;  height: 32px;  border-radius: 50%; flex-shrink: 0; }
+.sk-avatar-md  { width: 44px;  height: 44px;  border-radius: 50%; flex-shrink: 0; }
+.sk-avatar-lg  { width: 64px;  height: 64px;  border-radius: 50%; flex-shrink: 0; }
+.sk-avatar-xl  { width: 96px;  height: 96px;  border-radius: 50%; flex-shrink: 0; }
+.sk-avatar-2xl { width: 128px; height: 128px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Icon placeholder ── */
+.sk-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+.sk-icon-sm { width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; }
+.sk-icon-lg { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SKELETON COMPONENTS
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Skeleton wrapper card ── */
+.skeleton-card {
+    background: #fff;
+    border: 1px solid #E6E2D6;
+    border-radius: .75rem;
+    padding: 1.25rem;
+    box-shadow: 0 1px 4px rgba(10,31,28,.05);
+}
+
+/* ── Stat card skeleton ── */
+.skeleton-stat-card {
+    background: #fff;
+    border: 1px solid #E6E2D6;
+    border-left: 3px solid #E6E2D6;
+    border-radius: .75rem;
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: 0 1px 4px rgba(10,31,28,.06);
+    overflow: hidden;
+}
+.skeleton-stat-card .sk-stat-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+/* ── Table skeleton ── */
+.skeleton-table-wrap { overflow: hidden; }
+.skeleton-table-row {
+    display: flex;
+    gap: .75rem;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid #F0EDE6;
+    align-items: center;
+}
+.skeleton-table-row:last-child { border-bottom: none; }
+.skeleton-table-header {
+    display: flex;
+    gap: .75rem;
+    padding: .6rem 1rem;
+    background: #FAFAF8;
+    border-bottom: 1px solid #E6E2D6;
+}
+
+/* ── Form skeleton ── */
+.skeleton-form-group { margin-bottom: 1.25rem; }
+.skeleton-form-group .sk-label { margin-bottom: .45rem; }
+
+/* ── Profile skeleton ── */
+.skeleton-profile-header {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #E6E2D6;
+    margin-bottom: 1.25rem;
+}
+
+/* ── Modal skeleton ── */
+.skeleton-modal-body > * + * { margin-top: .85rem; }
+
+/* ── Sidebar skeleton (dark surface) ── */
+.skeleton-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .55rem 1.25rem;
+}
+
+/* ── Topbar skeleton ── */
+.skeleton-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* ── Sparkline skeleton ── */
+.sk-sparkline {
+    height: 30px;
+    border-radius: 4px;
+    width: 100%;
+    margin-top: .75rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CONTENT TRANSITION
+   The `.sk-loaded` class is added by JS when skeleton is replaced
+   ══════════════════════════════════════════════════════════════════ */
+.sk-content {
+    display: none;
+}
+.sk-content.sk-loaded {
+    display: block;
+    animation: sk-fade-in .3s ease forwards;
+}
+.sk-content-flex {
+    display: none;
+}
+.sk-content-flex.sk-loaded {
+    display: flex;
+    animation: sk-fade-in .3s ease forwards;
+}
+
+/* ── Skeleton visibility helpers ── */
+.sk-hidden { display: none !important; }
+.sk-visible { display: block !important; }
+
+/* ── Pulse variant (subtle heartbeat) ── */
+@keyframes sk-pulse {
+    0%, 100% { opacity: .5; }
+    50%       { opacity: 1; }
+}
+.sk-pulse {
+    animation: sk-pulse 1.8s ease-in-out infinite;
+    background: #E6E2D6;
+    border-radius: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+    .sk-hide-mobile { display: none !important; }
+    .skeleton-profile-header { flex-direction: column; align-items: flex-start; }
+}
+
+/* ── Dashboard progress bar fill (width applied via JS from data-width attr) ── */
+.progress-bar-fill {
+    height: 100%;
+    width: 0;
+    background: var(--signal, #14C79A);
+    border-radius: 4px;
+    transition: width .6s ease;
+}
