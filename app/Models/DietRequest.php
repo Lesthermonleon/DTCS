@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Traits\HasStatusBadge;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class DietRequest extends Model
 {
     use HasStatusBadge;
-    use HasFactory;
 
     protected $fillable = [
         'request_no', 'patient_id', 'doctor_id', 'diet_type',

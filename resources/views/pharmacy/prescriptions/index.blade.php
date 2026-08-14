@@ -32,13 +32,29 @@
                     <td><span class="badge bg-{{ $rx->statusBadge }}">{{ $rx->status }}</span></td>
                     <td><small>{{ $rx->prescribed_at?->format('M d, Y') }}</small></td>
                     <td>
-                        <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
-                        @if($rx->status==='Pending' && auth()->user()->hasAnyRole(['admin','pharmacist']))
-                            <form method="POST" action="{{ route('pharmacy.prescriptions.verify', $rx) }}" class="d-inline">
-                                @csrf @method('PATCH')
-                                <button class="btn btn-sm btn-outline-success">Verify</button>
-                            </form>
-                        @endif
+                        <div class="d-flex align-items-center gap-1">
+                            <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="btn btn-sm btn-outline-primary" title="View Prescription"><i class="bi bi-eye"></i></a>
+                            @if($rx->status==='Pending' && auth()->user()->hasAnyRole(['admin','pharmacist']))
+                                <form method="POST" action="{{ route('pharmacy.prescriptions.verify', $rx) }}" class="d-inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Verify Prescription"><i class="bi bi-check-lg"></i> Verify</button>
+                                </form>
+                            @else
+                                <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="btn btn-sm btn-outline-secondary" title="Details"><i class="bi bi-file-earmark-medical"></i></a>
+                            @endif
+
+                            <div class="dropdown d-inline">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    <li><a class="dropdown-item small" href="{{ route('pharmacy.prescriptions.show', $rx) }}"><i class="bi bi-folder2-open me-2 text-primary"></i>View Details</a></li>
+                                    @if($rx->status==='Pending' && auth()->user()->hasAnyRole(['admin','doctor']))
+                                        <li><a class="dropdown-item small" href="{{ route('pharmacy.prescriptions.edit', $rx) }}"><i class="bi bi-pencil me-2 text-warning"></i>Edit Prescription</a></li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -73,7 +89,7 @@
             const params = new URLSearchParams(formData);
             const newUrl = `${window.location.pathname}?${params.toString()}`;
             
-            window.history.pushState(null, '', newUrl);
+            window.history.replaceState(null, '', newUrl);
 
             fetch(newUrl, {
                 headers: {

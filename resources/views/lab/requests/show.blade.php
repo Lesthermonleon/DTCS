@@ -13,14 +13,14 @@
             <div class="card-body">
                 <dl class="row mb-0 small">
                     <dt class="col-5 text-muted">Request No</dt><dd class="col-7 fw-semibold">{{ $labRequest->request_no }}</dd>
-                    <dt class="col-5 text-muted">Patient</dt><dd class="col-7">{{ $labRequest->patient->full_name }}</dd>
-                    <dt class="col-5 text-muted">Patient No</dt><dd class="col-7">{{ $labRequest->patient->patient_no }}</dd>
-                    <dt class="col-5 text-muted">Doctor</dt><dd class="col-7">{{ $labRequest->doctor->name }}</dd>
+                    <dt class="col-5 text-muted">Patient</dt><dd class="col-7">{{ $labRequest->patient?->full_name ?? 'Unspecified Patient' }}</dd>
+                    <dt class="col-5 text-muted">Patient No</dt><dd class="col-7">{{ $labRequest->patient?->patient_no ?? 'N/A' }}</dd>
+                    <dt class="col-5 text-muted">Doctor</dt><dd class="col-7">{{ $labRequest->doctor?->name ?? 'Unassigned Doctor' }}</dd>
                     <dt class="col-5 text-muted">Priority</dt>
                     <dd class="col-7"><span class="badge bg-{{ $labRequest->priority==='STAT'?'danger':($labRequest->priority==='Urgent'?'warning text-dark':'secondary') }}">{{ $labRequest->priority }}</span></dd>
                     <dt class="col-5 text-muted">Specimen</dt><dd class="col-7">{{ $labRequest->specimen_type }}</dd>
                     <dt class="col-5 text-muted">Status</dt><dd class="col-7"><span class="badge bg-{{ $labRequest->statusBadge }}">{{ $labRequest->status }}</span></dd>
-                    <dt class="col-5 text-muted">Requested</dt><dd class="col-7">{{ $labRequest->requested_at->format('M d, Y H:i') }}</dd>
+                    <dt class="col-5 text-muted">Requested</dt><dd class="col-7">{{ $labRequest->requested_at?->format('M d, Y H:i') ?? 'N/A' }}</dd>
                     @if($labRequest->received_at)<dt class="col-5 text-muted">Received</dt><dd class="col-7">{{ $labRequest->received_at->format('M d, Y H:i') }}</dd>@endif
                     @if($labRequest->clinical_notes)<dt class="col-5 text-muted">Notes</dt><dd class="col-7">{{ $labRequest->clinical_notes }}</dd>@endif
                 </dl>
@@ -28,17 +28,17 @@
         </div>
         <div class="d-flex flex-column gap-2">
             @if($labRequest->status==='Pending')
-                @if(auth()->user()->hasAnyRole(['admin','med-tech']))
+                @if(auth()->user()?->hasAnyRole(['admin','med-tech']))
                     <form method="POST" action="{{ route('lab.requests.receive', $labRequest) }}">
                         @csrf @method('PATCH')
-                        <button class="btn btn-success w-100"><i class="bi bi-inbox-fill me-1"></i>Mark as Received</button>
+                        <button type="submit" class="btn btn-success w-100" data-confirm="Are you sure you want to mark lab request {{ $labRequest->request_no }} as received?"><i class="bi bi-inbox-fill me-1"></i>Mark as Received</button>
                     </form>
                 @endif
-                @if(auth()->user()->hasAnyRole(['admin','doctor']))
+                @if(auth()->user()?->hasAnyRole(['admin','doctor']))
                     <a href="{{ route('lab.requests.edit', $labRequest) }}" class="btn btn-outline-warning"><i class="bi bi-pencil me-1"></i>Edit Request</a>
                 @endif
             @endif
-            <a href="{{ route('lab.requests.print', $labRequest) }}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-printer me-1"></i>Print Report</a>
+            <a href="{{ route('lab.requests.print', ['labRequest' => $labRequest]) }}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-printer me-1"></i>Print Report</a>
             <a href="{{ route('lab.requests.index') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-1"></i>Back to List</a>
         </div>
     </div>
@@ -51,17 +51,17 @@
                     <tbody>
                     @foreach($labRequest->items as $item)
                     <tr>
-                        <td class="fw-semibold">{{ $item->labTest->name }}<br><small class="text-muted">{{ $item->labTest->code }}</small></td>
-                        <td>{{ $item->labTest->category->name }}</td>
-                        <td>{{ $item->labTest->normal_range }}</td>
-                        <td>{{ $item->labTest->unit }}</td>
+                        <td class="fw-semibold">{{ $item->labTest?->name ?? 'Unknown Test' }}<br><small class="text-muted">{{ $item->labTest?->code ?? '-' }}</small></td>
+                        <td>{{ $item->labTest?->category?->name ?? 'Uncategorized' }}</td>
+                        <td>{{ $item->labTest?->normal_range ?? '-' }}</td>
+                        <td>{{ $item->labTest?->unit ?? '-' }}</td>
                         <td><span class="badge bg-{{ $item->status === 'Completed' ? 'success' : ($item->status === 'In Progress' ? 'info' : 'secondary') }}">{{ $item->status }}</span></td>
                         <td>
                         @if($item->result)
                             <strong>{{ $item->result->result_value }} {{ $item->labTest->unit }}</strong><br>
                             <small class="text-muted">{{ $item->result->remarks }}</small><br>
                             <span class="badge bg-{{ $item->result->statusBadge }}">{{ $item->result->status }}</span>
-                            @if(auth()->user()->hasAnyRole(['admin','med-tech']) && in_array($item->result->status, ['Encoded','Validated']))
+                            @if(auth()->user()?->hasAnyRole(['admin','med-tech']) && in_array($item->result->status, ['Encoded','Validated']))
                                 @if($item->result->status === 'Encoded')
                                     <form method="POST" action="{{ route('lab.results.validate', $item->result) }}" class="d-inline">
                                         @csrf @method('PATCH')
@@ -74,7 +74,7 @@
                                     </form>
                                 @endif
                             @endif
-                        @elseif(auth()->user()->hasAnyRole(['admin','med-tech']) && $labRequest->status==='In Progress')
+                        @elseif(auth()->user()?->hasAnyRole(['admin','med-tech']) && $labRequest->status==='In Progress')
                             <a href="{{ route('lab.results.create') }}?item_id={{ $item->id }}" class="btn btn-sm btn-outline-info">Encode Result</a>
                         @else
                             <span class="text-muted small">Awaiting result</span>

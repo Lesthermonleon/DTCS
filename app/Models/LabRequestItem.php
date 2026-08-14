@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -12,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class LabRequestItem extends Model
 {
-    use HasFactory;
 
     protected $fillable = ['lab_request_id', 'lab_test_id', 'status'];
 

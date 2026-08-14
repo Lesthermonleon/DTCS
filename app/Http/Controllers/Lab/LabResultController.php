@@ -9,6 +9,7 @@ use App\Models\LabRequestItem;
 use App\Models\LabResult;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -20,7 +21,7 @@ class LabResultController extends Controller
     {
         $query = LabResult::with('requestItem.labTest', 'requestItem.labRequest.patient', 'technologist');
 
-        if ($status = $request->get('status')) {
+        if ($status = $request->input('status')) {
             $query->where('status', $status);
         }
 
@@ -44,7 +45,7 @@ class LabResultController extends Controller
     {
         LabResult::create([
             'lab_request_item_id' => $request->lab_request_item_id,
-            'technologist_id'     => auth()->id(),
+            'technologist_id'     => Auth::id(),
             'result_value'        => $request->result_value,
             'remarks'             => $request->remarks,
             'status'              => 'Encoded',
@@ -101,7 +102,7 @@ class LabResultController extends Controller
 
         $labResult->update([
             'status'       => 'Validated',
-            'validated_by' => auth()->id(),
+            'validated_by' => Auth::id(),
             'validated_at' => now(),
         ]);
 
@@ -115,7 +116,7 @@ class LabResultController extends Controller
 
         $labResult->update([
             'status'       => 'Released',
-            'released_by'  => auth()->id(),
+            'released_by'  => Auth::id(),
             'released_at'  => now(),
         ]);
 
@@ -127,6 +128,19 @@ class LabResultController extends Controller
 
         if ($allReleased) {
             $labRequest->update(['status' => 'Completed', 'completed_at' => now()]);
+        }
+
+        // Notify ordering doctor
+        if ($labRequest->doctor_id) {
+            \App\Services\NotificationService::notifyUser(
+                $labRequest->doctor_id,
+                'lab_result',
+                'Laboratory Result Released',
+                "Lab result for Request {$labRequest->request_no} is now available.",
+                'lis',
+                route('lab.results.show', $labResult),
+                'urgent'
+            );
         }
 
         return back()->with('success', 'Result released successfully.');

@@ -1,58 +1,81 @@
 {{--
     Skeleton: Data Table
-    Usage: <x-skeleton.table :rows="8" :cols="5" />
+    Usage: <x-skeleton.table :rows="6" :cols="8" />
     Props:
       $rows = number of skeleton rows  (default 6)
-      $cols = number of columns        (default 4)
+      $cols = number of columns        (default 8)
       $searchBar = show search bar above table (default true)
       $pagination = show pagination below (default true)
 --}}
-@props(['rows' => 6, 'cols' => 4, 'searchBar' => true, 'pagination' => true])
+@props(['rows' => 6, 'cols' => 8, 'searchBar' => true, 'pagination' => true])
 
 <div role="status" aria-label="Loading table data" aria-busy="true">
 
-    {{-- Search + action bar --}}
-    @if($searchBar)
-    <div class="d-flex gap-2 mb-3 align-items-center">
-        <div class="sk sk-lg" style="width:220px;border-radius:8px;"></div>
-        <div class="sk sk-lg" style="width:100px;border-radius:8px;margin-left:auto;"></div>
-        <div class="sk sk-lg" style="width:80px;border-radius:8px;"></div>
-    </div>
-    @endif
+    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: .75rem;">
+        
+        {{-- Card Header: Filter & Search bar --}}
+        @if($searchBar)
+        <div class="card-header bg-white py-3 d-flex flex-wrap gap-2 align-items-center border-bottom">
+            <div class="sk sk-md" style="width:220px;max-width:250px;border-radius:6px;height:32px;"></div>
+            <div class="sk sk-md" style="width:130px;max-width:150px;border-radius:6px;height:32px;"></div>
+            <div class="sk sk-md ms-auto" style="width:110px;border-radius:6px;height:32px;"></div>
+        </div>
+        @endif
 
-    <div class="skeleton-card p-0 overflow-hidden">
-        {{-- Table header --}}
-        <div class="skeleton-table-header">
-            @for ($c = 0; $c < $cols; $c++)
-                @php $w = [60,90,80,55,45][$c % 5]; @endphp
-                <div class="sk sk-xs sk-pill" {!! 'style="width:' . $w . 'px;"' !!}></div>
-            @endfor
+        {{-- Table Body --}}
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3" style="width:110px;"><div class="sk sk-xs" style="width:70px;"></div></th>
+                            <th><div class="sk sk-xs" style="width:90px;"></div></th>
+                            <th><div class="sk sk-xs" style="width:80px;"></div></th>
+                            <th><div class="sk sk-xs" style="width:55px;"></div></th>
+                            <th><div class="sk sk-xs" style="width:75px;"></div></th>
+                            <th><div class="sk sk-xs" style="width:50px;"></div></th>
+                            <th><div class="sk sk-xs" style="width:65px;"></div></th>
+                            <th class="pe-3 text-end" style="width:90px;"><div class="sk sk-xs ms-auto" style="width:50px;"></div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for ($r = 0; $r < $rows; $r++)
+                        <tr>
+                            <td class="ps-3"><div class="sk sk-sm" style="width:85px;height:22px;border-radius:4px;"></div></td>
+                            <td>
+                                <div class="sk sk-sm mb-1" style="width:140px;"></div>
+                                <div class="sk sk-xs" style="width:100px;"></div>
+                            </td>
+                            <td>
+                                <div class="sk sk-sm mb-1" style="width:90px;"></div>
+                                <div class="sk sk-xs" style="width:40px;"></div>
+                            </td>
+                            <td><div class="sk sk-sm" style="width:50px;"></div></td>
+                            <td><div class="sk sk-sm" style="width:35px;"></div></td>
+                            <td><div class="sk sk-sm sk-pill" style="width:65px;height:20px;"></div></td>
+                            <td><div class="sk sk-sm" style="width:80px;"></div></td>
+                            <td class="pe-3 text-end">
+                                <div class="sk sk-sm ms-auto" style="width:36px;height:28px;border-radius:4px;"></div>
+                            </td>
+                        </tr>
+                        @endfor
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        {{-- Table rows --}}
-        @for ($r = 0; $r < $rows; $r++)
-        <div class="skeleton-table-row">
-            @for ($c = 0; $c < $cols; $c++)
-                @php
-                    $widths = ['50', '75', '66', '25', '33'];
-                    $w = $widths[$c % count($widths)];
-                @endphp
-                <div class="sk sk-md sk-w-{{ $w }}" style="flex:1;"></div>
-            @endfor
+        {{-- Card Footer: Pagination --}}
+        @if($pagination)
+        <div class="card-footer bg-white py-2.5 d-flex justify-content-between align-items-center border-top">
+            <div class="sk sk-xs" style="width:130px;"></div>
+            <div class="d-flex gap-1">
+                @for ($p = 0; $p < 4; $p++)
+                    <div class="sk sk-circle" style="width:28px;height:28px;"></div>
+                @endfor
+            </div>
         </div>
-        @endfor
-    </div>
+        @endif
 
-    {{-- Pagination --}}
-    @if($pagination)
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="sk sk-sm" style="width:120px;"></div>
-        <div class="d-flex gap-2">
-            @for ($p = 0; $p < 5; $p++)
-                <div class="sk sk-circle" style="width:32px;height:32px;"></div>
-            @endfor
-        </div>
     </div>
-    @endif
 
 </div>

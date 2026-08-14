@@ -11,9 +11,10 @@ class StoreRadiologyReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'findings'        => 'required|string|min:10',
-            'impression'      => 'required|string|min:5',
-            'recommendations' => 'nullable|string|max:2000',
+            'radiology_request_id' => 'required|exists:radiology_requests,id',
+            'findings'             => 'required|string|min:10',
+            'impression'           => 'required|string|min:5',
+            'recommendations'      => 'nullable|string|max:2000',
         ];
     }
 }

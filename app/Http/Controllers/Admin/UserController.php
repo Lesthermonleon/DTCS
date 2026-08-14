@@ -102,11 +102,9 @@ class UserController extends Controller
                          ->with('success', 'User created successfully.');
     }
 
-    public function show(User $user): View
+    public function show(User $user): RedirectResponse
     {
-        $user->load('roles');
-
-        return view('admin.users.show', compact('user'));
+        return redirect()->route('admin.users.edit', $user);
     }
 
     public function edit(User $user): View

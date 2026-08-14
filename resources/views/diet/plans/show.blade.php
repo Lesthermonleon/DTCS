@@ -136,13 +136,13 @@
                     </div>
                     <div class="progress mb-2 d-flex" style="height: 24px; border-radius: 6px; overflow: hidden; font-size: 0.72rem; font-weight: bold; color:#fff;">
                         @if($proteinPct > 0)
-                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $proteinPct }}" style="background-color: #E85C55; role:progressbar; height:100%; display: flex; align-items: center; justify-content: center;" title="Protein: {{ $proteinPct }}%">P ({{ $proteinPct }}%)</div>
+                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $proteinPct }}" role="progressbar" style="background-color: #E85C55; height:100%; display: flex; align-items: center; justify-content: center;" title="Protein: {{ $proteinPct }}%">P ({{ $proteinPct }}%)</div>
                         @endif
                         @if($carbPct > 0)
-                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $carbPct }}" style="background-color: #4C7EA8; role:progressbar; height:100%; display: flex; align-items: center; justify-content: center;" title="Carbs: {{ $carbPct }}%">C ({{ $carbPct }}%)</div>
+                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $carbPct }}" role="progressbar" style="background-color: #4C7EA8; height:100%; display: flex; align-items: center; justify-content: center;" title="Carbs: {{ $carbPct }}%">C ({{ $carbPct }}%)</div>
                         @endif
                         @if($fatPct > 0)
-                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $fatPct }}" style="background-color: #E0A030; role:progressbar; height:100%; display: flex; align-items: center; justify-content: center;" title="Fat: {{ $fatPct }}%">F ({{ $fatPct }}%)</div>
+                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $fatPct }}" role="progressbar" style="background-color: #E0A030; height:100%; display: flex; align-items: center; justify-content: center;" title="Fat: {{ $fatPct }}%">F ({{ $fatPct }}%)</div>
                         @endif
                     </div>
                     <div class="d-flex justify-content-between x-small text-muted" style="font-size:0.7rem;">

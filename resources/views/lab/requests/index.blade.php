@@ -53,11 +53,33 @@
                     <td><span class="badge bg-{{ $req->statusBadge }}">{{ $req->status }}</span></td>
                     <td><small>{{ $req->requested_at->format('M d, Y H:i') }}</small></td>
                     <td>
-                        <a href="{{ route('lab.requests.show', $req) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
-                        <a href="{{ route('lab.requests.print', $req) }}" class="btn btn-sm btn-outline-secondary" title="Print" target="_blank"><i class="bi bi-printer"></i></a>
-                        @if($req->status==='Pending' && auth()->user()->hasAnyRole(['admin','doctor']))
-                            <a href="{{ route('lab.requests.edit', $req) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                        @endif
+                        <div class="d-flex align-items-center gap-1">
+                            <a href="{{ route('lab.requests.show', $req) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                            @if($req->status==='Pending' && auth()->user()->hasAnyRole(['admin','med-tech']))
+                                <form method="POST" action="{{ route('lab.requests.receive', $req) }}" class="d-inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Mark as Received" data-confirm="Are you sure you want to mark {{ $req->request_no }} as received?"><i class="bi bi-inbox-fill"></i></button>
+                                </form>
+                            @else
+                                <a href="{{ route('lab.requests.print', ['labRequest' => $req]) }}" class="btn btn-sm btn-outline-secondary" title="Print" target="_blank"><i class="bi bi-printer"></i></a>
+                            @endif
+
+                            <div class="dropdown d-inline">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    @if($req->status === 'Pending')
+                                        <li><a class="dropdown-item small" href="{{ route('lab.requests.print', ['labRequest' => $req]) }}" target="_blank"><i class="bi bi-printer me-2 text-secondary"></i>Print Request</a></li>
+                                        @if(auth()->user()->hasAnyRole(['admin','doctor']))
+                                            <li><a class="dropdown-item small" href="{{ route('lab.requests.edit', $req) }}"><i class="bi bi-pencil me-2 text-warning"></i>Edit Request</a></li>
+                                        @endif
+                                    @else
+                                        <li><a class="dropdown-item small" href="{{ route('lab.requests.show', $req) }}"><i class="bi bi-folder2-open me-2 text-primary"></i>Open Record</a></li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -95,7 +117,7 @@
             const params = new URLSearchParams(formData);
             const newUrl = `${window.location.pathname}?${params.toString()}`;
             
-            window.history.pushState(null, '', newUrl);
+            window.history.replaceState(null, '', newUrl);
 
             fetch(newUrl, {
                 headers: {

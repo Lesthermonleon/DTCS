@@ -6,7 +6,10 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StorePatientRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return $this->user()?->canAccessPatients() ?? false;
+    }
 
     public function rules(): array
     {

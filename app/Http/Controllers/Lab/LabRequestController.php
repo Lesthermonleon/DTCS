@@ -8,8 +8,10 @@ use App\Models\LabRequest;
 use App\Models\LabRequestItem;
 use App\Models\LabTest;
 use App\Models\Patient;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -24,11 +26,13 @@ class LabRequestController extends Controller
         $query = LabRequest::with('patient', 'doctor', 'items.labTest');
 
         // Role-based scoping: doctors only see their own requests
-        if (auth()->user()->hasRole('doctor')) {
-            $query->where('doctor_id', auth()->id());
+        /** @var \App\Models\User|null $currentUser */
+        $currentUser = Auth::user();
+        if ($currentUser && $currentUser->hasRole('doctor')) {
+            $query->where('doctor_id', $currentUser->id);
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('request_no', 'like', "%{$search}%")
                   ->orWhereHas('patient', fn($p) => $p->where('first_name', 'like', "%{$search}%")
@@ -37,11 +41,11 @@ class LabRequestController extends Controller
             });
         }
 
-        if ($status = $request->get('status')) {
+        if ($status = $request->input('status')) {
             $query->where('status', $status);
         }
 
-        if ($priority = $request->get('priority')) {
+        if ($priority = $request->input('priority')) {
             $query->where('priority', $priority);
         }
 
@@ -68,7 +72,7 @@ class LabRequestController extends Controller
             $labRequest = LabRequest::create([
                 'request_no'     => 'LR-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT),
                 'patient_id'     => $request->patient_id,
-                'doctor_id'      => auth()->id(),
+                'doctor_id'      => Auth::id(),
                 'priority'       => $request->priority,
                 'specimen_type'  => $request->specimen_type,
                 'clinical_notes' => $request->clinical_notes,
@@ -83,6 +87,17 @@ class LabRequestController extends Controller
                     'status'         => 'Pending',
                 ]);
             }
+
+            $doctorName = $request->user()?->name ?? 'Doctor';
+            NotificationService::notifyRole(
+                'med-tech',
+                'lab_request',
+                'New Laboratory Request',
+                "New request {$labRequest->request_no} submitted by Dr. {$doctorName}",
+                'lis',
+                route('lab.requests.show', $labRequest),
+                $request->priority === 'STAT' ? 'critical' : ($request->priority === 'Urgent' ? 'urgent' : 'normal')
+            );
         });
 
         return redirect()->route('lab.requests.index')
@@ -142,13 +157,21 @@ class LabRequestController extends Controller
                          ->with('success', 'Lab request cancelled.');
     }
 
-    /** Medical Technologist marks request as received. */
+    /** Medical Technologist / Admin marks request as received. */
     public function receive(LabRequest $labRequest): RedirectResponse
     {
-        $labRequest->update([
-            'status'      => 'In Progress',
-            'received_at' => now(),
-        ]);
+        abort_if($labRequest->status !== 'Pending', 400, 'Only pending laboratory requests can be marked as received.');
+
+        DB::transaction(function () use ($labRequest) {
+            $labRequest->update([
+                'status'      => 'In Progress',
+                'received_at' => now(),
+            ]);
+
+            $labRequest->items()
+                ->where('status', 'Pending')
+                ->update(['status' => 'In Progress']);
+        });
 
         return back()->with('success', "Request {$labRequest->request_no} marked as received.");
     }

@@ -10,16 +10,18 @@ use Illuminate\View\View;
 
 /**
  * PatientController — CRUD operations for patient records.
- * All clinical staff can view; only doctors and admin can create/update.
+ * Access restricted exclusively to System Administrator and Doctor.
  */
 class PatientController extends Controller
 {
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Patient::class);
+
         $query = Patient::query();
 
         // Search
-        if ($search = $request->get('search')) {
+        if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
@@ -29,7 +31,7 @@ class PatientController extends Controller
         }
 
         // Filter by type
-        if ($type = $request->get('type')) {
+        if ($type = $request->input('type')) {
             $query->where('patient_type', $type);
         }
 
@@ -40,11 +42,15 @@ class PatientController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Patient::class);
+
         return view('patients.create');
     }
 
     public function store(StorePatientRequest $request): RedirectResponse
     {
+        $this->authorize('create', Patient::class);
+
         // Auto-generate patient number
         $count = Patient::withTrashed()->count() + 1;
         $data  = $request->validated();
@@ -58,6 +64,8 @@ class PatientController extends Controller
 
     public function show(Patient $patient): View
     {
+        $this->authorize('view', $patient);
+
         $patient->load([
             'labRequests',
             'radiologyRequests',
@@ -71,11 +79,15 @@ class PatientController extends Controller
 
     public function edit(Patient $patient): View
     {
+        $this->authorize('update', $patient);
+
         return view('patients.edit', compact('patient'));
     }
 
     public function update(StorePatientRequest $request, Patient $patient): RedirectResponse
     {
+        $this->authorize('update', $patient);
+
         $patient->update($request->validated());
 
         return redirect()->route('patients.show', $patient)
@@ -84,9 +96,12 @@ class PatientController extends Controller
 
     public function destroy(Patient $patient): RedirectResponse
     {
+        $this->authorize('delete', $patient);
+
         $patient->delete(); // SoftDelete
 
         return redirect()->route('patients.index')
                          ->with('success', 'Patient record archived successfully.');
     }
 }
+

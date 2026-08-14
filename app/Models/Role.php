@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -12,9 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Role extends Model
 {
-    use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description'];
+    protected $fillable = ['name', 'slug', 'description', 'dashboard_route'];
 
     /**
      * Get accessible modules for this role.
@@ -31,6 +29,28 @@ class Role extends Model
             'dietitian'      => 'DNMS',
             'or-coordinator' => 'SORS',
             default          => 'None',
+        };
+    }
+
+    /**
+     * Get the dashboard route name, falling back to slug-based defaults if not set in DB.
+     */
+    public function getDashboardRouteAttribute(?string $value): string
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        return match ($this->slug) {
+            'admin'          => 'admin.dashboard',
+            'doctor'         => 'doctor.dashboard',
+            'med-tech'       => 'lab.dashboard',
+            'rad-tech'       => 'radiology.dashboard',
+            'radiologist'    => 'radiology.dashboard',
+            'pharmacist'     => 'pharmacy.dashboard',
+            'dietitian'      => 'diet.dashboard',
+            'or-coordinator' => 'surgery.dashboard',
+            default          => 'dashboard',
         };
     }
 

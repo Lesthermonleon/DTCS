@@ -95,7 +95,7 @@
             const params = new URLSearchParams(formData);
             const newUrl = `${window.location.pathname}?${params.toString()}`;
             
-            window.history.pushState(null, '', newUrl);
+            window.history.replaceState(null, '', newUrl);
 
             fetch(newUrl, {
                 headers: {

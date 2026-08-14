@@ -7,103 +7,123 @@ use App\Http\Requests\StoreRadiologyReportRequest;
 use App\Models\RadiologyReport;
 use App\Models\RadiologyRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * RadiologyReportController — radiologist creates, approves, and releases reports.
+ * RadiologyReportController — radiologist creates, approves, and releases diagnostic reports.
  */
 class RadiologyReportController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $reports = RadiologyReport::with('radiologyRequest.patient', 'radiologist')
-                   ->latest()->paginate(15);
+        $this->authorize('viewAny', RadiologyReport::class);
+
+        $query = RadiologyReport::with('radiologyRequest.patient', 'radiologyRequest.doctor', 'radiologist');
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        $reports = $query->latest()->paginate(15)->withQueryString();
 
         return view('radiology.reports.index', compact('reports'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        // Only show requests that are In Progress and have no report yet
-        $pendingRequests = RadiologyRequest::whereIn('status', ['In Progress', 'Scheduled'])
+        $this->authorize('create', RadiologyReport::class);
+
+        // Show requests that are Completed or In Progress (with uploaded images) and have no report yet
+        $pendingRequests = RadiologyRequest::whereIn('status', ['Completed', 'In Progress', 'Scheduled'])
                            ->whereDoesntHave('report')
-                           ->with('patient')
+                           ->with('patient', 'images')
                            ->get();
 
-        return view('radiology.reports.create', compact('pendingRequests'));
+        $selectedRequestId = $request->input('radiology_request_id');
+
+        return view('radiology.reports.create', compact('pendingRequests', 'selectedRequestId'));
     }
 
     public function store(StoreRadiologyReportRequest $request): RedirectResponse
     {
-        RadiologyReport::create(array_merge($request->validated(), [
-            'radiology_request_id' => $request->radiology_request_id,
-            'radiologist_id'       => auth()->id(),
-            'status'               => 'Draft',
+        $this->authorize('create', RadiologyReport::class);
+
+        $report = RadiologyReport::create(array_merge($request->validated(), [
+            'radiologist_id' => Auth::id(),
+            'status'         => 'Draft',
         ]));
 
-        // Update the request status to completed
-        RadiologyRequest::find($request->radiology_request_id)
-                        ->update(['status' => 'Completed', 'completed_at' => now()]);
+        // Ensure radiology request is marked as completed if it wasn't already
+        $radReq = RadiologyRequest::find($request->radiology_request_id);
+        if ($radReq && $radReq->status !== 'Completed') {
+            $radReq->update(['status' => 'Completed', 'completed_at' => now()]);
+        }
 
-        return redirect()->route('radiology.reports.index')
-                         ->with('success', 'Radiology report created successfully.');
+        return redirect()->route('radiology.reports.show', $report)
+                         ->with('success', 'Diagnostic radiology report created successfully as Draft.');
     }
 
     public function show(RadiologyReport $radiologyReport): View
     {
-        $radiologyReport->load('radiologyRequest.patient', 'radiologyRequest.doctor', 'radiologist', 'approvedBy', 'releasedBy');
+        $this->authorize('view', $radiologyReport);
+
+        $radiologyReport->load('radiologyRequest.patient', 'radiologyRequest.doctor', 'radiologyRequest.images', 'radiologist', 'approvedBy', 'releasedBy');
 
         return view('radiology.reports.show', compact('radiologyReport'));
     }
 
     public function edit(RadiologyReport $radiologyReport): View
     {
-        abort_if($radiologyReport->status === 'Released', 403, 'Released reports cannot be edited.');
+        $this->authorize('update', $radiologyReport);
 
         return view('radiology.reports.edit', compact('radiologyReport'));
     }
 
     public function update(StoreRadiologyReportRequest $request, RadiologyReport $radiologyReport): RedirectResponse
     {
-        abort_if($radiologyReport->status === 'Released', 403, 'Released reports cannot be edited.');
+        $this->authorize('update', $radiologyReport);
+
         $radiologyReport->update($request->validated());
 
         return redirect()->route('radiology.reports.show', $radiologyReport)
-                         ->with('success', 'Report updated.');
+                         ->with('success', 'Radiology report updated successfully.');
     }
 
     public function destroy(RadiologyReport $radiologyReport): RedirectResponse
     {
-        abort_if($radiologyReport->status !== 'Draft', 403, 'Only draft reports can be deleted.');
+        $this->authorize('delete', $radiologyReport);
+
         $radiologyReport->delete();
 
         return redirect()->route('radiology.reports.index')
-                         ->with('success', 'Report deleted.');
+                         ->with('success', 'Draft report deleted.');
     }
 
     public function approve(RadiologyReport $radiologyReport): RedirectResponse
     {
-        abort_if($radiologyReport->status !== 'Draft', 403, 'Only draft reports can be approved.');
+        $this->authorize('approve', $radiologyReport);
 
         $radiologyReport->update([
             'status'      => 'Approved',
-            'approved_by' => auth()->id(),
+            'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
 
-        return back()->with('success', 'Report approved.');
+        return back()->with('success', 'Radiology report approved and finalized.');
     }
 
     public function release(RadiologyReport $radiologyReport): RedirectResponse
     {
-        abort_if($radiologyReport->status !== 'Approved', 403, 'Only approved reports can be released.');
+        $this->authorize('release', $radiologyReport);
 
         $radiologyReport->update([
             'status'      => 'Released',
-            'released_by' => auth()->id(),
+            'released_by' => Auth::id(),
             'released_at' => now(),
         ]);
 
-        return back()->with('success', 'Report released to referring doctor.');
+        return back()->with('success', 'Radiology report officially released to referring doctor.');
     }
 }

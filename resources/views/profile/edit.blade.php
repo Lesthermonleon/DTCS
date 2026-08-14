@@ -2,7 +2,7 @@
 @section('title', 'My Profile')
 @section('page-title', 'My Profile')
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="#">Account</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('profile.edit') }}">Account</a></li>
     <li class="breadcrumb-item active">Profile</li>
 @endsection
 

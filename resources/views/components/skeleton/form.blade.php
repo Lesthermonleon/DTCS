@@ -1,46 +1,60 @@
 {{--
-    Skeleton: Form
-    Usage: <x-skeleton.form :fields="5" :columns="1" />
+    Skeleton: Form Card
+    Usage: <x-skeleton.form :fields="6" :columns="2" />
     Props:
-      $fields  = number of input fields (default 4)
-      $columns = 1 or 2 column layout   (default 1)
+      $fields  = number of input fields (default 6)
+      $columns = 1 or 2 column layout   (default 2)
       $button  = show submit button     (default true)
 --}}
-@props(['fields' => 4, 'columns' => 1, 'button' => true])
+@props(['fields' => 6, 'columns' => 2, 'button' => true])
 
-<div class="skeleton-card" role="status" aria-label="Loading form" aria-busy="true">
+<div role="status" aria-label="Loading form" aria-busy="true">
 
-    @if($columns === 2)
-        <div class="row g-4">
-            @for ($i = 0; $i < $fields; $i++)
-            <div class="col-md-6">
-                <div class="skeleton-form-group">
-                    <div class="sk sk-sm sk-w-33 sk-label"></div>
-                    <div class="sk sk-2xl sk-w-100 mt-1" style="border-radius:8px;"></div>
-                </div>
-            </div>
-            @endfor
+    <div class="card border-0 shadow-sm" style="border-radius: .75rem;">
+        
+        {{-- Card Header --}}
+        <div class="card-header bg-white py-3 border-bottom">
+            <div class="sk sk-md mb-1" style="width:180px;border-radius:4px;"></div>
+            <div class="sk sk-xs" style="width:260px;border-radius:4px;"></div>
         </div>
-    @else
-        @for ($i = 0; $i < $fields; $i++)
-        <div class="skeleton-form-group">
-            @php $w = [100, 130, 90, 120, 110][$i % 5]; @endphp
-            <div class="sk sk-sm" {!! 'style="width:' . $w . 'px;"' !!}></div>
-            @if ($i === 1 || $i === 3)
-                {{-- Textarea --}}
-                <div class="sk sk-w-100 mt-1" style="height:80px;border-radius:8px;"></div>
+
+        {{-- Card Body --}}
+        <div class="card-body p-4">
+            @if($columns === 2)
+                <div class="row g-4">
+                    @for ($i = 0; $i < $fields; $i++)
+                    <div class="col-md-6">
+                        <div class="skeleton-form-group">
+                            <div class="sk sk-xs mb-1.5" style="width:110px;border-radius:4px;"></div>
+                            <div class="sk sk-xl w-100" style="height:38px;border-radius:6px;"></div>
+                        </div>
+                    </div>
+                    @endfor
+                </div>
             @else
-                <div class="sk sk-2xl sk-w-100 mt-1" style="border-radius:8px;"></div>
+                <div class="d-flex flex-column gap-3">
+                    @for ($i = 0; $i < $fields; $i++)
+                    <div class="skeleton-form-group">
+                        <div class="sk sk-xs mb-1.5" style="width:120px;border-radius:4px;"></div>
+                        @if ($i === 1)
+                            <div class="sk sk-xl w-100" style="height:80px;border-radius:6px;"></div>
+                        @else
+                            <div class="sk sk-xl w-100" style="height:38px;border-radius:6px;"></div>
+                        @endif
+                    </div>
+                    @endfor
+                </div>
             @endif
         </div>
-        @endfor
-    @endif
 
-    @if($button)
-    <div class="d-flex gap-2 mt-2">
-        <div class="sk sk-xl" style="width:100px;border-radius:8px;"></div>
-        <div class="sk sk-xl" style="width:80px;border-radius:8px;"></div>
+        {{-- Card Footer Buttons --}}
+        @if($button)
+        <div class="card-footer bg-white py-3 d-flex gap-2 border-top">
+            <div class="sk sk-md" style="width:110px;height:36px;border-radius:6px;"></div>
+            <div class="sk sk-md" style="width:80px;height:36px;border-radius:6px;"></div>
+        </div>
+        @endif
+
     </div>
-    @endif
 
 </div>

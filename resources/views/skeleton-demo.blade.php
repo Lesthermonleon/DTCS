@@ -15,7 +15,7 @@
 
 {{-- ════════════════════════ STAT CARDS ════════════════════════ --}}
 <div class="skeleton-card mb-4">
-    <h5 class="sk-section-label mb-3">📦 Stat Cards — <code>&lt;x-skeleton.stat-card color="signal|coral|amber|steel" /&gt;</code></h5>
+    <h5 class="sk-section-label mb-3"><i class="bi bi-box-seam me-1 text-primary"></i> Stat Cards — <code>&lt;x-skeleton.stat-card color="signal|coral|amber|steel" /&gt;</code></h5>
     <div class="row g-3">
         <div class="col-6 col-md-3"><x-skeleton.stat-card color="signal" /></div>
         <div class="col-6 col-md-3"><x-skeleton.stat-card color="coral"  /></div>
@@ -26,18 +26,18 @@
 
 {{-- ════════════════════════ TABLE ════════════════════════ --}}
 <div class="skeleton-card mb-4">
-    <h5 class="sk-section-label mb-3">📋 Table — <code>&lt;x-skeleton.table :rows="6" :cols="5" /&gt;</code></h5>
+    <h5 class="sk-section-label mb-3"><i class="bi bi-table me-1 text-primary"></i> Table — <code>&lt;x-skeleton.table :rows="6" :cols="5" /&gt;</code></h5>
     <x-skeleton.table :rows="5" :cols="5" />
 </div>
 
 {{-- ════════════════════════ FORMS ════════════════════════ --}}
 <div class="row g-3 mb-4">
     <div class="col-md-6">
-        <h5 class="sk-section-label mb-2">📝 Form 1-col — <code>&lt;x-skeleton.form :fields="4" /&gt;</code></h5>
+        <h5 class="sk-section-label mb-2"><i class="bi bi-pencil-square me-1 text-primary"></i> Form 1-col — <code>&lt;x-skeleton.form :fields="4" /&gt;</code></h5>
         <x-skeleton.form :fields="4" />
     </div>
     <div class="col-md-6">
-        <h5 class="sk-section-label mb-2">📝 Form 2-col — <code>&lt;x-skeleton.form :fields="6" :columns="2" /&gt;</code></h5>
+        <h5 class="sk-section-label mb-2"><i class="bi bi-pencil-square me-1 text-primary"></i> Form 2-col — <code>&lt;x-skeleton.form :fields="6" :columns="2" /&gt;</code></h5>
         <x-skeleton.form :fields="6" :columns="2" />
     </div>
 </div>
@@ -45,37 +45,37 @@
 {{-- ════════════════════════ CARDS ════════════════════════ --}}
 <div class="row g-3 mb-4">
     <div class="col-md-4">
-        <h5 class="sk-section-label mb-2">🃏 Card — <code>&lt;x-skeleton.card /&gt;</code></h5>
+        <h5 class="sk-section-label mb-2"><i class="bi bi-card-heading me-1 text-primary"></i> Card — <code>&lt;x-skeleton.card /&gt;</code></h5>
         <x-skeleton.card />
     </div>
     <div class="col-md-8">
-        <h5 class="sk-section-label mb-2">🃏 Card horizontal — <code>&lt;x-skeleton.card :count="2" :horizontal="true" /&gt;</code></h5>
+        <h5 class="sk-section-label mb-2"><i class="bi bi-card-heading me-1 text-primary"></i> Card horizontal — <code>&lt;x-skeleton.card :count="2" :horizontal="true" /&gt;</code></h5>
         <x-skeleton.card :count="2" :horizontal="true" />
     </div>
 </div>
 
 {{-- ════════════════════════ PROFILE ════════════════════════ --}}
 <div class="mb-4">
-    <h5 class="sk-section-label mb-3">👤 Profile — <code>&lt;x-skeleton.profile /&gt;</code></h5>
+    <h5 class="sk-section-label mb-3"><i class="bi bi-person me-1 text-primary"></i> Profile — <code>&lt;x-skeleton.profile /&gt;</code></h5>
     <x-skeleton.profile />
 </div>
 
 {{-- ════════════════════════ MODAL TYPES ════════════════════════ --}}
 <div class="row g-3 mb-4">
     <div class="col-md-4">
-        <h5 class="sk-section-label mb-2">🪟 Modal Form — <code>type="form"</code></h5>
+        <h5 class="sk-section-label mb-2"><i class="bi bi-window me-1 text-primary"></i> Modal Form — <code>type="form"</code></h5>
         <div class="skeleton-card">
             <x-skeleton.modal type="form" />
         </div>
     </div>
     <div class="col-md-4">
-        <h5 class="sk-section-label mb-2">🪟 Modal Detail — <code>type="detail"</code></h5>
+        <h5 class="sk-section-label mb-2"><i class="bi bi-window me-1 text-primary"></i> Modal Detail — <code>type="detail"</code></h5>
         <div class="skeleton-card">
             <x-skeleton.modal type="detail" />
         </div>
     </div>
     <div class="col-md-4">
-        <h5 class="sk-section-label mb-2">🪟 Modal Confirm — <code>type="confirm"</code></h5>
+        <h5 class="sk-section-label mb-2"><i class="bi bi-window-stack me-1 text-primary"></i> Modal Confirm — <code>type="confirm"</code></h5>
         <div class="skeleton-card">
             <x-skeleton.modal type="confirm" />
         </div>
@@ -84,7 +84,7 @@
 
 {{-- ════════════════════════ DASHBOARD FULL ════════════════════════ --}}
 <div class="mb-4">
-    <h5 class="sk-section-label mb-3">🏥 Full Dashboard — <code>&lt;x-skeleton.dashboard :stats="4" :cards="2" /&gt;</code></h5>
+    <h5 class="sk-section-label mb-3"><i class="bi bi-hospital me-1 text-primary"></i> Full Dashboard — <code>&lt;x-skeleton.dashboard :stats="4" :cards="2" /&gt;</code></h5>
     <div style="background:var(--paper);border-radius:.75rem;padding:1.5rem;border:1px solid var(--line);">
         <x-skeleton.dashboard :stats="4" :cards="2" />
     </div>
@@ -92,7 +92,7 @@
 
 {{-- ════════════════════════ SHOW/HIDE DEMO ════════════════════════ --}}
 <div class="skeleton-card mb-4">
-    <h5 class="sk-section-label mb-3">⚡ JS Show/Hide Demo</h5>
+    <h5 class="sk-section-label mb-3"><i class="bi bi-lightning-charge me-1 text-primary"></i> JS Show/Hide Demo</h5>
     <p class="text-soft" style="font-size:.875rem;margin-bottom:1rem;">
         Click the button to toggle the skeleton on and off dynamically.
     </p>
@@ -129,7 +129,7 @@
 
 {{-- ════════════════════════ PRIMITIVE UTILITIES ════════════════════════ --}}
 <div class="skeleton-card mb-4">
-    <h5 class="sk-section-label mb-3">🔧 Raw Primitive Classes</h5>
+    <h5 class="sk-section-label mb-3"><i class="bi bi-tools me-1 text-primary"></i> Raw Primitive Classes</h5>
     <div class="d-flex flex-column gap-2">
         <div class="d-flex align-items-center gap-3">
             <code class="text-soft" style="width:180px;font-size:.75rem;">.sk .sk-xs</code>

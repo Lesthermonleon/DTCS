@@ -95,7 +95,7 @@ class AdminUserSeeder extends Seeder
 
             // Attach role if not already attached
             $role = Role::where('slug', $roleSlug)->first();
-            if ($role && ! $user->roles()->where('role_id', $role->id)->exists()) {
+            if ($role && ! $user->roles()->where('role_user.role_id', $role->id)->exists()) {
                 $user->roles()->attach($role->id);
             }
         }

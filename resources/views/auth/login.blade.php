@@ -10,9 +10,10 @@
 
     {{-- Lockout Countdown Alert --}}
     @if (session('lockout_seconds'))
-        <div class="alert alert-warning py-2 mb-3" id="lockout-alert">
+        @php $lockoutSeconds = (int) session('lockout_seconds'); @endphp
+        <div class="alert alert-warning py-2 mb-3" id="lockout-alert" data-seconds="{{ $lockoutSeconds }}">
             <i class="bi bi-hourglass-split me-1"></i>
-            Account temporarily locked. Please wait <strong id="countdown-display">{{ session('lockout_seconds') }}</strong> seconds.
+            Account temporarily locked. Please wait <strong id="countdown-display">{{ $lockoutSeconds }}</strong> seconds.
         </div>
     @endif
 
@@ -62,25 +63,26 @@
     </form>
 
     {{-- Lockout Countdown Timer Script --}}
-    @if (session('lockout_seconds'))
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            let seconds = {{ (int) session('lockout_seconds') }};
-            const display = document.getElementById('countdown-display');
-            const submitBtn = document.getElementById('login-submit-btn');
-            const alert = document.getElementById('lockout-alert');
+            var lockoutEl = document.getElementById('lockout-alert');
+            if (!lockoutEl) return;
+
+            var seconds = parseInt(lockoutEl.dataset.seconds, 10);
+            var display = document.getElementById('countdown-display');
+            var submitBtn = document.getElementById('login-submit-btn');
 
             if (seconds > 0 && submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.style.opacity = '0.6';
                 submitBtn.style.cursor = 'not-allowed';
 
-                const timer = setInterval(function () {
+                var timer = setInterval(function () {
                     seconds--;
                     if (display) {
                         if (seconds >= 60) {
-                            const mins = Math.floor(seconds / 60);
-                            const secs = seconds % 60;
+                            var mins = Math.floor(seconds / 60);
+                            var secs = seconds % 60;
                             display.textContent = mins + 'm ' + (secs < 10 ? '0' : '') + secs + 's';
                         } else {
                             display.textContent = seconds;
@@ -92,15 +94,12 @@
                         submitBtn.disabled = false;
                         submitBtn.style.opacity = '1';
                         submitBtn.style.cursor = 'pointer';
-                        if (alert) {
-                            alert.classList.remove('alert-warning');
-                            alert.classList.add('alert-success');
-                            alert.innerHTML = '<i class="bi bi-check-circle me-1"></i> You may now try logging in again.';
-                        }
+                        lockoutEl.classList.remove('alert-warning');
+                        lockoutEl.classList.add('alert-success');
+                        lockoutEl.innerHTML = '<i class="bi bi-check-circle me-1"></i> You may now try logging in again.';
                     }
                 }, 1000);
             }
         });
     </script>
-    @endif
 @endsection

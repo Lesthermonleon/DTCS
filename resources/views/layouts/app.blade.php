@@ -53,10 +53,26 @@
             --steel:        #4C7EA8;
 
             --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
+            --sidebar-current-width: var(--sidebar-width);
             --topbar-height: 60px;
             --font-display: 'Space Grotesk', sans-serif;
             --font-body:    'Inter', sans-serif;
             --font-mono:    'IBM Plex Mono', monospace;
+
+            /* Sidebar Light Mode variables */
+            --sidebar-bg:          #FFFFFF;
+            --sidebar-border:      var(--line);
+            --sidebar-text:        var(--text);
+            --sidebar-text-soft:   var(--text-soft);
+            --sidebar-hover-bg:    rgba(20, 199, 154, 0.08);
+            --sidebar-hover-text:  var(--text);
+            --sidebar-active-bg:   rgba(20, 199, 154, 0.12);
+            --sidebar-active-text: var(--text);
+        }
+
+        body.sidebar-collapsed {
+            --sidebar-current-width: var(--sidebar-collapsed-width);
         }
 
         /* Dark Theme Overrides */
@@ -66,6 +82,16 @@
             --line:         #1E3630;
             --text:         #E2E8F0;
             --text-soft:    #94A3B8;
+
+            /* Sidebar Dark Mode variables */
+            --sidebar-bg:          var(--ink);
+            --sidebar-border:      rgba(255, 255, 255, 0.07);
+            --sidebar-text:        #ffffff;
+            --sidebar-text-soft:   rgba(255, 255, 255, 0.55);
+            --sidebar-hover-bg:    rgba(255, 255, 255, 0.06);
+            --sidebar-hover-text:  #ffffff;
+            --sidebar-active-bg:   rgba(20, 199, 154, 0.1);
+            --sidebar-active-text: #ffffff;
         }
         html[data-theme="dark"] body {
             background-color: var(--paper);
@@ -243,23 +269,25 @@
            SIDEBAR
         ══════════════════════════════════════ */
         #sidebar {
-            width: var(--sidebar-width);
+            width: var(--sidebar-current-width);
             height: 100vh;
-            background: var(--ink);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
             position: fixed;
             top: 0; left: 0; z-index: 1040;
             display: flex;
             flex-direction: column;
-            transition: transform .25s ease;
+            transition: transform .25s ease, width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: hidden;
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
+            white-space: nowrap;
         }
 
         /* Brand area */
         .sb-brand {
             padding: 1.1rem 1.25rem 1rem;
-            border-bottom: 1px solid rgba(255,255,255,.07);
+            border-bottom: 1px solid var(--sidebar-border);
             flex-shrink: 0;
         }
         .sb-brand-inner {
@@ -277,7 +305,7 @@
             font-family: var(--font-display);
             font-weight: 700;
             font-size: .95rem;
-            color: #fff;
+            color: var(--sidebar-text);
             margin: 0;
             line-height: 1.2;
         }
@@ -285,7 +313,7 @@
             font-family: var(--font-mono);
             font-weight: 500;
             font-size: .62rem;
-            color: rgba(255,255,255,.45);
+            color: var(--sidebar-text-soft);
             letter-spacing: .04em;
         }
 
@@ -295,7 +323,7 @@
             align-items: center;
             gap: .4rem;
             padding: .55rem 1.25rem .45rem;
-            border-bottom: 1px solid rgba(255,255,255,.06);
+            border-bottom: 1px solid var(--sidebar-border);
         }
         .sys-live-dot {
             width: 7px; height: 7px;
@@ -325,7 +353,7 @@
             font-family: var(--font-mono);
             font-weight: 600;
             font-size: .6rem;
-            color: rgba(255,255,255,.3);
+            color: var(--sidebar-text-soft);
             letter-spacing: .1em;
             text-transform: uppercase;
             padding: .8rem 1.25rem .2rem;
@@ -336,7 +364,7 @@
             font-family: var(--font-body);
             font-size: .84rem;
             font-weight: 400;
-            color: rgba(255,255,255,.65);
+            color: var(--sidebar-text-soft);
             padding: .5rem 1.25rem;
             display: flex;
             align-items: center;
@@ -349,21 +377,21 @@
             width: 18px;
             text-align: center;
             font-size: 1rem;
-            opacity: .7;
+            color: var(--sidebar-text-soft);
         }
         #sidebar .nav-link:hover {
-            background: rgba(255,255,255,.06);
-            color: #fff;
+            background: var(--sidebar-hover-bg);
+            color: var(--sidebar-hover-text);
             border-left-color: rgba(20,199,154,.4);
         }
-        #sidebar .nav-link:hover i { opacity: 1; }
+        #sidebar .nav-link:hover i { color: var(--sidebar-hover-text); }
         #sidebar .nav-link.active {
-            background: rgba(20,199,154,.1);
-            color: #fff;
+            background: var(--sidebar-active-bg);
+            color: var(--sidebar-active-text);
             border-left-color: var(--signal);
             font-weight: 600;
         }
-        #sidebar .nav-link.active i { opacity: 1; }
+        #sidebar .nav-link.active i { color: var(--sidebar-active-text); }
 
         /* Logout button override */
         #sidebar .nav-link-logout {
@@ -378,9 +406,9 @@
             transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
         }
         #sidebar .sb-group-toggle:hover {
-            background: rgba(255,255,255,.08) !important;
+            background: var(--sidebar-hover-bg) !important;
             border-color: rgba(20,199,154,.35) !important;
-            color: #fff;
+            color: var(--sidebar-hover-text);
         }
         #sidebar .nav-link-logout:hover {
             background: rgba(232, 92, 85, 0.18) !important;
@@ -397,13 +425,14 @@
             border-bottom: 1px solid var(--line);
             position: fixed;
             top: 0;
-            left: var(--sidebar-width);
+            left: var(--sidebar-current-width);
             right: 0;
             z-index: 1030;
             display: flex;
             align-items: center;
             padding: 0 1.25rem;
             gap: .75rem;
+            transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Hamburger / toggle */
@@ -424,7 +453,30 @@
         /* Search */
         .topbar-search {
             flex: 1;
-            max-width: 340px;
+            max-width: 420px;
+            min-width: 280px;
+            transition: max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .topbar-search-container {
+            display: flex;
+            align-items: center;
+        }
+        .topbar-search-close {
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+        .topbar-search-close:hover {
+            color: var(--signal) !important;
+        }
+        .topbar-search-close i {
+            font-size: 1.25rem;
+            color: var(--text-soft);
         }
         .topbar-search input {
             border: 1px solid var(--line);
@@ -436,6 +488,9 @@
             padding: .38rem .75rem .38rem 2.1rem;
             width: 100%;
             transition: border-color .15s, box-shadow .15s;
+        }
+        html[data-theme="dark"] .topbar-search-close i {
+            color: var(--text-soft);
         }
         .topbar-search input::placeholder { color: var(--text-soft); }
         .topbar-search input:focus {
@@ -454,6 +509,124 @@
             color: var(--text-soft);
             font-size: .82rem;
             pointer-events: none;
+        }
+        @media (min-width: 576px) {
+            .topbar-search:focus-within {
+                max-width: 540px;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 991.98px) {
+            .topbar-search {
+                max-width: 320px;
+                min-width: 240px;
+            }
+            .topbar-search:focus-within {
+                max-width: 440px;
+            }
+        }
+        @media (min-width: 576px) and (max-width: 767.98px) {
+            .topbar-search {
+                max-width: 240px;
+                min-width: 200px;
+            }
+            .topbar-search:focus-within {
+                max-width: 320px;
+            }
+        }
+
+        /* Live Global Search Dropdown */
+        .search-kbd-shortcut {
+            position: absolute;
+            right: .6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: .65rem;
+            padding: .15rem .35rem;
+            border-radius: .25rem;
+            background: var(--surface);
+            color: var(--text-soft);
+            border: 1px solid var(--line);
+            font-family: var(--font-mono);
+            pointer-events: none;
+        }
+
+        .search-dropdown-results {
+            position: absolute;
+            top: calc(100% + .4rem);
+            left: 0;
+            right: 0;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: .6rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,.15), 0 8px 10px -6px rgba(0,0,0,.1);
+            max-height: 420px;
+            overflow-y: auto;
+            z-index: 1100;
+            padding: .35rem 0;
+        }
+
+        .search-group-header {
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--text-soft);
+            padding: .4rem .85rem .2rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            border-top: 1px solid var(--line);
+        }
+
+        .search-group-header:first-child {
+            border-top: none;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .45rem .85rem;
+            text-decoration: none;
+            color: var(--text);
+            transition: background .12s;
+            cursor: pointer;
+        }
+
+        .search-result-item:hover,
+        .search-result-item.selected {
+            background: var(--surface);
+            color: var(--signal);
+            text-decoration: none;
+        }
+
+        .search-result-item .item-title {
+            font-size: .83rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.25;
+            transition: color .12s;
+        }
+
+        .search-result-item:hover .item-title,
+        .search-result-item.selected .item-title {
+            color: var(--signal);
+        }
+
+        .search-result-item .item-subtitle {
+            font-size: .72rem;
+            color: var(--text-soft);
+            line-height: 1.2;
+        }
+
+        .search-result-item .item-badge {
+            font-size: .68rem;
+            font-weight: 600;
+            padding: .15rem .45rem;
+            border-radius: .3rem;
+            background: rgba(20,199,154,.12);
+            color: var(--signal);
+            white-space: nowrap;
         }
 
 
@@ -556,7 +729,7 @@
         #page-titlebar {
             position: fixed;
             top: var(--topbar-height);
-            left: var(--sidebar-width);
+            left: var(--sidebar-current-width);
             right: 0;
             z-index: 1020;
             height: 54px;
@@ -568,6 +741,7 @@
             justify-content: center;
             padding: 0.4rem 1.25rem;
             gap: 2px;
+            transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #page-titlebar-text {
             font-family: var(--font-display);
@@ -595,7 +769,7 @@
            MAIN CONTENT
         ══════════════════════════════════════ */
         #main-content {
-            margin-left: var(--sidebar-width);
+            margin-left: var(--sidebar-current-width);
             padding-top: calc(var(--topbar-height) + 54px + 1.5rem);
             padding-bottom: 1.5rem;
             padding-left: 1.5rem;
@@ -603,6 +777,19 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #page-intro-skeleton {
+            margin-left: var(--sidebar-current-width) !important;
+            padding-top: calc(var(--topbar-height) + 54px + 1.5rem) !important;
+            padding-bottom: 1.5rem !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+            min-height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
 
         /* ══════════════════════════════════════
@@ -946,30 +1133,221 @@
         }
         #sidebar-overlay.show { display: block; }
 
+        /* ======================================
+           MODERN SCROLLBARS (global & sidebar)
+           ====================================== */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+        }
+
+        /* Webkit scrollbar for global application */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Webkit scrollbar specific to client sidebar navigation */
+        .sb-nav-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+        }
+        .sb-nav-container::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .sb-nav-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sb-nav-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+        }
+        .sb-nav-container:hover::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .sb-nav-container::-webkit-scrollbar-thumb:hover {
+            background: var(--signal);
+        }
+
+        /* Floating Tooltip */
+        .sb-tooltip {
+            position: fixed;
+            z-index: 1060;
+            background: var(--ink);
+            color: #fff;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.76rem;
+            font-weight: 500;
+            font-family: var(--font-display);
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-10px, -50%);
+            transition: opacity 0.12s ease, transform 0.12s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.08);
+            white-space: nowrap;
+        }
+        .sb-tooltip::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -4px;
+            transform: translateY(-50%) rotate(45deg);
+            width: 8px;
+            height: 8px;
+            background: var(--ink);
+            border-left: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .sb-tooltip.show {
+            opacity: 1;
+            transform: translate(0, -50%);
+        }
+
         /* ══════════════════════════════════════
-           RESPONSIVE
+           RESPONSIVE & MINI SIDEBAR COLLAPSE
         ══════════════════════════════════════ */
+        @media (min-width: 768px) {
+            /* Under collapsed state: */
+            body.sidebar-collapsed #sidebar .sb-brand-text,
+            body.sidebar-collapsed #sidebar .sb-nav-label,
+            body.sidebar-collapsed #sidebar .sb-group-label,
+            body.sidebar-collapsed #sidebar .sb-chevron,
+            body.sidebar-collapsed #sidebar .sys-live,
+            body.sidebar-collapsed #sidebar .brand-tagline,
+            body.sidebar-collapsed #sidebar .sb-badge {
+                display: none !important;
+            }
+
+            body.sidebar-collapsed #sidebar .nav-link {
+                justify-content: center !important;
+                padding: 0.6rem 0 !important;
+                margin: 2px 8px !important;
+                font-size: 0 !important;
+            }
+
+            body.sidebar-collapsed #sidebar .nav-link i {
+                font-size: 1.25rem !important;
+                margin: 0 !important;
+            }
+
+            body.sidebar-collapsed #sidebar .sb-group-toggle {
+                justify-content: center !important;
+                padding: 0.6rem 0 !important;
+                margin: 2px 8px !important;
+                width: calc(100% - 16px) !important;
+            }
+
+            body.sidebar-collapsed #sidebar .collapse {
+                display: none !important;
+            }
+
+            body.sidebar-collapsed #sidebar .sb-brand-inner {
+                flex-direction: column !important;
+                gap: 8px !important;
+                justify-content: center !important;
+            }
+
+            body.sidebar-collapsed #sidebar #desktopSidebarCollapse {
+                display: none !important;
+            }
+
+            body.sidebar-collapsed #sidebar .sb-brand-icon-wrap,
+            body.sidebar-collapsed #sidebar .sb-pulse-icon {
+                margin: 0 auto !important;
+            }
+
+            body.sidebar-collapsed #sidebar #userMenuBtn {
+                justify-content: center !important;
+                padding: 0.5rem 0 !important;
+                border: none !important;
+                margin: 2px 8px !important;
+            }
+
+            body.sidebar-collapsed #sidebar #userMenuBtn .text-start,
+            body.sidebar-collapsed #sidebar #userMenuBtn .bi-chevron-right {
+                display: none !important;
+            }
+
+            body.sidebar-collapsed #sidebar .nav-link-logout {
+                justify-content: center !important;
+                padding: 0.5rem 0 !important;
+                margin: 2px 8px !important;
+            }
+
+            body.sidebar-collapsed #sidebar .nav-link-logout span {
+                display: none !important;
+            }
+
+            body.sidebar-collapsed #sidebar .nav-link-logout i {
+                margin: 0 !important;
+                font-size: 1.25rem !important;
+            }
+        }
+
         @media (max-width: 767px) {
             #sidebar {
-                transform: translateX(-100%);
+                transform: translateX(-100%) !important;
+                width: var(--sidebar-width) !important;
             }
             #sidebar.show {
-                transform: translateX(0);
+                transform: translateX(0) !important;
             }
             #topbar {
-                left: 0;
+                left: 0 !important;
             }
             #page-titlebar {
-                left: 0;
+                left: 0 !important;
             }
             #main-content {
-                margin-left: 0;
+                margin-left: 0 !important;
+            }
+            #page-intro-skeleton {
+                margin-left: 0 !important;
             }
             .topbar-toggle {
                 display: flex;
             }
-            .topbar-search { max-width: 200px; }
             .topbar-title { display: none; }
+        }
+
+        @media (max-width: 575.98px) {
+            .topbar-search {
+                display: none;
+                flex: none;
+                max-width: none;
+                width: 100%;
+            }
+            .topbar-search.active {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: var(--topbar-height);
+                background: var(--card);
+                border-bottom: 1px solid var(--line);
+                z-index: 1035;
+                padding: 0 1.25rem;
+                display: flex !important;
+                align-items: center;
+            }
+            .topbar-search.active input {
+                font-size: 0.9rem;
+                padding: 0.45rem 0.75rem 0.45rem 2.2rem;
+            }
         }
 
         /* ══════════════════════════════════════
@@ -992,122 +1370,118 @@
 <nav id="sidebar" aria-label="Main navigation">
 
     {{-- Brand --}}
-    <div class="sb-brand">
-        <div class="sb-brand-inner">
-            {{-- Department Logo / Brand Icon --}}
-            @php
-                $userDept = strtolower(auth()->user()->department ?? '');
-                $showSvgPulse = false;
-                if (str_contains($userDept, 'admin')) {
-                    $deptIcon = 'ph-fill ph-shield-checkered';
-                } elseif (str_contains($userDept, 'medicine') || str_contains($userDept, 'doctor')) {
-                    $deptIcon = 'ph-fill ph-heartbeat';
-                } elseif (str_contains($userDept, 'lab')) {
-                    $deptIcon = 'ph-fill ph-flask';
-                } elseif (str_contains($userDept, 'radio')) {
-                    $deptIcon = 'ph-fill ph-scan';
-                } elseif (str_contains($userDept, 'pharm')) {
-                    $deptIcon = 'ph-fill ph-pill';
-                } elseif (str_contains($userDept, 'nutrition') || str_contains($userDept, 'diet')) {
-                    $deptIcon = 'ph-fill ph-apple';
-                } elseif (str_contains($userDept, 'operating') || str_contains($userDept, 'surgery') || str_contains($userDept, 'or')) {
-                    $deptIcon = 'ph-fill ph-first-aid';
-                } else {
-                    $showSvgPulse = true;
-                }
-            @endphp
-            @if($showSvgPulse)
-                <svg class="sb-pulse-icon" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect width="34" height="34" rx="8" fill="rgba(20,199,154,0.12)"/>
-                    <polyline
-                        points="3,17 8,17 10,11 12,23 15,8 17,26 19,14 21,20 23,17 31,17"
-                        fill="none"
-                        stroke="#14C79A"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
-                </svg>
-            @else
-                <div class="sb-brand-icon-wrap" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(20,199,154,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <i class="{{ $deptIcon }}" style="color: var(--signal); font-size: 1.15rem;"></i>
-                </div>
-            @endif
-            <div class="sb-brand-text">
+    <div class="sb-brand" style="position: relative;">
+        <div class="sb-brand-inner d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2" style="min-width: 0; overflow: hidden; flex: 1;">
+                {{-- Department Logo / Brand Icon --}}
                 @php
-                    $roleTagline = '';
-                    $brandSuffix = 'DTCS';
-                    $primaryRole = auth()->user()->primaryRole;
-                    if ($primaryRole === 'admin') {
-                        $roleTagline = 'Administrator';
-                        $brandSuffix = 'Admin';
-                    } elseif ($primaryRole === 'med-tech') {
-                        $roleTagline = 'Laboratory';
-                        $brandSuffix = 'LIS';
-                    } elseif (in_array($primaryRole, ['rad-tech', 'radiologist'])) {
-                        $roleTagline = 'radiology';
-                        $brandSuffix = 'RIS';
-                    } elseif ($primaryRole === 'pharmacist') {
-                        $roleTagline = 'pharmacy';
-                        $brandSuffix = 'PMS';
-                    } elseif ($primaryRole === 'or-coordinator') {
-                        $roleTagline = 'surgery';
-                        $brandSuffix = 'SORS';
-                    } elseif ($primaryRole === 'dietitian') {
-                        $roleTagline = 'nutrition';
-                        $brandSuffix = 'DNMS';
-                    } elseif ($primaryRole === 'doctor') {
-                        $roleTagline = 'doctor';
-                        $brandSuffix = 'DOC';
+                    $userDept = strtolower(auth()->user()->department ?? '');
+                    $showSvgPulse = false;
+                    if (str_contains($userDept, 'admin')) {
+                        $deptIcon = 'ph-fill ph-shield-checkered';
+                    } elseif (str_contains($userDept, 'medicine') || str_contains($userDept, 'doctor')) {
+                        $deptIcon = 'ph-fill ph-heartbeat';
+                    } elseif (str_contains($userDept, 'lab')) {
+                        $deptIcon = 'ph-fill ph-flask';
+                    } elseif (str_contains($userDept, 'radio')) {
+                        $deptIcon = 'ph-fill ph-scan';
+                    } elseif (str_contains($userDept, 'pharm')) {
+                        $deptIcon = 'ph-fill ph-pill';
+                    } elseif (str_contains($userDept, 'nutrition') || str_contains($userDept, 'diet')) {
+                        $deptIcon = 'ph-fill ph-apple';
+                    } elseif (str_contains($userDept, 'operating') || str_contains($userDept, 'surgery') || str_contains($userDept, 'or')) {
+                        $deptIcon = 'ph-fill ph-first-aid';
+                    } else {
+                        $showSvgPulse = true;
                     }
                 @endphp
-                <h5>HIMS - {{ $brandSuffix }}</h5>
-                @if($roleTagline)
-                    <span class="brand-tagline" style="color: var(--signal); font-size: 0.72rem; font-weight: 600; display: block; margin-top: -3px; margin-bottom: 2px; text-transform: uppercase;">{{ $roleTagline }}</span>
+                @if($showSvgPulse)
+                    <svg class="sb-pulse-icon" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink: 0;">
+                        <rect width="34" height="34" rx="8" fill="rgba(20,199,154,0.12)"/>
+                        <polyline
+                            points="3,17 8,17 10,11 12,23 15,8 17,26 19,14 21,20 23,17 31,17"
+                            fill="none"
+                            stroke="#14C79A"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+                @else
+                    <div class="sb-brand-icon-wrap" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(20,199,154,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="{{ $deptIcon }}" style="color: var(--signal); font-size: 1.15rem;"></i>
+                    </div>
                 @endif
-                <small>Hospital Operations Suite</small>
+                <div class="sb-brand-text">
+                    @php
+                        $roleTagline = '';
+                        $brandSuffix = 'DTCS';
+                        $primaryRole = auth()->user()->primaryRole;
+                        if ($primaryRole === 'admin') {
+                            $roleTagline = 'Administrator';
+                            $brandSuffix = 'Admin';
+                        } elseif ($primaryRole === 'med-tech') {
+                            $roleTagline = 'Laboratory';
+                            $brandSuffix = 'LIS';
+                        } elseif (in_array($primaryRole, ['rad-tech', 'radiologist'])) {
+                            $roleTagline = 'radiology';
+                            $brandSuffix = 'RIS';
+                        } elseif ($primaryRole === 'pharmacist') {
+                            $roleTagline = 'pharmacy';
+                            $brandSuffix = 'PMS';
+                        } elseif ($primaryRole === 'or-coordinator') {
+                            $roleTagline = 'surgery';
+                            $brandSuffix = 'SORS';
+                        } elseif ($primaryRole === 'dietitian') {
+                            $roleTagline = 'nutrition';
+                            $brandSuffix = 'DNMS';
+                        } elseif ($primaryRole === 'doctor') {
+                            $roleTagline = 'doctor';
+                            $brandSuffix = 'DOC';
+                        }
+                    @endphp
+                    <h5 class="m-0">HIMS - {{ $brandSuffix }}</h5>
+                    @if($roleTagline)
+                        <span class="brand-tagline" style="color: var(--signal); font-size: 0.72rem; font-weight: 600; display: block; margin-top: -1px; margin-bottom: 2px; text-transform: uppercase;">{{ $roleTagline }}</span>
+                    @endif
+                    <small>Hospital Suite</small>
+                </div>
             </div>
+
+            {{-- Desktop Collapse Toggle --}}
+            <button class="topbar-toggle d-none d-md-flex align-items-center justify-content-center border-0 p-0" id="desktopSidebarCollapse" aria-label="Collapse sidebar" style="width: 24px; height: 24px; background: transparent; color: var(--sidebar-text-soft); transition: color 0.15s; outline: none;">
+                <i class="bi bi-arrow-bar-left" id="desktopCollapseIcon" style="font-size:1.15rem;"></i>
+            </button>
         </div>
     </div>
 
     {{-- Navigation --}}
-    <div style="flex:1; overflow-y:auto; padding-top:.5rem; -webkit-overflow-scrolling: touch;">
+    <div class="sb-nav-container" style="flex:1; overflow-y:auto; padding-top:.5rem; -webkit-overflow-scrolling: touch;">
         @include('partials._sidebar')
     </div>
 
     {{-- User Account Menu (Stuck at the bottom) --}}
-    <div class="px-3 py-3 border-top" style="border-color: rgba(255,255,255,0.06) !important; background: var(--ink); z-index: 1050; flex-shrink: 0;">
+    <div class="px-3 py-3 border-top" style="border-color: var(--sidebar-border) !important; background: var(--sidebar-bg); z-index: 1050; flex-shrink: 0;">
         <div class="d-flex flex-column gap-1">
             {{-- Direct User Profile Button --}}
-            <a href="{{ route('profile.edit') }}" 
-               class="nav-link sb-group-toggle w-100 text-start d-flex align-items-center justify-content-between p-2 rounded {{ request()->routeIs('profile.edit') ? 'active' : '' }}"
+            <button type="button" 
+               class="nav-link sb-group-toggle w-100 text-start d-flex align-items-center justify-content-between p-2 rounded"
                style="background: transparent; border: 1px solid transparent; text-decoration: none;"
                id="userMenuBtn" 
+               data-bs-toggle="modal"
+               data-bs-target="#userMenuModal"
                aria-label="User profile">
                 <div class="d-flex align-items-center gap-2" style="min-width: 0;">
                     <div class="topbar-avatar" style="width: 30px; height: 30px; border-radius: 50%; background: var(--signal); color: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: .75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
                     <div class="text-start" style="line-height: 1.2; min-width: 0;">
-                        <div style="font-size: .8rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px;">{{ auth()->user()->name }}</div>
-                        <div style="font-size: .65rem; color: rgba(255,255,255,.5); font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px;">{{ auth()->user()->roleName }}</div>
+                        <div style="font-size: .8rem; font-weight: 600; color: var(--sidebar-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px;">{{ auth()->user()->name }}</div>
+                        <div style="font-size: .65rem; color: var(--sidebar-text-soft); font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px;">{{ auth()->user()->roleName }}</div>
                     </div>
                 </div>
-                <i class="bi bi-chevron-right" style="font-size: .75rem; color: rgba(255,255,255,.4);"></i>
-            </a>
-
-
-            {{-- Logout Button Below User Menu Btn --}}
-            <form method="POST" action="{{ route('logout') }}" class="m-0">
-                @csrf
-                <button type="submit" 
-                        class="nav-link py-2 px-2.5 rounded text-danger w-100 nav-link-logout d-flex align-items-center gap-2" 
-                        style="font-size: 0.82rem; background: transparent; border: 1px solid transparent; transition: background 0.15s, border-color 0.15s;"
-                        aria-label="Logout">
-                    <i class="bi bi-box-arrow-right" style="font-size: 0.95rem;"></i>
-                    <span>Log Out</span>
-                </button>
-            </form>
+                <i class="bi bi-chevron-expand" style="font-size: .75rem; color: var(--sidebar-text-soft);"></i>
+            </button>
         </div>
     </div>
 
@@ -1116,8 +1490,8 @@
 {{-- ═══════════════════ TOPBAR ═══════════════════ --}}
 <header id="topbar">
 
-    {{-- Hamburger --}}
-    <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+    {{-- Mobile Hamburger --}}
+    <button class="topbar-toggle d-md-none" id="sidebarToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
         <i class="bi bi-list" style="font-size:1.1rem;"></i>
     </button>
 
@@ -1135,10 +1509,17 @@
     <div class="flex-fill d-none d-sm-block"></div>
 
     {{-- Search --}}
-    <div class="topbar-search d-none d-sm-block">
-        <div class="topbar-search-wrap">
-            <i class="bi bi-search"></i>
-            <input type="search" placeholder="Search patients, records…" aria-label="Search">
+    <div class="topbar-search" id="topbarSearch">
+        <div class="topbar-search-container w-100">
+            <button class="topbar-search-close d-sm-none btn border-0 p-0 me-2 text-soft" id="mobileSearchClose" type="button" aria-label="Close search">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <div class="topbar-search-wrap flex-fill position-relative">
+                <i class="bi bi-search"></i>
+                <input type="search" id="topbarSearchInput" placeholder="Search patients, records…" aria-label="Search" autocomplete="off">
+                <kbd class="search-kbd-shortcut d-none d-lg-inline-block">Ctrl K</kbd>
+                <div id="searchDropdownResults" class="search-dropdown-results d-none"></div>
+            </div>
         </div>
     </div>
 
@@ -1146,7 +1527,7 @@
     <div class="flex-fill d-none d-sm-block"></div>
 
     {{-- Right actions: Clock, Messages, Notifications --}}
-    <div class="d-flex align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2 ms-auto">
         {{-- Live Clock --}}
         <div class="topbar-clock d-none d-sm-flex" aria-label="Current date and time" aria-live="off">
             <div>
@@ -1155,162 +1536,210 @@
             </div>
         </div>
 
-        {{-- Messages --}}
-        <button class="topbar-notif" aria-label="Messages">
-            <i class="bi bi-chat-left-text" style="font-size:.9rem;"></i>
+        {{-- Mobile Search Trigger --}}
+        <button class="topbar-notif d-sm-none" id="mobileSearchToggle" aria-label="Open search">
+            <i class="bi bi-search" style="font-size:.9rem;"></i>
         </button>
 
-        {{-- Notifications --}}
-        <button class="topbar-notif" aria-label="Notifications">
-            <i class="bi bi-bell" style="font-size:.9rem;"></i>
-            <span class="notif-dot" aria-hidden="true"></span>
-        </button>
+        {{-- Messages Dropdown --}}
+        <div class="dropdown">
+            <button class="topbar-notif position-relative" id="topbarMessageDropdownToggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Messages">
+                <i class="bi bi-chat-left-text" style="font-size:.9rem;"></i>
+                <span class="badge bg-danger rounded-circle position-absolute d-none" id="msgBadge" style="top: -2px; right: -2px; font-size: 0.55rem; padding: 2px 4px;"></span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-0 mt-2" aria-labelledby="topbarMessageDropdownToggle" style="width: 320px; font-size: 0.85rem;">
+                <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+                    <span class="fw-bold text-dark me-2">Staff Messages</span>
+                    <a href="{{ route('messages.index') }}" class="text-decoration-none small text-primary fw-semibold">View all →</a>
+                </div>
+                <div id="topbarMessageList" style="max-height: 280px; overflow-y: auto;">
+                    <div class="text-center py-4 text-muted small me-2 ms-2">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span> Loading messages...
+                    </div>
+                </div>
+                <div class="p-2 border-top bg-light text-center">
+                    <a href="{{ route('messages.index') }}" class="btn btn-sm btn-primary w-100 py-1">Open Messaging Hub</a>
+                </div>
+            </div>
+        </div>
+
+        {{-- Notifications Dropdown --}}
+        <div class="dropdown">
+            <button class="topbar-notif position-relative" id="topbarNotifDropdownToggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+                <i class="bi bi-bell" style="font-size:.9rem;"></i>
+                <span class="notif-dot d-none" id="notifDot" aria-hidden="true"></span>
+                <span class="badge bg-danger rounded-circle position-absolute d-none" id="notifBadge" style="top: -2px; right: -2px; font-size: 0.55rem; padding: 2px 4px;"></span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-0 mt-2" aria-labelledby="topbarNotifDropdownToggle" style="width: 340px; font-size: 0.85rem;">
+                <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+                    <div>
+                        <span class="fw-bold text-dark me-2">Notifications</span>
+                        <span class="badge bg-secondary rounded-pill" id="notifDropdownCount" style="font-size: 0.65rem;">0</span>
+                    </div>
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 text-muted small" id="markAllReadBtn">
+                        Mark all read
+                    </button>
+                </div>
+                <div id="topbarNotifList" style="max-height: 300px; overflow-y: auto;">
+                    <div class="text-center py-4 text-muted small me-2 ms-2">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span> Loading notifications...
+                    </div>
+                </div>
+                <div class="p-2 border-top bg-light text-center">
+                    <a href="{{ route('notifications.index') }}" class="text-decoration-none small fw-bold text-primary">View all notifications →</a>
+                </div>
+            </div>
+        </div>
     </div>
 </header>
 
 {{-- ═══ PAGE TITLE BAR ═══ --}}
 <div id="page-titlebar">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            @hasSection('breadcrumb')
-                @yield('breadcrumb')
-            @else
-                @php
-                    $user = Auth::user();
-                    $role = $user?->primaryRole;
-                    $breadcrumbs = [];
-                    
-                    $labActive   = request()->routeIs('lab.*');
-                    $radActive   = request()->routeIs('radiology.*');
-                    $pmsActive   = request()->routeIs('pharmacy.*');
-                    $sorActive   = request()->routeIs('surgery.*');
-                    $dnmActive   = request()->routeIs('diet.*');
-                    $adminActive = request()->routeIs('admin.*') || request()->routeIs('admin.*.*');
-                    
-                    if ($role === 'admin') {
-                        if ($labActive || $radActive || $pmsActive || $sorActive || $dnmActive) {
-                            $breadcrumbs[] = ['title' => 'Modules'];
-                        }
+    @hasSection('page-titlebar-custom')
+        @yield('page-titlebar-custom')
+    @else
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                @hasSection('breadcrumb')
+                    @yield('breadcrumb')
+                @else
+                    @php
+                        $user = Auth::user();
+                        $role = $user?->primaryRole;
+                        $breadcrumbs = [];
                         
-                        if ($labActive) {
-                            $breadcrumbs[] = ['title' => 'Laboratory (LIS)', 'url' => route('lab.dashboard')];
-                        } elseif ($radActive) {
-                            $breadcrumbs[] = ['title' => 'Radiology (RIS)', 'url' => route('radiology.dashboard')];
-                        } elseif ($pmsActive) {
-                            $breadcrumbs[] = ['title' => 'Pharmacy (PMS)', 'url' => route('pharmacy.dashboard')];
-                        } elseif ($sorActive) {
-                            $breadcrumbs[] = ['title' => 'Surgery (SORS)', 'url' => route('surgery.dashboard')];
-                        } elseif ($dnmActive) {
-                            $breadcrumbs[] = ['title' => 'Nutrition (DNMS)', 'url' => route('diet.dashboard')];
-                        }
+                        $labActive   = request()->routeIs('lab.*');
+                        $radActive   = request()->routeIs('radiology.*');
+                        $pmsActive   = request()->routeIs('pharmacy.*');
+                        $sorActive   = request()->routeIs('surgery.*');
+                        $dnmActive   = request()->routeIs('diet.*');
+                        $adminActive = request()->routeIs('admin.*') || request()->routeIs('admin.*.*');
                         
-                        if ($adminActive) {
-                            $breadcrumbs[] = ['title' => 'Administration'];
-                            if (request()->routeIs('admin.dashboard')) {
-                                $breadcrumbs[] = ['title' => 'Dashboard', 'url' => route('admin.dashboard')];
-                            } elseif (request()->routeIs('admin.users.*')) {
-                                $breadcrumbs[] = ['title' => 'User Management', 'url' => route('admin.users.index')];
-                            } elseif (request()->routeIs('admin.roles.*')) {
-                                $breadcrumbs[] = ['title' => 'Permission', 'url' => route('admin.roles.index')];
+                        if ($role === 'admin') {
+                            if ($labActive || $radActive || $pmsActive || $sorActive || $dnmActive) {
+                                $breadcrumbs[] = ['title' => 'Modules'];
+                            }
+                            
+                            if ($labActive) {
+                                $breadcrumbs[] = ['title' => 'Laboratory (LIS)', 'url' => route('lab.dashboard')];
+                            } elseif ($radActive) {
+                                $breadcrumbs[] = ['title' => 'Radiology (RIS)', 'url' => route('radiology.dashboard')];
+                            } elseif ($pmsActive) {
+                                $breadcrumbs[] = ['title' => 'Pharmacy (PMS)', 'url' => route('pharmacy.dashboard')];
+                            } elseif ($sorActive) {
+                                $breadcrumbs[] = ['title' => 'Surgery (SORS)', 'url' => route('surgery.dashboard')];
+                            } elseif ($dnmActive) {
+                                $breadcrumbs[] = ['title' => 'Nutrition (DNMS)', 'url' => route('diet.dashboard')];
+                            }
+                            
+                            if ($adminActive) {
+                                $breadcrumbs[] = ['title' => 'Administration'];
+                                if (request()->routeIs('admin.dashboard')) {
+                                    $breadcrumbs[] = ['title' => 'Dashboard', 'url' => route('admin.dashboard')];
+                                } elseif (request()->routeIs('admin.users.*')) {
+                                    $breadcrumbs[] = ['title' => 'User Management', 'url' => route('admin.users.index')];
+                                } elseif (request()->routeIs('admin.roles.*')) {
+                                    $breadcrumbs[] = ['title' => 'Permission', 'url' => route('admin.roles.index')];
+                                }
+                            }
+                        } else {
+                            // Non-admin roles
+                            if ($labActive) {
+                                $breadcrumbs[] = ['title' => 'Laboratory (LIS)', 'url' => route('lab.dashboard')];
+                            } elseif ($radActive) {
+                                $breadcrumbs[] = ['title' => 'Radiology (RIS)', 'url' => route('radiology.dashboard')];
+                            } elseif ($pmsActive) {
+                                $breadcrumbs[] = ['title' => 'Pharmacy (PMS)', 'url' => route('pharmacy.dashboard')];
+                            } elseif ($sorActive) {
+                                $breadcrumbs[] = ['title' => 'Surgery (SORS)', 'url' => route('surgery.dashboard')];
+                            } elseif ($dnmActive) {
+                                $breadcrumbs[] = ['title' => 'Nutrition (DNMS)', 'url' => route('diet.dashboard')];
                             }
                         }
-                    } else {
-                        // Non-admin roles
-                        if ($labActive) {
-                            $breadcrumbs[] = ['title' => 'Laboratory (LIS)', 'url' => route('lab.dashboard')];
-                        } elseif ($radActive) {
-                            $breadcrumbs[] = ['title' => 'Radiology (RIS)', 'url' => route('radiology.dashboard')];
-                        } elseif ($pmsActive) {
-                            $breadcrumbs[] = ['title' => 'Pharmacy (PMS)', 'url' => route('pharmacy.dashboard')];
-                        } elseif ($sorActive) {
-                            $breadcrumbs[] = ['title' => 'Surgery (SORS)', 'url' => route('surgery.dashboard')];
-                        } elseif ($dnmActive) {
-                            $breadcrumbs[] = ['title' => 'Nutrition (DNMS)', 'url' => route('diet.dashboard')];
+                        
+                        // Add specific page link
+                        if ($labActive && !request()->routeIs('lab.dashboard')) {
+                            if (request()->routeIs('lab.requests.*')) {
+                                $breadcrumbs[] = ['title' => 'Lab Requests', 'url' => route('lab.requests.index')];
+                            } elseif (request()->routeIs('lab.results.*')) {
+                                $breadcrumbs[] = ['title' => 'Lab Results', 'url' => route('lab.results.index')];
+                            }
+                        } elseif ($radActive && !request()->routeIs('radiology.dashboard')) {
+                            if (request()->routeIs('radiology.requests.*')) {
+                                $breadcrumbs[] = ['title' => 'Imaging Requests', 'url' => route('radiology.requests.index')];
+                            } elseif (request()->routeIs('radiology.reports.*')) {
+                                $breadcrumbs[] = ['title' => 'Reports', 'url' => route('radiology.reports.index')];
+                            }
+                        } elseif ($pmsActive && !request()->routeIs('pharmacy.dashboard')) {
+                            if (request()->routeIs('pharmacy.prescriptions.*')) {
+                                $breadcrumbs[] = ['title' => 'Prescriptions', 'url' => route('pharmacy.prescriptions.index')];
+                            } elseif (request()->routeIs('pharmacy.dispensing.*')) {
+                                $breadcrumbs[] = ['title' => 'Dispensing', 'url' => route('pharmacy.dispensing.index')];
+                            }
+                        } elseif ($sorActive && !request()->routeIs('surgery.dashboard')) {
+                            if (request()->routeIs('surgery.requests.*')) {
+                                $breadcrumbs[] = ['title' => 'Surgery Requests', 'url' => route('surgery.requests.index')];
+                            } elseif (request()->routeIs('surgery.schedules.*')) {
+                                $breadcrumbs[] = ['title' => 'OR Schedules', 'url' => route('surgery.schedules.index')];
+                            } elseif (request()->routeIs('surgery.calendar')) {
+                                $breadcrumbs[] = ['title' => 'Surgery Calendar', 'url' => route('surgery.calendar')];
+                            }
+                        } elseif ($dnmActive && !request()->routeIs('diet.dashboard')) {
+                            if (request()->routeIs('diet.requests.*')) {
+                                $breadcrumbs[] = ['title' => 'Diet Requests', 'url' => route('diet.requests.index')];
+                            } elseif (request()->routeIs('diet.plans.*')) {
+                                $breadcrumbs[] = ['title' => 'Diet Plans', 'url' => route('diet.plans.index')];
+                            }
                         }
-                    }
-                    
-                    // Add specific page link
-                    if ($labActive && !request()->routeIs('lab.dashboard')) {
-                        if (request()->routeIs('lab.requests.*')) {
-                            $breadcrumbs[] = ['title' => 'Lab Requests', 'url' => route('lab.requests.index')];
-                        } elseif (request()->routeIs('lab.results.*')) {
-                            $breadcrumbs[] = ['title' => 'Lab Results', 'url' => route('lab.results.index')];
-                        }
-                    } elseif ($radActive && !request()->routeIs('radiology.dashboard')) {
-                        if (request()->routeIs('radiology.requests.*')) {
-                            $breadcrumbs[] = ['title' => 'Imaging Requests', 'url' => route('radiology.requests.index')];
-                        } elseif (request()->routeIs('radiology.reports.*')) {
-                            $breadcrumbs[] = ['title' => 'Reports', 'url' => route('radiology.reports.index')];
-                        }
-                    } elseif ($pmsActive && !request()->routeIs('pharmacy.dashboard')) {
-                        if (request()->routeIs('pharmacy.prescriptions.*')) {
-                            $breadcrumbs[] = ['title' => 'Prescriptions', 'url' => route('pharmacy.prescriptions.index')];
-                        } elseif (request()->routeIs('pharmacy.dispensing.*')) {
-                            $breadcrumbs[] = ['title' => 'Dispensing', 'url' => route('pharmacy.dispensing.index')];
-                        }
-                    } elseif ($sorActive && !request()->routeIs('surgery.dashboard')) {
-                        if (request()->routeIs('surgery.requests.*')) {
-                            $breadcrumbs[] = ['title' => 'Surgery Requests', 'url' => route('surgery.requests.index')];
-                        } elseif (request()->routeIs('surgery.schedules.*')) {
-                            $breadcrumbs[] = ['title' => 'OR Schedules', 'url' => route('surgery.schedules.index')];
-                        } elseif (request()->routeIs('surgery.calendar')) {
-                            $breadcrumbs[] = ['title' => 'Surgery Calendar', 'url' => route('surgery.calendar')];
-                        }
-                    } elseif ($dnmActive && !request()->routeIs('diet.dashboard')) {
-                        if (request()->routeIs('diet.requests.*')) {
-                            $breadcrumbs[] = ['title' => 'Diet Requests', 'url' => route('diet.requests.index')];
-                        } elseif (request()->routeIs('diet.plans.*')) {
-                            $breadcrumbs[] = ['title' => 'Diet Plans', 'url' => route('diet.plans.index')];
-                        }
-                    }
-                    
-                    // Add Action Level
-                    if (request()->routeIs('*.create')) {
-                        $breadcrumbs[] = ['title' => 'Create'];
-                    } elseif (request()->routeIs('*.edit')) {
-                        $breadcrumbs[] = ['title' => 'Edit'];
-                    } elseif (request()->routeIs('*.show')) {
-                        $breadcrumbs[] = ['title' => 'Details'];
-                    }
-                    
-                    // Doctor Dashboard fallback
-                    if (request()->routeIs('doctor.dashboard')) {
-                        $breadcrumbs[] = ['title' => 'Dashboard'];
-                    }
-                    
-                    // Profile Page fallback
-                    if (request()->routeIs('profile.*')) {
-                        $breadcrumbs[] = ['title' => 'Account'];
-                        $breadcrumbs[] = ['title' => 'Profile', 'url' => route('profile.edit')];
-                    }
-                    
-                    // Patients Pages fallback
-                    if (request()->routeIs('patients.*')) {
-                        $breadcrumbs[] = ['title' => 'Patients', 'url' => route('patients.index')];
-                        if (request()->routeIs('patients.create')) {
-                            $breadcrumbs[] = ['title' => 'New Patient'];
-                        } elseif (request()->routeIs('patients.edit')) {
-                            $breadcrumbs[] = ['title' => 'Edit Patient'];
-                        } elseif (request()->routeIs('patients.show')) {
+                        
+                        // Add Action Level
+                        if (request()->routeIs('*.create')) {
+                            $breadcrumbs[] = ['title' => 'Create'];
+                        } elseif (request()->routeIs('*.edit')) {
+                            $breadcrumbs[] = ['title' => 'Edit'];
+                        } elseif (request()->routeIs('*.show')) {
                             $breadcrumbs[] = ['title' => 'Details'];
                         }
-                    }
-                @endphp
-                @foreach($breadcrumbs as $index => $crumb)
-                    @if($index === count($breadcrumbs) - 1)
-                        <li class="breadcrumb-item active" aria-current="page">{{ $crumb['title'] }}</li>
-                    @else
-                        @if(isset($crumb['url']))
-                            <li class="breadcrumb-item"><a href="{{ $crumb['url'] }}">{{ $crumb['title'] }}</a></li>
+                        
+                        // Doctor Dashboard fallback
+                        if (request()->routeIs('doctor.dashboard')) {
+                            $breadcrumbs[] = ['title' => 'Dashboard'];
+                        }
+                        
+                        // Profile Page fallback
+                        if (request()->routeIs('profile.*')) {
+                            $breadcrumbs[] = ['title' => 'Account'];
+                            $breadcrumbs[] = ['title' => 'Profile', 'url' => route('profile.edit')];
+                        }
+                        
+                        // Patients Pages fallback
+                        if (request()->routeIs('patients.*')) {
+                            $breadcrumbs[] = ['title' => 'Patients', 'url' => route('patients.index')];
+                            if (request()->routeIs('patients.create')) {
+                                $breadcrumbs[] = ['title' => 'New Patient'];
+                            } elseif (request()->routeIs('patients.edit')) {
+                                $breadcrumbs[] = ['title' => 'Edit Patient'];
+                            } elseif (request()->routeIs('patients.show')) {
+                                $breadcrumbs[] = ['title' => 'Details'];
+                            }
+                        }
+                    @endphp
+                    @foreach($breadcrumbs as $index => $crumb)
+                        @if($index === count($breadcrumbs) - 1)
+                            <li class="breadcrumb-item active" aria-current="page">{{ $crumb['title'] }}</li>
                         @else
-                            <li class="breadcrumb-item opacity-75">{{ $crumb['title'] }}</li>
+                            @if(isset($crumb['url']))
+                                <li class="breadcrumb-item"><a href="{{ $crumb['url'] }}">{{ $crumb['title'] }}</a></li>
+                            @else
+                                <li class="breadcrumb-item opacity-75">{{ $crumb['title'] }}</li>
+                            @endif
                         @endif
-                    @endif
-                @endforeach
-            @endif
-        </ol>
-    </nav>
-    <div id="page-titlebar-text">@yield('page-title', 'Dashboard')</div>
+                    @endforeach
+                @endif
+            </ol>
+        </nav>
+        <div id="page-titlebar-text">@yield('page-title', 'Dashboard')</div>
+    @endif
 </div>
 
 {{-- ═══ TOAST MESSAGES ═══ --}}
@@ -1319,7 +1748,7 @@
 </div>
 
 {{-- Page Intro Skeleton loader --}}
-<div id="page-intro-skeleton" class="container-fluid" style="margin-left: var(--sidebar-width); padding-top: calc(var(--topbar-height) + 54px + 1.5rem); padding-left: 1.5rem; padding-right: 1.5rem;">
+<div id="page-intro-skeleton">
     @hasSection('skeleton')
         @yield('skeleton')
     @else
@@ -1343,6 +1772,21 @@
 
 {{-- ═══════════════════ MAIN CONTENT ═══════════════════ --}}
 <main id="main-content" class="d-none">
+    @if(request()->routeIs('*.dashboard') || request()->routeIs('dashboard') || request()->routeIs('doctor.dashboard'))
+    <div class="mb-3" style="display:flex;align-items:center;gap:.75rem;">
+        <div style="width:42px;height:42px;border-radius:.65rem;background:rgba(20,199,154,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi bi-person-check" style="font-size:1.15rem;color:var(--signal-dark);"></i>
+        </div>
+        <div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.95rem;color:var(--text);line-height:1.3;">
+                Welcome, {{ auth()->user()->name }}
+            </div>
+            <div style="font-size:.78rem;color:var(--text-soft);line-height:1.3;">
+                You are logged in to the DITC Hospital
+            </div>
+        </div>
+    </div>
+    @endif
     @yield('content')
 
     {{-- ═══ APP FOOTER ═══ --}}
@@ -1403,6 +1847,120 @@
         sidebar.classList.contains('show') ? closeSidebar() : openSidebar();
     });
 
+    /* ── Desktop Sidebar Collapse ── */
+    const desktopCollapseBtn = document.getElementById('desktopSidebarCollapse');
+    const desktopCollapseIcon = document.getElementById('desktopCollapseIcon');
+    
+    // Read and apply initial state from localStorage
+    const sidebarState = localStorage.getItem('sidebar_collapsed');
+    if (sidebarState === 'true') {
+        document.body.classList.add('sidebar-collapsed');
+        if (desktopCollapseIcon) {
+            desktopCollapseIcon.className = 'bi bi-arrow-bar-right';
+        }
+    }
+    
+    desktopCollapseBtn?.addEventListener('click', () => {
+        const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebar_collapsed', isCollapsed);
+        if (desktopCollapseIcon) {
+            desktopCollapseIcon.className = isCollapsed ? 'bi bi-arrow-bar-right' : 'bi bi-arrow-bar-left';
+        }
+        
+        // Dispatch window resize event so charts or layouts update
+        window.dispatchEvent(new Event('resize'));
+    });
+
+    // Auto-expand sidebar if any link or toggle is clicked while collapsed
+    document.querySelectorAll('#sidebar .nav-link, #sidebar .sb-group-toggle').forEach(elem => {
+        elem.addEventListener('click', (e) => {
+            if (elem.id === 'userMenuBtn') return; // Don't auto-expand for user menu modal
+            if (document.body.classList.contains('sidebar-collapsed')) {
+                document.body.classList.remove('sidebar-collapsed');
+                localStorage.setItem('sidebar_collapsed', 'false');
+                if (desktopCollapseIcon) {
+                    desktopCollapseIcon.className = 'bi bi-arrow-bar-left';
+                }
+                window.dispatchEvent(new Event('resize'));
+            }
+        });
+    });
+
+    // Expand sidebar when clicking on the brand icon / logo in mini mode
+    document.querySelectorAll('.sb-brand-icon-wrap, .sb-pulse-icon').forEach(elem => {
+        elem.style.cursor = 'pointer';
+        elem.addEventListener('click', () => {
+            if (document.body.classList.contains('sidebar-collapsed')) {
+                document.body.classList.remove('sidebar-collapsed');
+                localStorage.setItem('sidebar_collapsed', 'false');
+                if (desktopCollapseIcon) {
+                    desktopCollapseIcon.className = 'bi bi-arrow-bar-left';
+                }
+                window.dispatchEvent(new Event('resize'));
+            }
+        });
+    });
+
+    // Dynamic floating tooltip for collapsed sidebar icons
+    let tooltipEl = null;
+
+    document.querySelectorAll('#sidebar .nav-link, #sidebar .sb-group-toggle, #sidebar #userMenuBtn').forEach(elem => {
+        elem.addEventListener('mouseenter', (e) => {
+            if (!document.body.classList.contains('sidebar-collapsed')) return;
+            
+            let text = '';
+            if (elem.id === 'userMenuBtn') {
+                text = 'Account Menu';
+            } else if (elem.classList.contains('nav-link-logout')) {
+                text = 'Log Out';
+            } else {
+                const groupLabel = elem.querySelector('.sb-group-label');
+                if (groupLabel) {
+                    const clone = groupLabel.cloneNode(true);
+                    clone.querySelectorAll('.sb-badge').forEach(b => b.remove());
+                    text = clone.textContent.trim();
+                } else {
+                    const clone = elem.cloneNode(true);
+                    clone.querySelectorAll('i, svg').forEach(i => i.remove());
+                    text = clone.textContent.trim();
+                }
+            }
+            
+            if (!text) return;
+            
+            // Create tooltip
+            tooltipEl = document.createElement('div');
+            tooltipEl.className = 'sb-tooltip';
+            tooltipEl.textContent = text;
+            document.body.appendChild(tooltipEl);
+            
+            // Positioning coordinates
+            const rect = elem.getBoundingClientRect();
+            tooltipEl.style.top = `${rect.top + (rect.height / 2)}px`;
+            tooltipEl.style.left = `${rect.right + 10}px`;
+            
+            requestAnimationFrame(() => {
+                tooltipEl?.classList.add('show');
+            });
+        });
+        
+        elem.addEventListener('mouseleave', () => {
+            if (tooltipEl) {
+                const temp = tooltipEl;
+                tooltipEl = null;
+                temp.classList.remove('show');
+                setTimeout(() => temp.remove(), 120);
+            }
+        });
+        
+        elem.addEventListener('click', () => {
+            if (tooltipEl) {
+                tooltipEl.remove();
+                tooltipEl = null;
+            }
+        });
+    });
+
     /* ── Bootstrap Toasts ── */
     document.querySelectorAll('.toast').forEach(el => {
         new bootstrap.Toast(el, { delay: 4500 }).show();
@@ -1425,12 +1983,89 @@
         }
     });
 
-    /* ── Confirmation dialogs ── */
-    document.querySelectorAll('[data-confirm]').forEach(el => {
-        el.addEventListener('click', function(e) {
-            if (!confirm(this.dataset.confirm)) e.preventDefault();
+    /* ── Centralized Global Confirmation Modal Interceptor ── */
+    (function() {
+        let pendingFormOrElement = null;
+
+        document.addEventListener('click', function(e) {
+            const trigger = e.target.closest('[data-confirm]');
+            if (!trigger) return;
+
+            const confirmMsg = trigger.getAttribute('data-confirm');
+            if (!confirmMsg) return;
+
+            const form = trigger.closest('form');
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const modalEl = document.getElementById('globalConfirmModal');
+            if (!modalEl) {
+                if (confirm(confirmMsg)) {
+                    if (form) form.submit();
+                    else if (trigger.tagName === 'A') window.location.href = trigger.href;
+                }
+                return;
+            }
+
+            const titleEl = document.getElementById('globalConfirmTitle');
+            const msgEl = document.getElementById('globalConfirmMessage');
+            const actionBtn = document.getElementById('globalConfirmActionButton');
+            const iconBg = document.getElementById('globalConfirmIconBg');
+            const iconEl = document.getElementById('globalConfirmIcon');
+
+            const title = trigger.getAttribute('data-confirm-title') || 'Confirm Action';
+            const btnClass = trigger.getAttribute('data-confirm-btn') || 'btn-danger';
+            const iconClass = trigger.getAttribute('data-confirm-icon') || (btnClass.includes('danger') ? 'bi-exclamation-triangle-fill' : (btnClass.includes('warning') ? 'bi-exclamation-circle-fill' : (btnClass.includes('info') ? 'bi-unlock-fill' : 'bi-question-circle-fill')));
+            const actionBtnText = trigger.getAttribute('data-confirm-action-text') || 'Confirm';
+
+            if (titleEl) titleEl.textContent = title;
+            if (msgEl) msgEl.textContent = confirmMsg;
+
+            if (actionBtn) {
+                actionBtn.className = `btn btn-sm ${btnClass} px-3`;
+                actionBtn.innerHTML = `<i class="bi bi-check-lg me-1"></i>${actionBtnText}`;
+            }
+
+            if (iconBg && iconEl) {
+                iconEl.className = `bi ${iconClass} fs-5`;
+                if (btnClass.includes('danger')) {
+                    iconBg.style.background = 'rgba(232, 92, 85, 0.15)';
+                    iconBg.style.color = 'var(--coral)';
+                } else if (btnClass.includes('warning')) {
+                    iconBg.style.background = 'rgba(224, 160, 48, 0.15)';
+                    iconBg.style.color = 'var(--amber)';
+                } else if (btnClass.includes('info') || btnClass.includes('primary') || btnClass.includes('success')) {
+                    iconBg.style.background = 'rgba(20, 199, 154, 0.15)';
+                    iconBg.style.color = 'var(--signal-dark)';
+                } else {
+                    iconBg.style.background = 'rgba(76, 126, 168, 0.15)';
+                    iconBg.style.color = 'var(--steel)';
+                }
+            }
+
+            pendingFormOrElement = { form: form, link: trigger.tagName === 'A' ? trigger : null };
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }, true);
+
+        // Confirm button action listener
+        document.getElementById('globalConfirmActionButton')?.addEventListener('click', function() {
+            const modalEl = document.getElementById('globalConfirmModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+
+            if (pendingFormOrElement) {
+                if (pendingFormOrElement.form) {
+                    pendingFormOrElement.form.submit();
+                } else if (pendingFormOrElement.link) {
+                    window.location.href = pendingFormOrElement.link.href;
+                }
+                pendingFormOrElement = null;
+            }
         });
-    });
+    })();
 
     /* ── Live Clock ── */
     (function tickClock() {
@@ -1456,6 +2091,201 @@
         update();
         setInterval(update, 1000);
     })();
+
+    /* ── Global Live Search & Mobile Overlay Handler ── */
+    const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+    const mobileSearchClose  = document.getElementById('mobileSearchClose');
+    const topbarSearch       = document.getElementById('topbarSearch');
+    const searchInput        = document.getElementById('topbarSearchInput');
+    const searchDropdown     = document.getElementById('searchDropdownResults');
+
+    let debounceTimer = null;
+    let selectedIndex = -1;
+
+    // Mobile Overlay Toggle
+    mobileSearchToggle?.addEventListener('click', () => {
+        if (topbarSearch) {
+            topbarSearch.classList.add('active');
+            setTimeout(() => searchInput?.focus(), 50);
+        }
+    });
+
+    mobileSearchClose?.addEventListener('click', () => {
+        if (topbarSearch) {
+            topbarSearch.classList.remove('active');
+            if (searchInput) searchInput.value = '';
+            hideSearchDropdown();
+        }
+    });
+
+    function hideSearchDropdown() {
+        if (searchDropdown) {
+            searchDropdown.classList.add('d-none');
+            searchDropdown.innerHTML = '';
+        }
+        selectedIndex = -1;
+    }
+
+    function renderSearchDropdown(data) {
+        if (!searchDropdown) return;
+        
+        const results = data.results || {};
+        const categories = Object.keys(results);
+
+        if (categories.length === 0) {
+            searchDropdown.innerHTML = `
+                <div class="px-3 py-3 text-center text-soft" style="font-size: .83rem;">
+                    <i class="bi bi-search d-block mb-1 fs-5 opacity-50"></i>
+                    No matching records found for "<strong class="text-ink">${escapeHtml(data.query)}</strong>"
+                </div>`;
+            searchDropdown.classList.remove('d-none');
+            selectedIndex = -1;
+            return;
+        }
+
+        let html = '';
+        categories.forEach(catKey => {
+            const group = results[catKey];
+            html += `
+                <div class="search-group-header">
+                    <i class="bi ${group.icon}"></i>
+                    ${escapeHtml(group.label)}
+                </div>`;
+            
+            group.items.forEach(item => {
+                const badgeHtml = item.badge ? `<span class="item-badge">${escapeHtml(item.badge)}</span>` : '';
+                html += `
+                    <a href="${item.url}" class="search-result-item" data-url="${item.url}">
+                        <div>
+                            <div class="item-title">${escapeHtml(item.title)}</div>
+                            <div class="item-subtitle">${escapeHtml(item.subtitle)}</div>
+                        </div>
+                        ${badgeHtml}
+                    </a>`;
+            });
+        });
+
+        searchDropdown.innerHTML = html;
+        searchDropdown.classList.remove('d-none');
+        selectedIndex = -1;
+
+        // Hover & Click Navigation Events
+        searchDropdown.querySelectorAll('.search-result-item').forEach((el, idx) => {
+            el.addEventListener('mouseenter', () => setSelectedIndex(idx));
+
+            const navigateToResult = (e) => {
+                const url = el.getAttribute('data-url');
+                if (url && url !== '#') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = url;
+                }
+            };
+
+            el.addEventListener('mousedown', navigateToResult);
+            el.addEventListener('click', navigateToResult);
+        });
+    }
+
+    function setSelectedIndex(index) {
+        const items = searchDropdown?.querySelectorAll('.search-result-item') || [];
+        items.forEach(i => i.classList.remove('selected'));
+        if (index >= 0 && index < items.length) {
+            items[index].classList.add('selected');
+            items[index].scrollIntoView({ block: 'nearest' });
+            selectedIndex = index;
+        } else {
+            selectedIndex = -1;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Input Debounce Live Search
+    searchInput?.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (query.length < 2) {
+            hideSearchDropdown();
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`/global-search?q=${encodeURIComponent(query)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => renderSearchDropdown(data))
+            .catch(err => console.error('Global search error:', err));
+        }, 220);
+    });
+
+    // Keyboard Navigation & Shortcuts
+    document.addEventListener('keydown', (e) => {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        const isInputActive = ['input', 'textarea', 'select'].includes(activeTag) || document.activeElement?.isContentEditable;
+
+        // Global hotkey Ctrl+K or '/' to focus search
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            searchInput?.focus();
+            return;
+        }
+        if (e.key === '/' && !isInputActive) {
+            e.preventDefault();
+            searchInput?.focus();
+            return;
+        }
+
+        // Dropdown active key navigation
+        if (searchDropdown && !searchDropdown.classList.contains('d-none')) {
+            const items = searchDropdown.querySelectorAll('.search-result-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const nextIndex = selectedIndex + 1 < items.length ? selectedIndex + 1 : 0;
+                setSelectedIndex(nextIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prevIndex = selectedIndex - 1 >= 0 ? selectedIndex - 1 : items.length - 1;
+                setSelectedIndex(prevIndex);
+            } else if (e.key === 'Enter') {
+                if (selectedIndex >= 0 && items[selectedIndex]) {
+                    e.preventDefault();
+                    window.location.href = items[selectedIndex].getAttribute('data-url');
+                } else if (searchInput?.value.trim()) {
+                    e.preventDefault();
+                    window.location.href = `/patients?search=${encodeURIComponent(searchInput.value.trim())}`;
+                }
+            } else if (e.key === 'Escape') {
+                hideSearchDropdown();
+                if (topbarSearch?.classList.contains('active')) {
+                    topbarSearch.classList.remove('active');
+                }
+            }
+        } else if (e.key === 'Escape' && topbarSearch?.classList.contains('active')) {
+            topbarSearch.classList.remove('active');
+        }
+    });
+
+    // Hide dropdown on click outside
+    document.addEventListener('click', (e) => {
+        if (topbarSearch && !topbarSearch.contains(e.target)) {
+            hideSearchDropdown();
+        }
+    });
 </script>
 
 {{-- Skeleton Loading System --}}
@@ -1463,16 +2293,24 @@
 
 {{-- Page Intro Loader Logic --}}
 <script>
+    (function() {
+        window.__pageStartTime = performance.now();
+    })();
+
     document.addEventListener('DOMContentLoaded', function () {
         const intro = document.getElementById('page-intro-skeleton');
         const main = document.getElementById('main-content');
         if (intro && main) {
-            // Check if page was loaded after a button click/form submission
-            if (sessionStorage.getItem('submitted_form') === 'true') {
-                sessionStorage.removeItem('submitted_form');
-                intro.remove();
-                main.classList.remove('d-none');
-            } else {
+            const navEntries = performance.getEntriesByType('navigation');
+            const navType = navEntries.length > 0 ? navEntries[0].type : '';
+            const isRefreshOrBackForward = (navType === 'reload' || navType === 'back_forward');
+
+            if (isRefreshOrBackForward) {
+                // Skeleton loader displays for Page Refresh and Browser Back/Forward navigation
+                const SKELETON_MIN_DISPLAY_MS = 400;
+                const elapsed = performance.now() - (window.__pageStartTime || performance.now());
+                const remaining = Math.max(0, SKELETON_MIN_DISPLAY_MS - elapsed);
+
                 setTimeout(function() {
                     intro.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
                     intro.style.opacity = '0';
@@ -1482,7 +2320,11 @@
                         main.classList.remove('d-none');
                         main.style.animation = 'sk-fade-in 0.3s ease-out forwards';
                     }, 250);
-                }, 300);
+                }, remaining);
+            } else {
+                // Standard link navigation: reveal main content immediately
+                intro.remove();
+                main.classList.remove('d-none');
             }
         }
     });
@@ -1542,7 +2384,6 @@
         if (e.defaultPrevented) return;
         const btn = e.target.querySelector('button[type="submit"], input[type="submit"]');
         if (btn) {
-            sessionStorage.setItem('submitted_form', 'true');
             const overlay = document.getElementById('cardio-loader-overlay');
             if (overlay) {
                 overlay.style.display = 'flex';
@@ -1551,14 +2392,46 @@
         }
     });
 
-    // Intercept clicks on links styled as .btn that trigger navigation
+    // Intercept navigation links (sidebar nav-links, action buttons, table links) to show loading state
     document.addEventListener('click', function (e) {
+        if (e.defaultPrevented || e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
         const link = e.target.closest('a');
-        if (link && link.classList.contains('btn') && !link.hasAttribute('data-bs-toggle') && link.getAttribute('href') && link.getAttribute('href') !== '#') {
-            sessionStorage.setItem('submitted_form', 'true');
-            const overlay = document.getElementById('cardio-loader-overlay');
-            if (overlay) {
-                overlay.style.display = 'flex';
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (!href || href === '#' || href.startsWith('#') || href.startsWith('javascript:') || link.hasAttribute('data-bs-toggle') || link.getAttribute('target') === '_blank' || link.hasAttribute('download')) {
+            return;
+        }
+
+        try {
+            const url = new URL(link.href, window.location.href);
+            if (url.origin !== window.location.origin) return;
+        } catch (_) {
+            return;
+        }
+
+        const overlay = document.getElementById('cardio-loader-overlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+        }
+    });
+
+    // Handle Back-Forward Cache (bfcache) navigation
+    window.addEventListener('pageshow', function (event) {
+        const overlay = document.getElementById('cardio-loader-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        document.querySelectorAll('button[type="submit"]:disabled, input[type="submit"]:disabled').forEach(btn => {
+            btn.disabled = false;
+        });
+        if (event.persisted) {
+            const intro = document.getElementById('page-intro-skeleton');
+            const main = document.getElementById('main-content');
+            if (main && main.classList.contains('d-none')) {
+                if (intro) intro.remove();
+                main.classList.remove('d-none');
             }
         }
     });
@@ -1574,6 +2447,354 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
+{{-- User Menu Modal --}}
+<div class="modal fade" id="userMenuModal" tabindex="-1" aria-labelledby="userMenuModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border border-line" style="border-radius: 1rem; background: var(--card); color: var(--text); box-shadow: 0 15px 40px rgba(0,0,0,0.2);">
+            <div class="modal-body p-3">
+                <div class="d-flex flex-column gap-1">
+                    {{-- Profile --}}
+                    <a href="{{ route('profile.edit') }}" class="btn btn-link text-start text-decoration-none py-2 px-3 rounded d-flex align-items-center gap-2 modal-menu-link" style="color: var(--text);">
+                        <i class="bi bi-person text-secondary" style="font-size: 1.1rem;"></i>
+                        <span style="font-size: 0.88rem; font-weight: 500;">Profile</span>
+                    </a>
+
+                    {{-- Settings --}}
+                    <a href="{{ route('settings.index') }}" class="btn btn-link text-start text-decoration-none py-2 px-3 rounded d-flex align-items-center gap-2 modal-menu-link" style="color: var(--text);">
+                        <i class="bi bi-gear text-secondary" style="font-size: 1.1rem;"></i>
+                        <span style="font-size: 0.88rem; font-weight: 500;">Settings</span>
+                    </a>
+
+                    <hr class="my-2" style="border-top: 1px solid var(--line); opacity: 1; margin-left:-1rem; margin-right:-1rem;">
+
+                    {{-- Appearance & Theme Options --}}
+                    <div class="px-3 py-1">
+                        <div class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.65rem; font-family: var(--font-mono); letter-spacing: 0.05em;">Appearance</div>
+                        <div class="d-flex flex-column gap-1 w-100">
+                            <button type="button" class="btn btn-sm border-0 theme-btn text-start py-2 px-2.5 d-flex align-items-center gap-2 rounded w-100" data-theme-val="light" style="font-size: 0.82rem; transition: all 0.2s;">
+                                <i class="bi bi-sun"></i>
+                                <span>Light</span>
+                            </button>
+                            <button type="button" class="btn btn-sm border-0 theme-btn text-start py-2 px-2.5 d-flex align-items-center gap-2 rounded w-100" data-theme-val="dark" style="font-size: 0.82rem; transition: all 0.2s;">
+                                <i class="bi bi-moon-stars"></i>
+                                <span>Dark</span>
+                            </button>
+                            <button type="button" class="btn btn-sm border-0 theme-btn text-start py-2 px-2.5 d-flex align-items-center gap-2 rounded w-100" data-theme-val="system" style="font-size: 0.82rem; transition: all 0.2s;">
+                                <i class="bi bi-display"></i>
+                                <span>System</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="my-2" style="border-top: 1px solid var(--line); opacity: 1; margin-left:-1rem; margin-right:-1rem;">
+
+                    {{-- Logout --}}
+                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+                        @csrf
+                        <button type="submit" class="btn btn-link text-start text-decoration-none py-2 px-3 rounded d-flex align-items-center gap-2 w-100 modal-menu-logout" style="color: var(--coral);">
+                            <i class="bi bi-box-arrow-right" style="font-size: 1.1rem; color: var(--coral);"></i>
+                            <span style="font-size: 0.88rem; font-weight: 600;">Log Out</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Global Confirmation Modal --}}
+<div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-labelledby="globalConfirmModalLabel" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem; background: var(--card); color: var(--text);">
+            <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="globalConfirmIconBg" class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(232, 92, 85, 0.12); color: var(--coral);">
+                        <i id="globalConfirmIcon" class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold m-0" id="globalConfirmTitle" style="font-family: var(--font-display); font-size: 1.1rem; color: var(--text);">Confirm Action</h5>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3 px-4" id="globalConfirmMessage" style="font-size: 0.9rem; color: var(--text-soft); line-height: 1.5;">
+                Are you sure you want to proceed with this action?
+            </div>
+            <div class="modal-footer border-top-0 pt-0 pb-4 px-4 d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal" id="globalConfirmCancelBtn" style="border-radius: 0.5rem; font-weight: 500;">Cancel</button>
+                <button type="button" class="btn btn-sm btn-danger px-3" id="globalConfirmActionButton" style="border-radius: 0.5rem; font-weight: 600;">
+                    <i class="bi bi-check-lg me-1"></i>Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling & Position handling for userMenuModal */
+    #userMenuModal .modal-dialog {
+        position: fixed;
+        margin: 0;
+        z-index: 1060;
+        transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.18s ease-out !important;
+    }
+
+    /* Normal (Expanded) state: Inside sidebar, above profile button */
+    @media (min-width: 768px) {
+        #userMenuModal .modal-dialog {
+            bottom: 84px;
+            left: 12px;
+            width: 236px;
+            max-width: none;
+        }
+    }
+
+    /* Collapsed (Mini) state: Next to sidebar, beside avatar button */
+    @media (min-width: 768px) {
+        body.sidebar-collapsed #userMenuModal .modal-dialog {
+            bottom: 12px;
+            left: 80px;
+            width: 260px;
+            max-width: none;
+        }
+    }
+
+    /* Mobile state: anchored centered at standard size */
+    @media (max-width: 767px) {
+        #userMenuModal .modal-dialog {
+            bottom: 20px;
+            left: 12px;
+            right: 12px;
+            width: calc(100% - 24px);
+            max-width: none;
+        }
+    }
+
+    /* Transition classes */
+    #userMenuModal.fade .modal-dialog {
+        transform: scale(0.96) translateY(8px) !important;
+        opacity: 0;
+    }
+    #userMenuModal.show .modal-dialog {
+        transform: scale(1) translateY(0) !important;
+        opacity: 1;
+    }
+
+    /* Hover backgrounds & interactions */
+    .modal-menu-link {
+        transition: all 0.2s ease;
+    }
+    .modal-menu-link:hover {
+        background-color: rgba(20, 199, 154, 0.08) !important;
+        color: var(--signal-dark) !important;
+    }
+    .modal-menu-link:hover i {
+        color: var(--signal-dark) !important;
+    }
+    .modal-menu-logout {
+        transition: all 0.2s ease;
+    }
+    .modal-menu-logout:hover {
+        background-color: rgba(232, 92, 85, 0.08) !important;
+        color: var(--coral) !important;
+    }
+    html[data-theme="dark"] .modal-menu-link:hover {
+        background-color: rgba(20, 199, 154, 0.15) !important;
+        color: var(--signal) !important;
+    }
+    html[data-theme="dark"] .modal-menu-link:hover i {
+        color: var(--signal) !important;
+    }
+    html[data-theme="dark"] .modal-menu-logout:hover {
+        background-color: rgba(232, 92, 85, 0.15) !important;
+        color: #ff766f !important;
+    }
+
+    /* Specific overrides for modal theme buttons */
+    #userMenuModal .theme-btn {
+        background-color: transparent !important;
+        color: var(--text-soft) !important;
+        border: 1px solid transparent !important;
+    }
+    #userMenuModal .theme-btn:hover {
+        background-color: rgba(110, 124, 116, 0.05) !important;
+        color: var(--text) !important;
+    }
+    #userMenuModal .theme-btn.active {
+        background-color: rgba(20, 199, 154, 0.08) !important;
+        color: var(--signal-dark) !important;
+        font-weight: 600;
+    }
+    html[data-theme="dark"] #userMenuModal .theme-btn.active {
+        background-color: rgba(20, 199, 154, 0.15) !important;
+        color: var(--signal) !important;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userMenuEl = document.getElementById('userMenuModal');
+        if (userMenuEl) {
+            userMenuEl.addEventListener('show.bs.modal', function () {
+                setTimeout(() => {
+                    document.querySelectorAll('.modal-backdrop').forEach(el => {
+                        el.style.backgroundColor = 'transparent';
+                        el.style.opacity = '0';
+                    });
+                }, 5);
+            });
+        }
+    });
+
+    // Topbar Notifications & Internal Messaging Integration
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadTopbarCounts() {
+            // Fetch Notification Count
+            fetch("{{ route('notifications.unread-count') }}")
+                .then(res => res.ok ? res.json() : null)
+                .then(data => {
+                    if (!data) return;
+                    const dot = document.getElementById('notifDot');
+                    const badge = document.getElementById('notifBadge');
+                    const countSpan = document.getElementById('notifDropdownCount');
+                    if (data.unread_count > 0) {
+                        if (dot) dot.classList.remove('d-none');
+                        if (badge) {
+                            badge.classList.remove('d-none');
+                            badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        }
+                        if (countSpan) countSpan.textContent = data.unread_count;
+                    } else {
+                        if (dot) dot.classList.add('d-none');
+                        if (badge) badge.classList.add('d-none');
+                        if (countSpan) countSpan.textContent = '0';
+                    }
+                })
+                .catch(() => {});
+
+            // Fetch Message Count
+            fetch("{{ route('messages.recent') }}")
+                .then(res => res.ok ? res.json() : null)
+                .then(data => {
+                    if (!data) return;
+                    const badge = document.getElementById('msgBadge');
+                    if (data.unread_count > 0) {
+                        if (badge) {
+                            badge.classList.remove('d-none');
+                            badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        }
+                    } else {
+                        if (badge) badge.classList.add('d-none');
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // Populate Notification List when dropdown toggled
+        const notifBtn = document.getElementById('topbarNotifDropdownToggle');
+        if (notifBtn) {
+            notifBtn.addEventListener('show.bs.dropdown', function() {
+                const list = document.getElementById('topbarNotifList');
+                fetch("{{ route('notifications.recent') }}")
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => {
+                        if (!data || !data.notifications || data.notifications.length === 0) {
+                            list.innerHTML = `<div class="text-center py-4 text-muted small"><i class="bi bi-bell-slash d-block mb-1 fs-5 opacity-50"></i>No new notifications</div>`;
+                            return;
+                        }
+
+                        let html = '';
+                        data.notifications.forEach(item => {
+                            const bgClass = item.is_read ? 'bg-white' : 'bg-light fw-bold';
+                            const dotClass = item.priority === 'critical' ? 'bg-danger' : (item.priority === 'urgent' ? 'bg-warning' : 'bg-primary');
+                            html += `
+                                <a href="${item.target_url}" class="d-flex align-items-start gap-2 p-3 text-decoration-none border-bottom text-dark ${bgClass} hover-bg-light">
+                                    <span class="rounded-circle mt-1 flex-shrink-0 ${dotClass}" style="width: 8px; height: 8px;"></span>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="badge bg-secondary" style="font-size: 0.6rem;">${item.module}</span>
+                                            <small class="text-muted" style="font-size: 0.65rem;">${item.created_at}</small>
+                                        </div>
+                                        <div class="small mb-1 text-truncate">${item.title}</div>
+                                        <div class="text-muted text-truncate" style="font-size: 0.72rem; font-weight: normal;">${item.message}</div>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                        list.innerHTML = html;
+                    });
+            });
+        }
+
+        // Populate Message List when dropdown toggled
+        const msgBtn = document.getElementById('topbarMessageDropdownToggle');
+        if (msgBtn) {
+            msgBtn.addEventListener('show.bs.dropdown', function() {
+                const list = document.getElementById('topbarMessageList');
+                fetch("{{ route('messages.recent') }}")
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => {
+                        if (!data || !data.conversations || data.conversations.length === 0) {
+                            list.innerHTML = `<div class="text-center py-4 text-muted small"><i class="bi bi-chat-dots d-block mb-1 fs-5 opacity-50"></i>No recent staff messages</div>`;
+                            return;
+                        }
+
+                        let html = '';
+                        data.conversations.forEach(item => {
+                            const bgClass = item.is_unread ? 'bg-light fw-bold' : 'bg-white';
+                            html += `
+                                <a href="{{ route('messages.index') }}?conversation_id=${item.id}" class="d-flex align-items-center gap-2 p-3 text-decoration-none border-bottom text-dark ${bgClass} hover-bg-light">
+                                    <div class="topbar-avatar flex-shrink-0" style="width: 32px; height: 32px; border-radius: 50%; background: var(--signal); color: var(--ink); font-weight: 700; font-size: .75rem; display: flex; align-items: center; justify-content: center;">
+                                        ${item.other_user_name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="small text-truncate">${item.other_user_name}</span>
+                                            <small class="text-muted" style="font-size: 0.65rem;">${item.created_at}</small>
+                                        </div>
+                                        <div class="text-muted text-truncate" style="font-size: 0.72rem; font-weight: normal;">${item.last_message}</div>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                        list.innerHTML = html;
+                    });
+            });
+        }
+
+        // Mark All Read Button
+        const markAllBtn = document.getElementById('markAllReadBtn');
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                fetch("{{ route('notifications.mark-all-read') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(() => {
+                    loadTopbarCounts();
+                    if (notifBtn) notifBtn.dispatchEvent(new Event('show.bs.dropdown'));
+                });
+            });
+        }
+
+        // Initial load & periodic poll every 30s
+        loadTopbarCounts();
+        setInterval(loadTopbarCounts, 30000);
+    });
+</script>
+
+@auth
+    @unless(request()->routeIs('medisense.index'))
+        @include('partials._medisense_fab')
+    @endunless
+@endauth
 
 @stack('scripts')
 </body>

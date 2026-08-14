@@ -36,10 +36,37 @@
                     <td>{{ $sr->doctor->name }}</td>
                     <td><small>{{ $sr->requested_at?->format('M d, Y') }}</small></td>
                     <td>
-                        <a href="{{ route('surgery.requests.show', $sr) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
-                        @if($sr->status==='Pending' && auth()->user()->hasAnyRole(['admin','or-coordinator']))
-                            <a href="{{ route('surgery.schedules.create') }}?request={{ $sr->id }}" class="btn btn-sm btn-outline-success" title="Schedule"><i class="bi bi-calendar-plus"></i></a>
-                        @endif
+                        <div class="d-flex align-items-center gap-1">
+                            <a href="{{ route('surgery.requests.show', $sr) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                            @if($sr->status==='Pending' && auth()->user()->hasAnyRole(['admin','or-coordinator']))
+                                <a href="{{ route('surgery.schedules.create') }}?request={{ $sr->id }}" class="btn btn-sm btn-outline-success" title="Schedule"><i class="bi bi-calendar-plus"></i></a>
+                            @endif
+
+                            <div class="dropdown d-inline">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    @if($sr->status === 'Pending')
+                                        @if(auth()->user()->hasAnyRole(['admin','doctor']))
+                                            <li><a class="dropdown-item small" href="{{ route('surgery.requests.edit', $sr) }}"><i class="bi bi-pencil me-2 text-warning"></i>Edit Request</a></li>
+                                        @endif
+                                        @if(auth()->user()->hasAnyRole(['admin','doctor','or-coordinator']))
+                                            <li>
+                                                <form action="{{ route('surgery.requests.cancel', $sr) }}" method="POST">
+                                                    @csrf @method('PATCH')
+                                                    <button type="submit" class="dropdown-item small text-danger" data-confirm="Are you sure you want to cancel surgery request {{ $sr->request_no }}?">
+                                                        <i class="bi bi-x-circle me-2"></i>Cancel Request
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @endif
+                                    @else
+                                        <li><a class="dropdown-item small" href="{{ route('surgery.requests.show', $sr) }}"><i class="bi bi-folder2-open me-2 text-primary"></i>View Details</a></li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -75,7 +102,7 @@
             const params = new URLSearchParams(formData);
             const newUrl = `${window.location.pathname}?${params.toString()}`;
             
-            window.history.pushState(null, '', newUrl);
+            window.history.replaceState(null, '', newUrl);
 
             fetch(newUrl, {
                 headers: {
