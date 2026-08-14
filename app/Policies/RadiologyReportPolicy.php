@@ -27,15 +27,15 @@ class RadiologyReportPolicy
     }
 
     /**
-     * Determine whether the user can create radiology reports (Radiologists & Admins only).
+     * Determine whether the user can create radiology reports (Radiologists only).
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['admin', 'radiologist']);
+        return $user->hasRole('radiologist');
     }
 
     /**
-     * Determine whether the user can edit/update a radiology report (Radiologists & Admins when not Released).
+     * Determine whether the user can edit/update a radiology report (Radiologists when not Released).
      */
     public function update(User $user, RadiologyReport $radiologyReport): bool
     {
@@ -43,11 +43,11 @@ class RadiologyReportPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'radiologist']);
+        return $user->hasRole('radiologist');
     }
 
     /**
-     * Determine whether the user can delete a draft report (Radiologists & Admins when Draft).
+     * Determine whether the user can delete a draft report (Radiologists when Draft).
      */
     public function delete(User $user, RadiologyReport $radiologyReport): bool
     {
@@ -55,11 +55,11 @@ class RadiologyReportPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'radiologist']);
+        return $user->hasRole('radiologist');
     }
 
     /**
-     * Determine whether the user can approve/finalize a report (Radiologists & Admins when Draft).
+     * Determine whether the user can approve/finalize a report (Radiologists when Draft).
      */
     public function approve(User $user, RadiologyReport $radiologyReport): bool
     {
@@ -67,11 +67,11 @@ class RadiologyReportPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'radiologist']);
+        return $user->hasRole('radiologist');
     }
 
     /**
-     * Determine whether the user can release a report to referring doctor (Radiologists & Admins when Approved).
+     * Determine whether the user can release a report to referring doctor (Radiologists when Approved).
      */
     public function release(User $user, RadiologyReport $radiologyReport): bool
     {
@@ -79,6 +79,6 @@ class RadiologyReportPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'radiologist']);
+        return $user->hasRole('radiologist');
     }
 }

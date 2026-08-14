@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureSingleSessionActive;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -13,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Enforce single active session check on web requests
+        $middleware->web(append: [
+            EnsureSingleSessionActive::class,
+        ]);
+
         // Register the 'role' middleware alias for use in routes
         $middleware->alias([
             'role' => RoleMiddleware::class,

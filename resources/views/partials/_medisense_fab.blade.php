@@ -5,7 +5,8 @@
     <button id="medisenseFabBtn" 
             type="button" 
             class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center text-white border-0 position-relative"
-            title="MediSense AI: An Intelligent Clinical Decision Support Assistant for Symptom Assessment, Diagnostic Assistance, Treatment Recommendation, and Clinical Service"
+            title="MediSense AI: Clinical Assistant"
+            aria-label="Toggle MediSense AI Assistant"
             style="width: 54px; height: 54px; background: linear-gradient(135deg, #0A1F1C 0%, #14C79A 100%); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);">
         <i class="bi bi-cpu fs-4"></i>
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.58rem;">
@@ -15,7 +16,7 @@
 
     {{-- Slide-up Quick Chat Drawer --}}
     <div id="medisenseFabWidget" 
-         class="card border shadow-lg position-absolute bottom-100 end-0 mb-3 d-none overflow-hidden" 
+         class="card border shadow-lg position-absolute bottom-100 end-0 mb-3 d-none overflow-hidden bg-body text-body" 
          style="width: 380px; max-width: 92vw; height: 540px; max-height: 80vh; border-radius: 0.85rem; transition: opacity 0.25s ease, transform 0.25s ease;">
         
         {{-- Widget Header --}}
@@ -37,22 +38,22 @@
         </div>
 
         {{-- Widget Messages Container --}}
-        <div id="fabChatMessages" class="card-body p-3 overflow-y-auto" style="height: 410px; background: var(--paper); font-size: 0.82rem;">
-            <div class="p-2.5 rounded-3 bg-white border shadow-xs mb-3 text-dark">
+        <div id="fabChatMessages" class="card-body p-3 overflow-y-auto bg-body-tertiary" style="height: 410px; font-size: 0.82rem;">
+            <div class="p-2.5 rounded-3 bg-body border shadow-xs mb-3 text-body">
                 <div class="fw-semibold mb-1 text-success d-flex align-items-center gap-1" style="font-size: 0.8rem;">
                     <i class="bi bi-robot"></i> Intelligent Assistant Ready
                 </div>
-                <p class="mb-0 text-muted" style="font-size: 0.78rem;">
+                <p class="mb-0 text-body-secondary" style="font-size: 0.78rem;">
                     Ask any medical or clinical workflow question naturally. MediSense automatically determines intent and enforces role-based security.
                 </p>
             </div>
         </div>
 
         {{-- Widget Input Form --}}
-        <div class="card-footer p-2 bg-white border-top">
+        <div class="card-footer p-2 bg-body border-top">
             <form id="fabChatForm" class="d-flex align-items-center gap-1.5">
-                <input type="text" id="fabInputPrompt" class="form-control form-control-sm border-0 bg-light shadow-none" 
-                       placeholder="Ask MediSense AI..." style="font-size: 0.82rem;" required>
+                <input type="text" id="fabInputPrompt" class="form-control form-control-sm border bg-body text-body shadow-none" 
+                       placeholder="Ask MediSense AI..." style="font-size: 0.82rem;" required autocomplete="off">
                 <button type="submit" id="fabBtnSend" class="btn btn-sm btn-success px-2.5 flex-shrink-0" style="border-radius: 0.4rem;">
                     <i class="bi bi-send-fill"></i>
                 </button>
@@ -60,6 +61,22 @@
         </div>
     </div>
 </div>
+
+<style>
+@media (max-width: 575.98px) {
+    #medisenseFabWidget {
+        position: fixed !important;
+        bottom: 80px !important;
+        right: 12px !important;
+        left: 12px !important;
+        width: auto !important;
+        max-width: calc(100vw - 24px) !important;
+        height: calc(100vh - 120px) !important;
+        max-height: 520px !important;
+        z-index: 1090 !important;
+    }
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -73,10 +90,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Toggle widget
     if (fabBtn && fabWidget) {
-        fabBtn.addEventListener('click', function () {
+        fabBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
             if (fabWidget.classList.contains('d-none')) {
                 fabWidget.classList.remove('d-none');
                 fabBtn.style.transform = 'scale(0.9) rotate(45deg)';
+                setTimeout(() => { if (fabInputPrompt) fabInputPrompt.focus(); }, 150);
             } else {
                 closeFabWidget();
             }
@@ -84,8 +103,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (fabClose) {
-        fabClose.addEventListener('click', closeFabWidget);
+        fabClose.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeFabWidget();
+        });
     }
+
+    document.addEventListener('click', function(e) {
+        if (fabWidget && !fabWidget.classList.contains('d-none')) {
+            const container = document.getElementById('medisenseFabContainer');
+            if (container && !container.contains(e.target)) {
+                closeFabWidget();
+            }
+        }
+    });
 
     function closeFabWidget() {
         if (fabWidget) fabWidget.classList.add('d-none');
@@ -156,8 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const id = 'fab-load-' + Date.now();
         const html = `
             <div id="${id}" class="d-flex mb-2">
-                <div class="p-2 rounded-3 bg-white border text-muted small d-flex align-items-center gap-2" style="font-size: 0.75rem;">
-                    <span class="spinner-border spinner-border-sm text-success"></span>
+                <div class="p-2 rounded-3 bg-body border text-body-secondary small d-flex align-items-center gap-2" style="font-size: 0.75rem;">
+                    <span class="spinner-border spinner-border-sm text-success" role="status"></span>
                     <span>MediSense thinking...</span>
                 </div>
             </div>
@@ -168,31 +199,41 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function appendFabAi(txt, capLabel, sources, citations) {
-        const formatted = txt.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        const formatted = formatFabMarkdown(txt);
         const capBadge = capLabel ? `<span class="badge bg-success-subtle text-success ms-1" style="font-size: 0.62rem;">${escapeFabHtml(capLabel)}</span>` : '';
 
         let badgesHtml = '';
-        if (sources && Array.isArray(sources)) {
+        if (sources && Array.isArray(sources) && sources.length > 0) {
             badgesHtml = '<div class="d-flex flex-wrap gap-1 mt-1.5 pt-1.5 border-top" style="font-size: 0.68rem;">';
             sources.forEach(src => {
-                badgesHtml += `<span class="badge bg-body-secondary text-body border px-1.5 py-0.5">${escapeFabHtml(src)}</span>`;
+                badgesHtml += `<span class="badge bg-body-tertiary text-body border px-1.5 py-0.5">${escapeFabHtml(src)}</span>`;
             });
             badgesHtml += '</div>';
         }
 
         const html = `
             <div class="d-flex mb-2">
-                <div class="p-2.5 rounded-3 bg-white border text-dark shadow-xs" style="max-width: 90%; font-size: 0.78rem; line-height: 1.5;">
+                <div class="p-2.5 rounded-3 bg-body border text-body shadow-xs" style="max-width: 90%; font-size: 0.78rem; line-height: 1.5;">
                     <div class="fw-bold text-success mb-1 d-flex align-items-center gap-1" style="font-size: 0.72rem;">
                         <i class="bi bi-cpu"></i> MediSense AI ${capBadge}
                     </div>
-                    ${formatted}
+                    <div>${formatted}</div>
                     ${badgesHtml}
                 </div>
             </div>
         `;
         fabChatMessages.insertAdjacentHTML('beforeend', html);
         fabChatMessages.scrollTop = fabChatMessages.scrollHeight;
+    }
+
+    function formatFabMarkdown(str) {
+        if (!str) return '';
+        let escaped = escapeFabHtml(str);
+        escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        escaped = escaped.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        escaped = escaped.replace(/`([^`]+)`/g, '<code class="bg-body-secondary px-1 py-0.5 rounded" style="font-size:0.72rem;">$1</code>');
+        escaped = escaped.replace(/\n/g, '<br>');
+        return escaped;
     }
 
     function appendFabError(err) {

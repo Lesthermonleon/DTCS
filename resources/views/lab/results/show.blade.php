@@ -22,19 +22,19 @@
         </dl>
     </div>
     <div class="card-footer d-flex gap-2">
-        @if($labResult->status==='Encoded' && auth()->user()->hasAnyRole(['admin','med-tech']))
+        @if($labResult->status==='Encoded' && auth()->user()?->hasRole('med-tech'))
             <form method="POST" action="{{ route('lab.results.validate', $labResult) }}">
                 @csrf @method('PATCH')
                 <button class="btn btn-primary"><i class="bi bi-shield-check me-1"></i>Validate</button>
             </form>
         @endif
-        @if($labResult->status==='Validated' && auth()->user()->hasAnyRole(['admin','med-tech']))
+        @if($labResult->status==='Validated' && auth()->user()?->hasRole('med-tech'))
             <form method="POST" action="{{ route('lab.results.release', $labResult) }}">
                 @csrf @method('PATCH')
                 <button class="btn btn-success"><i class="bi bi-send me-1"></i>Release</button>
             </form>
         @endif
-        @if($labResult->status !== 'Released')
+        @if($labResult->status !== 'Released' && auth()->user()?->hasRole('med-tech'))
             <a href="{{ route('lab.results.edit', $labResult) }}" class="btn btn-outline-warning"><i class="bi bi-pencil me-1"></i>Edit</a>
         @endif
         <a href="{{ route('lab.results.index') }}" class="btn btn-outline-secondary ms-auto"><i class="bi bi-arrow-left me-1"></i>Back</a>

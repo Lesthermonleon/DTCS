@@ -43,6 +43,7 @@ class PrescriptionController extends Controller
 
     public function create(): View
     {
+        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can create prescriptions.');
         $patients = Patient::orderBy('last_name')->get(['id', 'patient_no', 'first_name', 'last_name']);
 
         return view('pharmacy.prescriptions.create', compact('patients'));
@@ -50,6 +51,7 @@ class PrescriptionController extends Controller
 
     public function store(StorePrescriptionRequest $request): RedirectResponse
     {
+        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can create prescriptions.');
         $count = Prescription::count() + 1;
 
         DB::transaction(function () use ($request, $count) {
@@ -81,6 +83,7 @@ class PrescriptionController extends Controller
 
     public function edit(Prescription $prescription): View
     {
+        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can edit prescriptions.');
         abort_if($prescription->status !== 'Pending', 403, 'Only pending prescriptions can be edited.');
         $patients = Patient::orderBy('last_name')->get(['id', 'patient_no', 'first_name', 'last_name']);
 
@@ -89,6 +92,7 @@ class PrescriptionController extends Controller
 
     public function update(StorePrescriptionRequest $request, Prescription $prescription): RedirectResponse
     {
+        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can edit prescriptions.');
         abort_if($prescription->status !== 'Pending', 403, 'Only pending prescriptions can be edited.');
 
         DB::transaction(function () use ($request, $prescription) {
@@ -109,6 +113,7 @@ class PrescriptionController extends Controller
 
     public function destroy(Prescription $prescription): RedirectResponse
     {
+        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can cancel prescriptions.');
         abort_if($prescription->status !== 'Pending', 403, 'Only pending prescriptions can be cancelled.');
         $prescription->update(['status' => 'Cancelled']);
 
@@ -119,6 +124,7 @@ class PrescriptionController extends Controller
     /** Pharmacist verifies the prescription before dispensing. */
     public function verify(Prescription $prescription): RedirectResponse
     {
+        abort_if(! auth()->user()->hasRole('pharmacist'), 403, 'Only pharmacists can verify prescriptions.');
         abort_if($prescription->status !== 'Pending', 403, 'Only pending prescriptions can be verified.');
 
         $prescription->update([
@@ -128,5 +134,13 @@ class PrescriptionController extends Controller
         ]);
 
         return back()->with('success', 'Prescription verified. Ready for dispensing.');
+    }
+
+    /** Print-friendly view for prescription (Rx). */
+    public function print(Prescription $prescription): View
+    {
+        $prescription->load('patient', 'doctor', 'items');
+
+        return view('pharmacy.prescriptions.print', compact('prescription'));
     }
 }

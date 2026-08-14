@@ -27,15 +27,15 @@ class RadiologyRequestPolicy
     }
 
     /**
-     * Determine whether the user can create radiology requests (Doctors & Admins).
+     * Determine whether the user can create radiology requests (Doctors only).
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['admin', 'doctor']);
+        return $user->hasRole('doctor');
     }
 
     /**
-     * Determine whether the user can update/edit the radiology request (Doctors & Admins when Pending).
+     * Determine whether the user can update/edit the radiology request (Doctors when Pending).
      */
     public function update(User $user, RadiologyRequest $radiologyRequest): bool
     {
@@ -43,11 +43,11 @@ class RadiologyRequestPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'doctor']);
+        return $user->hasRole('doctor');
     }
 
     /**
-     * Determine whether the user can delete/cancel the radiology request (Doctors & Admins when Pending).
+     * Determine whether the user can delete/cancel the radiology request (Doctors when Pending).
      */
     public function delete(User $user, RadiologyRequest $radiologyRequest): bool
     {
@@ -55,11 +55,11 @@ class RadiologyRequestPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'doctor']);
+        return $user->hasRole('doctor');
     }
 
     /**
-     * Determine whether the user can schedule/process the imaging procedure (Rad Techs & Admins when Pending).
+     * Determine whether the user can schedule/process the imaging procedure (Rad Techs when Pending).
      */
     public function schedule(User $user, RadiologyRequest $radiologyRequest): bool
     {
@@ -67,11 +67,11 @@ class RadiologyRequestPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'rad-tech']);
+        return $user->hasRole('rad-tech');
     }
 
     /**
-     * Determine whether the user can start the imaging procedure (Rad Techs & Admins when Scheduled).
+     * Determine whether the user can start the imaging procedure (Rad Techs when Scheduled).
      */
     public function start(User $user, RadiologyRequest $radiologyRequest): bool
     {
@@ -79,11 +79,11 @@ class RadiologyRequestPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'rad-tech']);
+        return $user->hasRole('rad-tech');
     }
 
     /**
-     * Determine whether the user can upload scan images/records (Rad Techs & Admins when Scheduled or In Progress).
+     * Determine whether the user can upload scan images/records (Rad Techs when Scheduled or In Progress).
      */
     public function uploadImage(User $user, RadiologyRequest $radiologyRequest): bool
     {
@@ -91,11 +91,11 @@ class RadiologyRequestPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'rad-tech']);
+        return $user->hasRole('rad-tech');
     }
 
     /**
-     * Determine whether the user can mark the imaging procedure as completed (Rad Techs & Admins when Scheduled or In Progress).
+     * Determine whether the user can mark the imaging procedure as completed (Rad Techs when Scheduled or In Progress).
      */
     public function complete(User $user, RadiologyRequest $radiologyRequest): bool
     {
@@ -103,6 +103,6 @@ class RadiologyRequestPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['admin', 'rad-tech']);
+        return $user->hasRole('rad-tech');
     }
 }

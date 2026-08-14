@@ -28,13 +28,13 @@
         </div>
         <div class="d-flex flex-column gap-2">
             @if($labRequest->status==='Pending')
-                @if(auth()->user()?->hasAnyRole(['admin','med-tech']))
+                @if(auth()->user()?->hasRole('med-tech'))
                     <form method="POST" action="{{ route('lab.requests.receive', $labRequest) }}">
                         @csrf @method('PATCH')
                         <button type="submit" class="btn btn-success w-100" data-confirm="Are you sure you want to mark lab request {{ $labRequest->request_no }} as received?"><i class="bi bi-inbox-fill me-1"></i>Mark as Received</button>
                     </form>
                 @endif
-                @if(auth()->user()?->hasAnyRole(['admin','doctor']))
+                @if(auth()->user()?->hasRole('doctor'))
                     <a href="{{ route('lab.requests.edit', $labRequest) }}" class="btn btn-outline-warning"><i class="bi bi-pencil me-1"></i>Edit Request</a>
                 @endif
             @endif
@@ -46,7 +46,8 @@
         <div class="card">
             <div class="card-header"><i class="bi bi-list-task me-2"></i>Tests Ordered</div>
             <div class="card-body p-0">
-                <table class="table mb-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
                     <thead><tr><th>Test</th><th>Category</th><th>Normal Range</th><th>Unit</th><th>Status</th><th>Result</th></tr></thead>
                     <tbody>
                     @foreach($labRequest->items as $item)
@@ -61,7 +62,7 @@
                             <strong>{{ $item->result->result_value }} {{ $item->labTest->unit }}</strong><br>
                             <small class="text-muted">{{ $item->result->remarks }}</small><br>
                             <span class="badge bg-{{ $item->result->statusBadge }}">{{ $item->result->status }}</span>
-                            @if(auth()->user()?->hasAnyRole(['admin','med-tech']) && in_array($item->result->status, ['Encoded','Validated']))
+                            @if(auth()->user()?->hasRole('med-tech') && in_array($item->result->status, ['Encoded','Validated']))
                                 @if($item->result->status === 'Encoded')
                                     <form method="POST" action="{{ route('lab.results.validate', $item->result) }}" class="d-inline">
                                         @csrf @method('PATCH')
@@ -74,7 +75,7 @@
                                     </form>
                                 @endif
                             @endif
-                        @elseif(auth()->user()?->hasAnyRole(['admin','med-tech']) && $labRequest->status==='In Progress')
+                        @elseif(auth()->user()?->hasRole('med-tech') && $labRequest->status==='In Progress')
                             <a href="{{ route('lab.results.create') }}?item_id={{ $item->id }}" class="btn btn-sm btn-outline-info">Encode Result</a>
                         @else
                             <span class="text-muted small">Awaiting result</span>
@@ -84,6 +85,7 @@
                     @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

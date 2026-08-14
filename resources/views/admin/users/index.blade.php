@@ -17,7 +17,10 @@
             </select>
             <button type="submit" class="btn btn-primary btn-sm d-none">Filter</button>
         </form>
-        <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Add User</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.users.print') }}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i>Print Directory</a>
+            <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Add User</a>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">

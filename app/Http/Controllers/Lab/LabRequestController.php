@@ -58,6 +58,8 @@ class LabRequestController extends Controller
 
     public function create(): View
     {
+        abort_if(! Auth::user()?->hasRole('doctor'), 403, 'Only physicians can create laboratory requests.');
+
         $patients  = Patient::orderBy('last_name')->get(['id', 'patient_no', 'first_name', 'last_name']);
         $labTests  = LabTest::with('category')->where('is_active', true)->orderBy('name')->get();
 
@@ -66,6 +68,8 @@ class LabRequestController extends Controller
 
     public function store(StoreLabRequestRequest $request): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('doctor'), 403, 'Only physicians can create laboratory requests.');
+
         $count = LabRequest::count() + 1;
 
         DB::transaction(function () use ($request, $count) {
@@ -157,9 +161,10 @@ class LabRequestController extends Controller
                          ->with('success', 'Lab request cancelled.');
     }
 
-    /** Medical Technologist / Admin marks request as received. */
+    /** Medical Technologist marks request as received. */
     public function receive(LabRequest $labRequest): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can receive laboratory specimens.');
         abort_if($labRequest->status !== 'Pending', 400, 'Only pending laboratory requests can be marked as received.');
 
         DB::transaction(function () use ($labRequest) {

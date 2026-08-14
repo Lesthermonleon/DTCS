@@ -201,4 +201,12 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
                          ->with('success', "User account for {$user->name} has been unlocked successfully.");
     }
+
+    /** Print-friendly view for user governance report. */
+    public function print(): View
+    {
+        $users = User::withTrashed()->with('roles')->latest()->get();
+
+        return view('admin.users.print', compact('users'));
+    }
 }

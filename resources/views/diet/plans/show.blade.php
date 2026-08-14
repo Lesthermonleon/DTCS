@@ -206,6 +206,7 @@
                         <button type="submit" class="btn btn-outline-danger w-100 text-start"><i class="bi bi-trash me-2"></i>Delete/Revert Plan</button>
                     </form>
                 @endif
+                <a href="{{ route('diet.plans.print', $dietPlan) }}" target="_blank" class="btn btn-outline-info w-100 text-start"><i class="bi bi-printer me-2"></i>Print Diet Plan</a>
                 <a href="{{ route('diet.plans.index') }}" class="btn btn-outline-secondary w-100 text-start"><i class="bi bi-chevron-left me-2"></i>Back to Plans</a>
             </div>
         </div>

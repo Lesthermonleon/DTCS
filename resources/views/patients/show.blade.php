@@ -45,7 +45,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane active" id="lab">
-                <div class="card"><div class="card-body p-0">
+                <div class="card"><div class="card-body p-0"><div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead><tr><th>Request No</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead>
                         <tbody>
@@ -54,10 +54,10 @@
                         @empty <tr><td colspan="4" class="text-center text-muted">None</td></tr> @endforelse
                         </tbody>
                     </table>
-                </div></div>
+                </div></div></div>
             </div>
             <div class="tab-pane" id="radiology">
-                <div class="card"><div class="card-body p-0">
+                <div class="card"><div class="card-body p-0"><div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead><tr><th>Request No</th><th>Modality</th><th>Body Part</th><th>Status</th></tr></thead>
                         <tbody>
@@ -66,10 +66,10 @@
                         @empty <tr><td colspan="4" class="text-center text-muted">None</td></tr> @endforelse
                         </tbody>
                     </table>
-                </div></div>
+                </div></div></div>
             </div>
             <div class="tab-pane" id="rx">
-                <div class="card"><div class="card-body p-0">
+                <div class="card"><div class="card-body p-0"><div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead><tr><th>Rx No</th><th>Diagnosis</th><th>Status</th><th>Date</th></tr></thead>
                         <tbody>
@@ -78,10 +78,10 @@
                         @empty <tr><td colspan="4" class="text-center text-muted">None</td></tr> @endforelse
                         </tbody>
                     </table>
-                </div></div>
+                </div></div></div>
             </div>
             <div class="tab-pane" id="surgery">
-                <div class="card"><div class="card-body p-0">
+                <div class="card"><div class="card-body p-0"><div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead><tr><th>Request No</th><th>Procedure</th><th>Urgency</th><th>Status</th></tr></thead>
                         <tbody>
@@ -90,10 +90,10 @@
                         @empty <tr><td colspan="4" class="text-center text-muted">None</td></tr> @endforelse
                         </tbody>
                     </table>
-                </div></div>
+                </div></div></div>
             </div>
             <div class="tab-pane" id="diet">
-                <div class="card"><div class="card-body p-0">
+                <div class="card"><div class="card-body p-0"><div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead><tr><th>Request No</th><th>Diet Type</th><th>Status</th><th>Date</th></tr></thead>
                         <tbody>
@@ -102,7 +102,7 @@
                         @empty <tr><td colspan="4" class="text-center text-muted">None</td></tr> @endforelse
                         </tbody>
                     </table>
-                </div></div>
+                </div></div></div>
             </div>
         </div>
     </div>

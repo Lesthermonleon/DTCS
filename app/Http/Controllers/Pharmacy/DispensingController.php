@@ -55,6 +55,8 @@ class DispensingController extends Controller
 
     public function create(Request $request): View
     {
+        abort_if(! Auth::user()?->hasRole('pharmacist'), 403, 'Only pharmacists can dispense medications.');
+
         // Verified and Partially Dispensed prescriptions that still have pending items
         $prescriptions = Prescription::whereIn('status', ['Verified', 'Partially Dispensed'])
             ->whereHas('items', fn($q) => $q->where('status', 'Pending'))
@@ -80,6 +82,8 @@ class DispensingController extends Controller
 
     public function store(StoreDispensingRecordRequest $request): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('pharmacist'), 403, 'Only pharmacists can dispense medications.');
+
         $item = PrescriptionItem::with('prescription')->findOrFail($request->prescription_item_id);
 
         if ($item->status === 'Dispensed') {
@@ -131,4 +135,16 @@ class DispensingController extends Controller
     public function edit(DispensingRecord $dispensing): View { abort(403, 'Dispensing records cannot be edited once recorded.'); }
     public function update(Request $request, DispensingRecord $dispensing): RedirectResponse { abort(403); }
     public function destroy(DispensingRecord $dispensing): RedirectResponse { abort(403); }
+
+    /** Print-friendly view for dispensing record. */
+    public function print(DispensingRecord $dispensing): View
+    {
+        $dispensing->load([
+            'prescriptionItem.prescription.patient',
+            'prescriptionItem.prescription.doctor',
+            'pharmacist'
+        ]);
+
+        return view('pharmacy.dispensing.print', compact('dispensing'));
+    }
 }

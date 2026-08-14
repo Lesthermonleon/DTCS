@@ -12,9 +12,9 @@
         <a href="{{ route('pharmacy.dispensing.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Back to History
         </a>
-        <button onclick="window.print()" class="btn btn-primary">
-            <i class="bi bi-printer me-1"></i> Print Receipt
-        </button>
+        <a href="{{ route('pharmacy.dispensing.print', $dispensing) }}" target="_blank" class="btn btn-primary">
+            <i class="bi bi-printer me-1"></i> Print Official Record
+        </a>
     </div>
 </div>
 

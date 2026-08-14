@@ -33,6 +33,8 @@ class LabResultController extends Controller
 
     public function create(): View
     {
+        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can encode laboratory results.');
+
         // List pending items that don't have a result yet
         $pendingItems = LabRequestItem::whereDoesntHave('result')
                         ->with('labRequest.patient', 'labTest')
@@ -43,6 +45,8 @@ class LabResultController extends Controller
 
     public function store(StoreLabResultRequest $request): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can encode laboratory results.');
+
         LabResult::create([
             'lab_request_item_id' => $request->lab_request_item_id,
             'technologist_id'     => Auth::id(),
@@ -67,6 +71,7 @@ class LabResultController extends Controller
 
     public function edit(LabResult $labResult): View
     {
+        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can edit laboratory results.');
         abort_if($labResult->status === 'Released', 403, 'Released results cannot be edited.');
 
         return view('lab.results.edit', compact('labResult'));
@@ -74,6 +79,7 @@ class LabResultController extends Controller
 
     public function update(StoreLabResultRequest $request, LabResult $labResult): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can edit laboratory results.');
         abort_if($labResult->status === 'Released', 403, 'Released results cannot be edited.');
 
         $labResult->update([
@@ -88,6 +94,7 @@ class LabResultController extends Controller
 
     public function destroy(LabResult $labResult): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can delete laboratory results.');
         abort_if($labResult->status !== 'Encoded', 403, 'Only encoded results can be deleted.');
         $labResult->delete();
 
@@ -98,6 +105,7 @@ class LabResultController extends Controller
     /** Validate (approve) a lab result before release. */
     public function validate(LabResult $labResult): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can validate laboratory results.');
         abort_if($labResult->status !== 'Encoded', 403, 'Only encoded results can be validated.');
 
         $labResult->update([
@@ -112,6 +120,7 @@ class LabResultController extends Controller
     /** Release the validated result to the ordering doctor. */
     public function release(LabResult $labResult): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can release laboratory results.');
         abort_if($labResult->status !== 'Validated', 403, 'Only validated results can be released.');
 
         $labResult->update([
@@ -144,5 +153,14 @@ class LabResultController extends Controller
         }
 
         return back()->with('success', 'Result released successfully.');
+    }
+
+    /** Print-friendly view for individual lab result. */
+    public function print(LabResult $labResult): View
+    {
+        $labRequest = $labResult->requestItem->labRequest;
+        $labRequest->load('patient', 'doctor', 'items.labTest.category', 'items.result.medTech');
+
+        return view('lab.requests.print', compact('labRequest'));
     }
 }

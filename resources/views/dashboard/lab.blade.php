@@ -9,19 +9,19 @@
 
 {{-- ── Quick Action Bar ── --}}
 <div class="card mb-4 border-0 shadow-sm bg-body">
-    <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary bg-opacity-10 text-primary fs-6 px-3 py-2">
+    <div class="card-body p-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 gap-sm-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-primary bg-opacity-10 text-primary fs-6 px-3 py-2 text-nowrap">
                 <i class="bi bi-box-seam me-1"></i> Medical Technologist Workspace
             </span>
-            <span class="text-muted small">Manage laboratory queue, specimen testing, and result authorization.</span>
+            <span class="text-muted small text-nowrap d-none d-md-inline">Manage laboratory queue, specimen testing, and result authorization.</span>
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('lab.requests.index') }}" class="btn btn-sm btn-primary">
+        <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-sm-auto justify-content-start justify-content-sm-end">
+            <a href="{{ route('lab.requests.index') }}" class="btn btn-sm btn-primary text-nowrap flex-grow-1 flex-sm-grow-0">
                 <i class="bi bi-list-task me-1"></i> View Lab Requests Queue
             </a>
             @if(Route::has('lab.requests.create'))
-            <a href="{{ route('lab.requests.create') }}" class="btn btn-sm btn-outline-primary">
+            <a href="{{ route('lab.requests.create') }}" class="btn btn-sm btn-outline-primary text-nowrap flex-grow-1 flex-sm-grow-0">
                 <i class="bi bi-plus-circle me-1"></i> Create Lab Request
             </a>
             @endif

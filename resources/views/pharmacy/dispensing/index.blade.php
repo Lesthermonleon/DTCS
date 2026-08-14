@@ -8,11 +8,13 @@
         <h4 class="mb-1 text-dark fw-bold"><i class="bi bi-capsule me-2 text-primary"></i>Medication Dispensing History</h4>
         <p class="text-muted small mb-0">Track and manage pharmaceutical dispensing records across all verified prescriptions.</p>
     </div>
+    @if(auth()->user()?->hasRole('pharmacist'))
     <div>
         <a href="{{ route('pharmacy.dispensing.create') }}" class="btn btn-primary shadow-sm">
             <i class="bi bi-plus-circle me-1"></i> Dispense Medication
         </a>
     </div>
+    @endif
 </div>
 
 {{-- Summary Stats Row --}}
@@ -170,9 +172,11 @@
                                 <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
                                 <h5>No dispensing records found</h5>
                                 <p class="small text-muted">No medications have been dispensed matching your criteria yet.</p>
+                                @if(auth()->user()?->hasRole('pharmacist'))
                                 <a href="{{ route('pharmacy.dispensing.create') }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-plus-circle me-1"></i> Dispense Medication Now
                                 </a>
+                                @endif
                             </td>
                         </tr>
                     @endforelse

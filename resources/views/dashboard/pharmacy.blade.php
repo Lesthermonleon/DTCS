@@ -9,24 +9,24 @@
 
 {{-- ── Quick Action Bar ── --}}
 <div class="card mb-4 border-0 shadow-sm bg-body">
-    <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-success bg-opacity-10 text-success fs-6 px-3 py-2">
+    <div class="card-body p-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 gap-sm-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-success bg-opacity-10 text-success fs-6 px-3 py-2 text-nowrap">
                 <i class="bi bi-capsule me-1"></i> Pharmacist Operational Workspace
             </span>
-            <span class="text-muted small">Perform prescription verification, medication safety checks, and patient dispensing.</span>
+            <span class="text-muted small text-nowrap d-none d-md-inline">Perform prescription verification, medication safety checks, and patient dispensing.</span>
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('pharmacy.prescriptions.index') }}" class="btn btn-sm btn-primary">
+        <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-sm-auto justify-content-start justify-content-sm-end">
+            <a href="{{ route('pharmacy.prescriptions.index') }}" class="btn btn-sm btn-primary text-nowrap flex-grow-1 flex-sm-grow-0">
                 <i class="bi bi-prescription2 me-1"></i> Prescriptions Queue
             </a>
             @if(Route::has('pharmacy.dispensing.index'))
-            <a href="{{ route('pharmacy.dispensing.index') }}" class="btn btn-sm btn-outline-success">
+            <a href="{{ route('pharmacy.dispensing.index') }}" class="btn btn-sm btn-outline-success text-nowrap flex-grow-1 flex-sm-grow-0">
                 <i class="bi bi-bag-check me-1"></i> Dispensing Records
             </a>
             @endif
             @if(Route::has('pharmacy.medicines.index'))
-            <a href="{{ route('pharmacy.medicines.index') }}" class="btn btn-sm btn-outline-secondary">
+            <a href="{{ route('pharmacy.medicines.index') }}" class="btn btn-sm btn-outline-secondary text-nowrap flex-grow-1 flex-sm-grow-0">
                 <i class="bi bi-box-seam me-1"></i> Drug Inventory
             </a>
             @endif

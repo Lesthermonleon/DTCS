@@ -27,7 +27,7 @@
                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                 <input id="email" type="email" name="email"
                        class="form-control @error('email') is-invalid @enderror"
-                       value="{{ old('email') }}" required autofocus autocomplete="username"
+                       value="{{ old('email', request()->cookie('remember_hims_email')) }}" required autofocus autocomplete="username"
                        placeholder="you@hospital.com">
                 @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
@@ -48,8 +48,8 @@
         {{-- Remember me + Forgot password --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="remember" id="remember_me">
-                <label class="form-check-label" for="remember_me">Remember me</label>
+                <input class="form-check-input" type="checkbox" name="remember" id="remember_me" value="1" {{ old('remember', request()->cookie('remember_hims_email') ? '1' : '') ? 'checked' : '' }} style="cursor: pointer;">
+                <label class="form-check-label" for="remember_me" style="cursor: pointer; user-select: none;">Remember me</label>
             </div>
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}" class="auth-link">Forgot password?</a>
@@ -62,9 +62,33 @@
         </button>
     </form>
 
-    {{-- Lockout Countdown Timer Script --}}
+    {{-- Remember Me & Lockout Countdown Script --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ── 1. Remember Me Local Storage Sync ──
+            var emailInput = document.getElementById('email');
+            var rememberCheckbox = document.getElementById('remember_me');
+            var loginForm = document.getElementById('login-form');
+
+            if (emailInput && !emailInput.value) {
+                var savedEmail = localStorage.getItem('hims_remembered_email');
+                if (savedEmail) {
+                    emailInput.value = savedEmail;
+                    if (rememberCheckbox) rememberCheckbox.checked = true;
+                }
+            }
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', function () {
+                    if (rememberCheckbox && rememberCheckbox.checked && emailInput && emailInput.value) {
+                        localStorage.setItem('hims_remembered_email', emailInput.value);
+                    } else {
+                        localStorage.removeItem('hims_remembered_email');
+                    }
+                });
+            }
+
+            // ── 2. Lockout Countdown Alert ──
             var lockoutEl = document.getElementById('lockout-alert');
             if (!lockoutEl) return;
 

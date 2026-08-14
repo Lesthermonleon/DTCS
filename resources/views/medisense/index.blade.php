@@ -1,32 +1,33 @@
 @extends('layouts.app')
 
-@section('title', 'MediSense AI — Intelligent Clinical Decision Support Assistant')
-@section('page-title', 'MediSense')
+@section('title', 'MediSense AI — AI Clinical & Information Assistant')
+@section('page-title', 'MediSense AI')
+
+@section('breadcrumb')
+    <li class="breadcrumb-item"><a href="{{ route('medisense.index') }}">Clinical AI</a></li>
+    <li class="breadcrumb-item active">MediSense AI Workspace</li>
+@endsection
 
 @section('page-titlebar-custom')
-<div class="d-flex align-items-center justify-content-between w-100">
+<div class="d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
     <div class="d-flex align-items-center gap-2">
-        <div class="gpt-model-badge" title="MediSense AI Model Version">
-            <i class="bi bi-sparkles text-success"></i>
-            <span>MediSense AI 2.0</span>
-            <span class="status-dot ms-1" title="Engine Active"></span>
-        </div>
-
-        {{-- Role pill --}}
-        <span class="badge bg-body-secondary text-body-emphasis border px-2 py-1.5" style="font-size: 0.72rem;">
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5" style="font-size: 0.75rem;">
+            <i class="bi bi-cpu me-1"></i> Clinical Assistant
+        </span>
+        <span class="badge bg-body-secondary text-body-emphasis border px-2.5 py-1.5" style="font-size: 0.75rem;">
             <i class="bi bi-person-badge me-1 text-success"></i> {{ auth()->user()->roleName }}
         </span>
     </div>
 
     <div class="d-flex align-items-center gap-2">
-        {{-- Activity Drawer Toggle --}}
-        <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="offcanvas" data-bs-target="#activityDrawer" title="View Recent Interactions & Role Scope">
+        {{-- Activity Log Drawer Toggle --}}
+        <button type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1.5" data-bs-toggle="offcanvas" data-bs-target="#activityDrawer" title="View Recent Interactions & Role Scope">
             <i class="bi bi-clock-history"></i>
-            <span class="d-none d-md-inline">Activity Log</span>
+            <span class="d-none d-sm-inline">Activity Log</span>
         </button>
 
         {{-- New Chat Button --}}
-        <button id="btnClearChat" type="button" class="btn btn-sm btn-outline-primary fw-medium d-flex align-items-center gap-1" title="Start New Chat">
+        <button id="btnClearChat" type="button" class="btn btn-sm btn-outline-primary fw-medium d-inline-flex align-items-center gap-1.5" title="Start New Chat">
             <i class="bi bi-pencil-square"></i>
             <span>New Chat</span>
         </button>
@@ -36,273 +37,128 @@
 
 @push('styles')
 <style>
-    /* ChatGPT Inspired Theme Design System */
-    :root {
-        --gpt-bg-canvas: #f9f9fb;
-        --gpt-bg-surface: #ffffff;
-        --gpt-bg-user: #f4f4f6;
-        --gpt-bg-input: #ffffff;
-        --gpt-bg-hover: #ececee;
-        --gpt-text-main: #0d0d0d;
-        --gpt-text-muted: #676767;
-        --gpt-border: #e5e5e7;
-        --gpt-emerald: #10a37f;
-        --gpt-emerald-dark: #0d8a6c;
-        --gpt-emerald-light: rgba(16, 163, 127, 0.12);
-        --gpt-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-    }
-
-    [data-bs-theme="dark"], body.dark-mode {
-        --gpt-bg-canvas: #212121;
-        --gpt-bg-surface: #171717;
-        --gpt-bg-user: #2f2f2f;
-        --gpt-bg-input: #2f2f2f;
-        --gpt-bg-hover: #383838;
-        --gpt-text-main: #ececf1;
-        --gpt-text-muted: #b4b4b4;
-        --gpt-border: #383838;
-        --gpt-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
-    }
-
-    .medisense-gpt-wrapper {
-        background-color: var(--gpt-bg-canvas);
-        color: var(--gpt-text-main);
-        min-height: calc(100vh - 70px);
+    /* ══════════════════════════════════════════════════════════════════
+       MEDISENSE AI — NATIVE HIMS DESIGN SYSTEM STYLES
+       ══════════════════════════════════════════════════════════════════ */
+    
+    /* Workspace Shell */
+    .medisense-workspace-card {
+        background-color: var(--card);
+        color: var(--text);
+        border-color: var(--line) !important;
+        min-height: calc(100vh - var(--topbar-height) - 54px - 3.5rem);
         display: flex;
         flex-direction: column;
-        transition: background-color 0.2s ease, color 0.2s ease;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     }
 
-    /* Top ChatGPT Model Header Bar */
-    .gpt-header {
-        height: 56px;
-        border-bottom: 1px solid var(--gpt-border);
-        background-color: var(--gpt-bg-canvas);
-        backdrop-filter: blur(8px);
-        position: sticky;
-        top: 0;
-        z-index: 100;
+    /* Scrollable Stream Container */
+    .medisense-chat-stream {
+        background-color: var(--paper);
+        scroll-behavior: smooth;
+        flex: 1;
+        overflow-y: auto;
     }
 
-    .gpt-model-badge {
-        background-color: var(--gpt-bg-hover);
-        color: var(--gpt-text-main);
-        font-weight: 600;
-        font-size: 0.9rem;
-        padding: 0.4rem 0.85rem;
-        border-radius: 0.75rem;
-        border: 1px solid var(--gpt-border);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.15s ease;
-    }
-
-    .gpt-model-badge:hover {
-        background-color: var(--gpt-border);
-    }
-
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        background-color: var(--gpt-emerald);
-        border-radius: 50%;
-        box-shadow: 0 0 8px var(--gpt-emerald);
-    }
-
-    /* Main Chat Column Centering */
-    .gpt-container {
-        max-width: 820px;
+    /* Inner Max-Width Layout Column */
+    .medisense-container {
+        max-width: 860px;
         width: 100%;
         margin: 0 auto;
     }
 
-    .gpt-chat-stream {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1.5rem 1rem 140px 1rem;
-        scroll-behavior: smooth;
-    }
-
-    /* Empty State Welcome Screen */
-    .gpt-empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 55vh;
-        text-align: center;
-    }
-
-    .gpt-spark-icon {
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, #10a37f 0%, #0d8a6c 100%);
-        color: #ffffff;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.75rem;
-        box-shadow: 0 8px 24px rgba(16, 163, 127, 0.3);
-        margin-bottom: 1.25rem;
-    }
-
-    .gpt-starter-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-        width: 100%;
-        max-width: 720px;
-        margin-top: 2rem;
-    }
-
-    @media (max-width: 640px) {
-        .gpt-starter-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .gpt-starter-card {
-        background-color: var(--gpt-bg-surface);
-        border: 1px solid var(--gpt-border);
+    /* User Message Bubble */
+    .medisense-user-bubble {
+        background-color: var(--card) !important;
+        border: 1px solid var(--line) !important;
+        color: var(--text) !important;
+        padding: 0.75rem 1.15rem;
         border-radius: 1rem;
-        padding: 1rem 1.15rem;
-        text-align: left;
-        cursor: pointer;
-        transition: all 0.18s ease;
-    }
-
-    .gpt-starter-card:hover {
-        background-color: var(--gpt-bg-hover);
-        border-color: var(--gpt-emerald);
-        transform: translateY(-2px);
-    }
-
-    /* Message Row & Bubbles */
-    .gpt-msg-row {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.75rem;
-        animation: fadeIn 0.2s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(4px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .gpt-msg-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-    }
-
-    .gpt-avatar-ai {
-        background: linear-gradient(135deg, #10a37f 0%, #0abf95 100%);
-        color: #ffffff;
-        box-shadow: 0 4px 12px rgba(16, 163, 127, 0.25);
-    }
-
-    .gpt-avatar-user {
-        background-color: var(--gpt-bg-user);
-        color: var(--gpt-text-main);
-        border: 1px solid var(--gpt-border);
-    }
-
-    .gpt-user-bubble {
-        background-color: var(--gpt-bg-user);
-        color: var(--gpt-text-main);
-        padding: 0.85rem 1.25rem;
-        border-radius: 1.25rem;
         max-width: 85%;
         margin-left: auto;
         line-height: 1.55;
-        font-size: 0.95rem;
+        font-size: 0.93rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
-    .gpt-ai-response {
-        flex: 1;
-        min-width: 0;
-        color: var(--gpt-text-main);
-        line-height: 1.65;
-        font-size: 0.95rem;
+    /* Formatted AI Output */
+    .medisense-formatted-output {
+        color: var(--text);
+        line-height: 1.6;
+        font-size: 0.93rem;
+        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
-    /* Bottom Fixed Floating Bar */
-    .gpt-bottom-fixed {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(to top, var(--gpt-bg-canvas) 80%, rgba(0,0,0,0));
-        padding: 0.5rem 1rem 1rem 1rem;
-        z-index: 90;
+    .medisense-formatted-output p {
+        margin-bottom: 0.75rem;
     }
 
-    /* Quick Action Suggestions Chips */
-    .gpt-chip-container {
-        display: flex;
-        gap: 0.5rem;
+    .medisense-formatted-output p:last-child {
+        margin-bottom: 0;
+    }
+
+    .medisense-formatted-output table {
+        width: 100%;
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    .medisense-formatted-output th,
+    .medisense-formatted-output td {
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--line);
+    }
+
+    .medisense-formatted-output th {
+        background-color: rgba(20, 199, 154, 0.08);
+        font-weight: 600;
+    }
+
+    .medisense-formatted-output pre {
+        background-color: var(--paper);
+        border: 1px solid var(--line);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
         overflow-x: auto;
-        padding-bottom: 0.5rem;
-        scrollbar-width: none;
+        max-width: 100%;
+        font-family: var(--font-mono);
+        font-size: 0.84rem;
     }
 
-    .gpt-chip-container::-webkit-scrollbar {
-        display: none;
+    .medisense-formatted-output code {
+        font-family: var(--font-mono);
+        font-size: 0.85em;
+        background-color: rgba(20, 199, 154, 0.08);
+        padding: 0.15rem 0.35rem;
+        border-radius: 0.25rem;
     }
 
-    .gpt-chip {
-        background-color: var(--gpt-bg-surface);
-        border: 1px solid var(--gpt-border);
-        color: var(--gpt-text-main);
-        font-size: 0.8rem;
-        font-weight: 500;
-        padding: 0.35rem 0.85rem;
-        border-radius: 2rem;
-        white-space: nowrap;
-        cursor: pointer;
-        transition: all 0.15s ease;
+    /* Input Pill Form Control */
+    .medisense-input-group {
+        background-color: var(--card) !important;
+        border: 1px solid var(--line) !important;
+        border-radius: 1.5rem !important;
+        padding: 0.4rem 0.6rem 0.4rem 1rem;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .gpt-chip:hover {
-        background-color: var(--gpt-emerald);
-        color: #ffffff;
-        border-color: var(--gpt-emerald);
+    .medisense-input-group:focus-within {
+        border-color: var(--signal) !important;
+        box-shadow: 0 0 0 3px rgba(20, 199, 154, 0.18) !important;
     }
 
-    /* Input Pill Bar */
-    .gpt-input-box {
-        background-color: var(--gpt-bg-input);
-        border: 1px solid var(--gpt-border);
-        border-radius: 1.75rem;
-        padding: 0.5rem 0.75rem 0.5rem 1.15rem;
-        box-shadow: var(--gpt-shadow);
-        display: flex;
-        align-items: flex-end;
-        gap: 0.75rem;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .gpt-input-box:focus-within {
-        border-color: var(--gpt-emerald);
-        box-shadow: 0 0 0 2px var(--gpt-emerald-light), var(--gpt-shadow);
-    }
-
-    .gpt-textarea {
-        background: transparent;
-        border: none;
-        outline: none;
-        color: var(--gpt-text-main);
-        font-size: 0.95rem;
-        line-height: 1.5;
+    .medisense-textarea {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        color: var(--text) !important;
+        font-size: 0.92rem;
+        line-height: 1.45;
         width: 100%;
         resize: none;
         max-height: 160px;
@@ -310,151 +166,276 @@
         padding: 0.35rem 0;
     }
 
-    .gpt-send-btn {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background-color: var(--gpt-emerald);
-        color: #ffffff;
-        border: none;
+    .medisense-textarea::placeholder {
+        color: var(--text-soft) !important;
+    }
+
+    /* Horizontal Quick Action Suggestions Chip Bar */
+    .medisense-chip-bar {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        flex-shrink: 0;
+        gap: 0.45rem;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .medisense-chip-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .medisense-chip-btn {
+        font-size: 0.78rem;
+        font-weight: 500;
+        border-radius: 2rem;
+        padding: 0.3rem 0.75rem;
+        border: 1px solid var(--line);
+        background-color: var(--card);
+        color: var(--text);
         transition: all 0.15s ease;
     }
 
-    .gpt-send-btn:hover {
-        background-color: var(--gpt-emerald-dark);
-        transform: scale(1.05);
+    .medisense-chip-btn:hover {
+        border-color: var(--signal);
+        color: var(--signal-dark);
+        background-color: rgba(20, 199, 154, 0.08);
     }
 
-    .gpt-send-btn:disabled {
-        background-color: var(--gpt-border);
-        color: var(--gpt-text-muted);
-        cursor: not-allowed;
-        transform: none;
+    /* Dark Mode Utility Classes & Overrides */
+    html[data-theme="dark"] .medisense-user-bubble,
+    html[data-bs-theme="dark"] .medisense-user-bubble {
+        background-color: #172d28 !important;
+        border-color: #1e3630 !important;
+        color: #e2e8f0 !important;
     }
 
-    .gpt-disclaimer {
-        font-size: 0.73rem;
-        color: var(--gpt-text-muted);
-        text-align: center;
-        margin-top: 0.4rem;
+    html[data-theme="dark"] .medisense-input-group,
+    html[data-bs-theme="dark"] .medisense-input-group {
+        background-color: #0b1412 !important;
+        border-color: #1e3630 !important;
+    }
+
+    html[data-theme="dark"] .medisense-textarea,
+    html[data-bs-theme="dark"] .medisense-textarea {
+        color: #e2e8f0 !important;
+    }
+
+    html[data-theme="dark"] .medisense-textarea::placeholder,
+    html[data-bs-theme="dark"] .medisense-textarea::placeholder {
+        color: #94a3b8 !important;
+    }
+
+    html[data-theme="dark"] .medisense-formatted-output,
+    html[data-bs-theme="dark"] .medisense-formatted-output {
+        color: #e2e8f0 !important;
+    }
+
+    html[data-theme="dark"] .medisense-chip-btn,
+    html[data-bs-theme="dark"] .medisense-chip-btn {
+        background-color: #12221e;
+        border-color: #1e3630;
+        color: #e2e8f0;
+    }
+
+    html[data-theme="dark"] .medisense-chip-btn:hover,
+    html[data-bs-theme="dark"] .medisense-chip-btn:hover {
+        background-color: rgba(20, 199, 154, 0.15);
+        border-color: var(--signal);
+        color: var(--signal);
+    }
+
+    html[data-theme="dark"] .medisense-starter-card,
+    html[data-bs-theme="dark"] .medisense-starter-card {
+        background-color: #12221e !important;
+        border-color: #1e3630 !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-theme="dark"] .offcanvas,
+    html[data-bs-theme="dark"] .offcanvas {
+        background-color: #12221e !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-theme="dark"] .offcanvas-header,
+    html[data-bs-theme="dark"] .offcanvas-header {
+        border-bottom-color: #1e3630 !important;
+    }
+
+    html[data-theme="dark"] .offcanvas .list-group-item,
+    html[data-bs-theme="dark"] .offcanvas .list-group-item {
+        background-color: #12221e !important;
+        border-color: #1e3630 !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-theme="dark"] .btn-close,
+    html[data-bs-theme="dark"] .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    /* Mobile Viewport Responsiveness */
+    @media (max-width: 767.98px) {
+        .medisense-workspace-card {
+            min-height: calc(100vh - var(--topbar-height) - 54px - 1.5rem);
+            border-radius: 0 !important;
+        }
+
+        .medisense-chat-stream {
+            padding: 1rem 0.75rem !important;
+        }
+
+        .medisense-user-bubble {
+            max-width: 92% !important;
+            padding: 0.65rem 0.95rem;
+            font-size: 0.88rem;
+        }
+
+        .medisense-input-group {
+            border-radius: 1.25rem !important;
+            padding: 0.3rem 0.5rem 0.3rem 0.85rem;
+        }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="medisense-gpt-wrapper" id="gptWrapper">
-    {{-- Main Chat Stream Area --}}
-    <main id="chatMessages" class="gpt-chat-stream">
-        <div class="gpt-container">
-            {{-- ChatGPT Welcome Screen (Empty State) --}}
-            <div id="welcomeScreen" class="gpt-empty-state">
-                <div class="gpt-spark-icon">
-                    <i class="bi bi-sparkles"></i>
+<div class="card border-0 shadow-sm medisense-workspace-card overflow-hidden">
+    {{-- Card Header --}}
+    <div class="card-header bg-card border-bottom py-3 px-3 px-md-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2.5">
+            <div class="p-2 bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <i class="bi bi-cpu fs-5"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-bold text-body" style="font-family: var(--font-display);">MediSense AI</h6>
+                <small class="text-body-secondary">Clinical & Information Decision Support</small>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1" style="font-size: 0.72rem;">
+                <i class="bi bi-shield-check me-1"></i> Active Intent Detection & Guardrails
+            </span>
+        </div>
+    </div>
+
+    {{-- Main Chat Stream --}}
+    <div id="chatMessages" class="medisense-chat-stream p-3 p-md-4">
+        <div class="medisense-container">
+            {{-- Welcome Screen / Empty State --}}
+            <div id="welcomeScreen" class="py-4 text-center d-flex flex-column align-items-center justify-content-center" style="min-height: 50vh;">
+                <div class="p-3 bg-success-subtle text-success rounded-circle d-inline-flex mb-3 shadow-xs">
+                    <i class="bi bi-sparkles fs-2"></i>
                 </div>
-                <h3 class="fw-bold mb-2 text-body">MediSense AI</h3>
-                <p class="text-body-secondary mb-1" style="max-width: 580px; font-size: 0.95rem;">
+                <h4 class="fw-bold text-body mb-1" style="font-family: var(--font-display);">MediSense AI Assistant</h4>
+                <p class="text-body-secondary small mb-2" style="max-width: 580px; font-size: 0.92rem;">
                     An Intelligent Clinical Decision Support Assistant for Symptom Assessment, Diagnostic Assistance, Treatment Recommendation, and Clinical Service.
                 </p>
-                <p class="text-muted small mb-4" style="font-size: 0.8rem;">
-                    Logged in as <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->roleName }}). Automatic intent detection active.
+                <p class="text-body-secondary small mb-4" style="font-size: 0.8rem;">
+                    Authorized User: <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->roleName }}). Type any clinical query or select a workflow task below.
                 </p>
 
                 {{-- Starter Cards Grid --}}
-                <div class="gpt-starter-grid">
-                    <div class="gpt-starter-card" data-prompt="Please evaluate symptoms for a patient reporting fever, headache, and fatigue.">
-                        <div class="d-flex align-items-center gap-2 mb-1 fw-semibold text-body">
-                            <i class="bi bi-activity text-success fs-5"></i>
-                            <span>Symptom Assessment</span>
+                <div class="row g-2.5 g-md-3 w-100 text-start" style="max-width: 760px;">
+                    <div class="col-12 col-sm-6">
+                        <div class="card border h-100 p-3 cursor-pointer card-hover-elevate medisense-starter-card" data-prompt="Please evaluate symptoms for a patient reporting fever, headache, and fatigue.">
+                            <div class="d-flex align-items-center gap-2 mb-1 fw-semibold text-body">
+                                <i class="bi bi-activity text-success fs-5"></i>
+                                <span>Symptom Assessment</span>
+                            </div>
+                            <div class="text-body-secondary small">Evaluate clinical symptoms, risk factors, and differential triage rules.</div>
                         </div>
-                        <div class="text-body-secondary small">Evaluate clinical symptoms, risk factors, and differential triage rules.</div>
                     </div>
 
-                    <div class="gpt-starter-card" data-prompt="Please analyze recent laboratory test results and flag panic value anomalies.">
-                        <div class="d-flex align-items-center gap-2 mb-1 fw-semibold text-body">
-                            <i class="bi bi-journal-medical text-success fs-5"></i>
-                            <span>Lab Results Analysis</span>
+                    <div class="col-12 col-sm-6">
+                        <div class="card border h-100 p-3 cursor-pointer card-hover-elevate medisense-starter-card" data-prompt="Please analyze recent laboratory test results and flag panic value anomalies.">
+                            <div class="d-flex align-items-center gap-2 mb-1 fw-semibold text-body">
+                                <i class="bi bi-journal-medical text-success fs-5"></i>
+                                <span>Lab Results Analysis</span>
+                            </div>
+                            <div class="text-body-secondary small">Summarize CBC, electrolytes, liver function, and critical analyte alerts.</div>
                         </div>
-                        <div class="text-body-secondary small">Summarize CBC, electrolytes, liver function, and critical analyte alerts.</div>
                     </div>
 
-                    <div class="gpt-starter-card" data-prompt="Please review current patient medications for polypharmacy and drug interactions.">
-                        <div class="d-flex align-items-center gap-2 mb-1 fw-semibold text-body">
-                            <i class="bi bi-capsule text-success fs-5"></i>
-                            <span>Medication & Rx Review</span>
+                    <div class="col-12 col-sm-6">
+                        <div class="card border h-100 p-3 cursor-pointer card-hover-elevate medisense-starter-card" data-prompt="Please review current patient medications for polypharmacy and drug interactions.">
+                            <div class="d-flex align-items-center gap-2 mb-1 fw-semibold text-body">
+                                <i class="bi bi-capsule text-success fs-5"></i>
+                                <span>Medication & Rx Review</span>
+                            </div>
+                            <div class="text-body-secondary small">Verify drug monographs, renal adjustments, and contraindications.</div>
                         </div>
-                        <div class="text-body-secondary small">Verify drug monographs, renal adjustments, and contraindications.</div>
                     </div>
 
-                    <div class="gpt-starter-card" data-prompt="Please summarize recent radiology imaging findings and diagnostic reports.">
-                        <div class="d-flex align-items-center gap-2 mb-1 fw-semibold text-body">
-                            <i class="bi bi-file-earmark-text text-success fs-5"></i>
-                            <span>Radiology Interpretation</span>
+                    <div class="col-12 col-sm-6">
+                        <div class="card border h-100 p-3 cursor-pointer card-hover-elevate medisense-starter-card" data-prompt="Please summarize recent radiology imaging findings and diagnostic reports.">
+                            <div class="d-flex align-items-center gap-2 mb-1 fw-semibold text-body">
+                                <i class="bi bi-file-earmark-text text-success fs-5"></i>
+                                <span>Radiology Interpretation</span>
+                            </div>
+                            <div class="text-body-secondary small">Extract imaging summary, radiologic impressions, and follow-up steps.</div>
                         </div>
-                        <div class="text-body-secondary small">Extract imaging summary, radiologic impressions, and follow-up steps.</div>
                     </div>
                 </div>
             </div>
 
-            {{-- Messages Stream rendered dynamically --}}
+            {{-- Messages Stream Container --}}
             <div id="messagesContainer"></div>
         </div>
-    </main>
+    </div>
 
-    {{-- Bottom Fixed Floating Input Bar --}}
-    <footer class="gpt-bottom-fixed">
-        <div class="gpt-container">
-            {{-- Quick Action Suggestion Chips Bar --}}
-            <div class="gpt-chip-container mb-2" id="quickActionChips">
-                <button type="button" class="gpt-chip" data-prompt="Evaluate persistent headache, fever, and nausea symptoms.">
+    {{-- Card Footer Input Area --}}
+    <div class="card-footer bg-card border-top p-3 sticky-bottom">
+        <div class="medisense-container">
+            {{-- Quick Action Suggestion Chips --}}
+            <div class="medisense-chip-bar mb-2" id="quickActionChips">
+                <button type="button" class="btn medisense-chip-btn" data-prompt="Evaluate persistent headache, fever, and nausea symptoms.">
                     <i class="bi bi-activity text-success me-1"></i> Symptom Assessment
                 </button>
-                <button type="button" class="gpt-chip" data-prompt="Provide diagnostic assistance and differential considerations for ">
+                <button type="button" class="btn medisense-chip-btn" data-prompt="Provide diagnostic assistance and differential considerations for ">
                     <i class="bi bi-search-heart text-success me-1"></i> Diagnostic Assistance
                 </button>
-                <button type="button" class="gpt-chip" data-prompt="Summarize recent laboratory results and pending test batches.">
+                <button type="button" class="btn medisense-chip-btn" data-prompt="Summarize recent laboratory results and pending test batches.">
                     <i class="bi bi-journal-medical text-success me-1"></i> Summarize Labs
                 </button>
-                <button type="button" class="gpt-chip" data-prompt="Summarize recent radiology imaging findings and scan impressions.">
+                <button type="button" class="btn medisense-chip-btn" data-prompt="Summarize recent radiology imaging findings and scan impressions.">
                     <i class="bi bi-file-earmark-text text-success me-1"></i> Summarize Imaging
                 </button>
-                <button type="button" class="gpt-chip" data-prompt="Review current patient medications for polypharmacy and dosage safety.">
+                <button type="button" class="btn medisense-chip-btn" data-prompt="Review current patient medications for polypharmacy and dosage safety.">
                     <i class="bi bi-check2-circle text-success me-1"></i> Medication Review
                 </button>
-                <button type="button" class="gpt-chip" data-prompt="Assist in formulating a therapeutic diet plan for ">
+                <button type="button" class="btn medisense-chip-btn" data-prompt="Assist in formulating a therapeutic diet plan for ">
                     <i class="bi bi-clipboard2-heart text-success me-1"></i> Diet Plan
                 </button>
-                <button type="button" class="gpt-chip" data-prompt="Assist with surgery workflow, OR scheduling, and turnaround times.">
+                <button type="button" class="btn medisense-chip-btn" data-prompt="Assist with surgery workflow, OR scheduling, and turnaround times.">
                     <i class="bi bi-scissors text-success me-1"></i> Surgery Workflow
                 </button>
-                <button type="button" class="gpt-chip" data-prompt="Provide operational analytics on clinical throughput and patient backlog.">
+                <button type="button" class="btn medisense-chip-btn" data-prompt="Provide operational analytics on clinical throughput and patient backlog.">
                     <i class="bi bi-graph-up-arrow text-success me-1"></i> Operational Analytics
                 </button>
             </div>
 
-            {{-- ChatGPT Pill Input Form --}}
+            {{-- Message Input Form --}}
             <form id="chatForm" class="w-100">
                 @csrf
-                <div class="gpt-input-box">
+                <div class="medisense-input-group d-flex align-items-end gap-2">
                     <textarea id="inputPrompt" name="prompt" rows="1" 
-                              class="gpt-textarea" 
+                              class="medisense-textarea" 
                               placeholder="Message MediSense AI..." required></textarea>
 
-                    <button type="submit" id="btnSend" class="gpt-send-btn" title="Send Message">
-                        <i class="bi bi-arrow-up-short"></i>
+                    <button type="submit" id="btnSend" class="btn btn-success rounded-circle p-0 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Send Message">
+                        <i class="bi bi-arrow-up-short fs-4"></i>
                     </button>
                 </div>
             </form>
 
-            <div class="gpt-disclaimer">
+            <div class="text-center text-body-secondary mt-1.5" style="font-size: 0.72rem;">
                 MediSense AI provides intelligent clinical decision support to authorized staff. Always verify critical recommendations against hospital protocols.
             </div>
         </div>
-    </footer>
+    </div>
 </div>
 
 {{-- Offcanvas Activity Log Drawer --}}
@@ -517,10 +498,8 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const gptWrapper = document.getElementById('gptWrapper');
     const chatForm = document.getElementById('chatForm');
     const inputPrompt = document.getElementById('inputPrompt');
-    const patientSelect = document.getElementById('patientSelect');
     const chatMessages = document.getElementById('chatMessages');
     const messagesContainer = document.getElementById('messagesContainer');
     const welcomeScreen = document.getElementById('welcomeScreen');
@@ -541,9 +520,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Handle Quick Starter Cards & Chips
+    // Handle Starter Cards & Quick Action Chips
     document.addEventListener('click', function (e) {
-        const starterCard = e.target.closest('.gpt-starter-card, .gpt-chip');
+        const starterCard = e.target.closest('.medisense-starter-card, .medisense-chip-btn');
         if (starterCard && starterCard.dataset.prompt) {
             inputPrompt.value = starterCard.dataset.prompt;
             inputPrompt.style.height = 'auto';
@@ -552,19 +531,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Theme Initialization (if toggle present)
-    const currentTheme = localStorage.getItem('medisense_gpt_theme') || 'light';
-    document.documentElement.setAttribute('data-bs-theme', currentTheme);
-
     // Submit Chat Form
     chatForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const prompt = inputPrompt.value.trim();
-        const patientId = patientSelect ? patientSelect.value : null;
-
         if (!prompt) return;
 
-        // Hide welcome screen on first prompt
+        // Hide welcome screen on first message
         if (welcomeScreen) {
             welcomeScreen.style.display = 'none';
         }
@@ -578,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const loadingId = appendLoadingMessage();
         btnSend.disabled = true;
 
-        // Send AJAX
+        // Send AJAX Request
         fetch("{{ route('medisense.chat') }}", {
             method: 'POST',
             headers: {
@@ -587,8 +560,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                prompt: prompt,
-                patient_id: patientId ? parseInt(patientId) : null,
+                prompt: prompt
             })
         })
         .then(res => res.json())
@@ -611,10 +583,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Clear Session
+    // Clear Session / New Chat
     if (btnClearChat) {
         btnClearChat.addEventListener('click', function () {
-            if (confirm('Clear current MediSense AI session?')) {
+            if (confirm('Start a new MediSense AI conversation session?')) {
                 fetch("{{ route('medisense.clear') }}", {
                     method: 'POST',
                     headers: {
@@ -633,8 +605,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function appendUserMessage(text) {
         const html = `
-            <div class="gpt-msg-row justify-content-end">
-                <div class="gpt-user-bubble">
+            <div class="d-flex justify-content-end mb-3">
+                <div class="medisense-user-bubble">
                     ${escapeHtml(text)}
                 </div>
             </div>
@@ -646,11 +618,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function appendLoadingMessage() {
         const id = 'loading-' + Date.now();
         const html = `
-            <div id="${id}" class="gpt-msg-row">
-                <div class="gpt-ai-response d-flex align-items-center gap-2 text-body-secondary py-1">
-                    <span class="spinner-grow spinner-grow-sm text-success"></span>
-                    <span>MediSense AI is evaluating HIMS data, searching web grounding & synthesizing analysis...</span>
-                </div>
+            <div id="${id}" class="d-flex align-items-center gap-2 py-2 mb-3 text-body-secondary small">
+                <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                <span>MediSense AI is evaluating clinical data & synthesizing recommendations...</span>
             </div>
         `;
         messagesContainer.insertAdjacentHTML('beforeend', html);
@@ -660,13 +630,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function appendAiMessage(markdownText, capLabel, sources, citations) {
         const formattedText = formatMarkdown(markdownText);
-        const capBadge = capLabel ? `<span class="badge bg-success-subtle text-success ms-1" style="font-size: 0.65rem;">${escapeHtml(capLabel)}</span>` : '';
+        const capBadge = capLabel ? `<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size: 0.65rem;">${escapeHtml(capLabel)}</span>` : '';
 
-        // Source Badges (HIMS Data, Web Search, AI Analysis)
+        // Source Badges
         let sourceBadgesHtml = '';
-        if (sources && Array.isArray(sources)) {
-            sourceBadgesHtml = '<div class="d-flex flex-wrap gap-1 mt-2 pt-2 border-top align-items-center" style="font-size: 0.72rem;">';
-            sourceBadgesHtml += '<span class="text-body-secondary fw-semibold me-1">Sources:</span>';
+        if (sources && Array.isArray(sources) && sources.length > 0) {
+            sourceBadgesHtml = '<div class="d-flex flex-wrap gap-1 mt-2.5 pt-2 border-top align-items-center" style="font-size: 0.72rem;">';
+            sourceBadgesHtml += '<span class="text-body-secondary me-1">Sources:</span>';
             sources.forEach(src => {
                 let badgeClass = 'bg-body-secondary text-body border';
                 if (src.includes('HIMS')) badgeClass = 'bg-primary-subtle text-primary border border-primary-subtle';
@@ -677,15 +647,15 @@ document.addEventListener('DOMContentLoaded', function () {
             sourceBadgesHtml += '</div>';
         }
 
-        // Web Search Citations
+        // Web Citations
         let citationsHtml = '';
         if (citations && Array.isArray(citations) && citations.length > 0) {
             citationsHtml = '<div class="mt-2.5 p-2.5 bg-body-tertiary rounded-3 border" style="font-size: 0.75rem;">';
-            citationsHtml += '<div class="fw-bold mb-1.5 text-body d-flex align-items-center"><i class="bi bi-globe me-1.5 text-info"></i> Web Grounding Citations:</div><ul class="list-unstyled mb-0 ms-1">';
+            citationsHtml += '<div class="fw-bold mb-1.5 text-body d-flex align-items-center"><i class="bi bi-globe me-1.5 text-info"></i> Grounding Citations:</div><ul class="list-unstyled mb-0 ms-1">';
             citations.forEach(cit => {
                 citationsHtml += `<li class="mb-1 text-truncate">
                     <span class="badge bg-secondary-subtle text-secondary me-1" style="font-size: 0.65rem;">${escapeHtml(cit.domain || 'web')}</span>
-                    <a href="${escapeHtml(cit.url)}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-medium text-body-emphasis hover-underline">
+                    <a href="${escapeHtml(cit.url)}" target="_blank" rel="noopener noreferrer" class="text-decoration-none fw-medium text-body-emphasis">
                         ${escapeHtml(cit.title || cit.url)} <i class="bi bi-box-arrow-up-right ms-0.5 text-body-secondary" style="font-size: 0.65rem;"></i>
                     </a>
                 </li>`;
@@ -694,10 +664,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const html = `
-            <div class="gpt-msg-row">
-                <div class="gpt-ai-response">
-                    <div class="d-flex align-items-center gap-1 mb-1 small">
-                        <strong class="text-body">MediSense AI</strong>
+            <div class="d-flex align-items-start gap-2.5 mb-4">
+                <div class="p-2 bg-success text-white rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                    <i class="bi bi-cpu fs-6"></i>
+                </div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="d-flex align-items-center gap-1.5 mb-1.5">
+                        <strong class="text-body small">MediSense AI</strong>
                         ${capBadge}
                     </div>
                     <div class="medisense-formatted-output">
@@ -715,26 +688,24 @@ document.addEventListener('DOMContentLoaded', function () {
     function appendConfirmationPrompt(data) {
         const details = data.action_details || {};
         const html = `
-            <div class="gpt-msg-row">
-                <div class="gpt-ai-response border border-warning-subtle bg-warning-subtle p-3 rounded-3">
-                    <div class="d-flex align-items-center gap-2 mb-2 text-warning-emphasis fw-bold">
-                        <i class="bi bi-shield-exclamation fs-5"></i>
-                        <span>Clinical Safety Confirmation Required</span>
-                    </div>
-                    <p class="mb-2 text-body small">${escapeHtml(data.ai_response || 'This sensitive clinical action requires user confirmation.')}</p>
-                    <div class="p-2.5 bg-body rounded-2 border mb-3 small">
-                        <div><strong>Action:</strong> ${escapeHtml(details.action || 'HIMS Action')}</div>
-                        <div><strong>Patient:</strong> ${escapeHtml(details.patient || 'N/A')}</div>
-                        <div><strong>Details:</strong> ${escapeHtml(details.test_name || '')} (${escapeHtml(details.urgency || 'ROUTINE')})</div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-sm btn-success px-3 fw-semibold" onclick="confirmAction('${escapeHtml(details.patient_id || '')}', '${escapeHtml(details.test_name || '')}')">
-                            <i class="bi bi-check-circle me-1"></i> Confirm & Execute Action
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary px-3" onclick="this.closest('.gpt-msg-row').remove()">
-                            Cancel
-                        </button>
-                    </div>
+            <div class="card border-warning-subtle bg-warning-subtle text-warning-emphasis p-3 mb-4 rounded-3">
+                <div class="d-flex align-items-center gap-2 mb-2 fw-bold">
+                    <i class="bi bi-shield-exclamation fs-5"></i>
+                    <span>Clinical Action Safety Confirmation Required</span>
+                </div>
+                <p class="mb-2 text-body small">${escapeHtml(data.ai_response || 'This action modifies HIMS records and requires confirmation.')}</p>
+                <div class="p-2.5 bg-body rounded-2 border mb-3 small">
+                    <div><strong>Action:</strong> ${escapeHtml(details.action || 'HIMS Action')}</div>
+                    <div><strong>Patient:</strong> ${escapeHtml(details.patient || 'N/A')}</div>
+                    <div><strong>Details:</strong> ${escapeHtml(details.test_name || '')} (${escapeHtml(details.urgency || 'ROUTINE')})</div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-success px-3 fw-semibold" onclick="confirmAction('${escapeHtml(details.patient_id || '')}', '${escapeHtml(details.test_name || '')}')">
+                        <i class="bi bi-check-circle me-1"></i> Confirm & Execute
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-3" onclick="this.closest('.card').remove()">
+                        Cancel
+                    </button>
                 </div>
             </div>
         `;
@@ -771,10 +742,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function appendErrorMessage(errorMsg) {
         const html = `
-            <div class="gpt-msg-row">
-                <div class="gpt-ai-response text-danger border border-danger-subtle bg-danger-subtle p-3 rounded-3">
-                    <strong>MediSense Error:</strong> ${escapeHtml(errorMsg)}
-                </div>
+            <div class="alert alert-danger border-danger-subtle d-flex align-items-center gap-2 mb-3 rounded-3">
+                <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                <div><strong>MediSense Error:</strong> ${escapeHtml(errorMsg)}</div>
             </div>
         `;
         messagesContainer.insertAdjacentHTML('beforeend', html);
@@ -801,9 +771,9 @@ document.addEventListener('DOMContentLoaded', function () {
         let out = escapeHtml(src);
 
         // Headers
-        out = out.replace(/^### (.*$)/gim, '<h5 class="fw-bold text-body mt-3 mb-2 border-bottom pb-1" style="font-size: 0.95rem;">$1</h5>');
-        out = out.replace(/^## (.*$)/gim, '<h4 class="fw-bold text-body mt-3 mb-2" style="font-size: 1.05rem;">$1</h4>');
-        out = out.replace(/^# (.*$)/gim, '<h3 class="fw-bold text-body mt-3 mb-2" style="font-size: 1.15rem;">$1</h3>');
+        out = out.replace(/^### (.*$)/gim, '<h6 class="fw-bold text-body mt-3 mb-1.5" style="font-size: 0.95rem;">$1</h6>');
+        out = out.replace(/^## (.*$)/gim, '<h5 class="fw-bold text-body mt-3 mb-2" style="font-size: 1.02rem;">$1</h5>');
+        out = out.replace(/^# (.*$)/gim, '<h4 class="fw-bold text-body mt-3 mb-2" style="font-size: 1.1rem;">$1</h4>');
 
         // Bold & Italic
         out = out.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -814,6 +784,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Bullet lists
         out = out.replace(/^\- (.*$)/gim, '<li class="ms-3 mb-1">$1</li>');
+
+        // Code blocks
+        out = out.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+        // Inline code
+        out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
 
         // Line breaks
         out = out.replace(/\n/g, '<br>');

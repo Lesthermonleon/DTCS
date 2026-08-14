@@ -15,7 +15,7 @@
             </select>
             <button class="btn btn-primary btn-sm d-none">Filter</button>
         </form>
-        @if(auth()->user()->hasAnyRole(['admin','med-tech']))
+        @if(auth()->user()?->hasRole('med-tech'))
             <a href="{{ route('lab.results.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>Encode Result</a>
         @endif
     </div>

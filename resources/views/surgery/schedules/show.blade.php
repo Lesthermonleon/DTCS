@@ -190,6 +190,9 @@
                     @endif
                 @endif
 
+                <a href="{{ route('surgery.schedules.print', $surgerySchedule) }}" target="_blank" class="btn btn-outline-info w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
+                    <i class="bi bi-printer"></i> Print Schedule Document
+                </a>
                 <a href="{{ route('surgery.schedules.index') }}" class="btn btn-outline-secondary w-100" style="border-radius: 0.5rem;">
                     Back to Schedules
                 </a>

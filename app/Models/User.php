@@ -28,6 +28,8 @@ class User extends Authenticatable
         'avatar',
         'is_active',
         'login_token',
+        'active_session_id',
+        'last_activity_at',
         'failed_attempts',
         'locked_at',
         'lockout_until',
@@ -43,6 +45,7 @@ class User extends Authenticatable
             'is_active'         => 'boolean',
             'locked_at'         => 'datetime',
             'lockout_until'     => 'datetime',
+            'last_activity_at'  => 'datetime',
         ];
     }
 
@@ -182,4 +185,69 @@ class User extends Authenticatable
             'lockout_until'   => null,
         ]);
     }
+
+    // ──────────────────────── Single Active Session Helpers ────────────────────────
+
+    /**
+     * Check if the user account currently has a valid active session on another browser/device.
+     */
+    public function hasActiveSession(?string $currentSessionId = null): bool
+    {
+        if (empty($this->active_session_id)) {
+            return false;
+        }
+
+        // If checking from the same session/browser, it is NOT a duplicate session
+        if ($currentSessionId !== null && $this->active_session_id === $currentSessionId) {
+            return false;
+        }
+
+        // Check session expiration against SESSION_LIFETIME configuration (default 120 mins)
+        $lifetimeMinutes = (int) config('session.lifetime', 120);
+
+        if ($this->last_activity_at === null || $this->last_activity_at->lt(now()->subMinutes($lifetimeMinutes))) {
+            // Previous session has expired / dead — clean stale record
+            $this->clearActiveSession();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Register a new active session for this user.
+     */
+    public function setActiveSession(string $sessionId): void
+    {
+        $this->update([
+            'active_session_id' => $sessionId,
+            'last_activity_at'  => now(),
+        ]);
+    }
+
+    /**
+     * Clear active session registration on logout or expiration.
+     */
+    public function clearActiveSession(): void
+    {
+        $this->update([
+            'active_session_id' => null,
+            'last_activity_at'  => null,
+        ]);
+    }
+
+    /**
+     * Update the last activity timestamp for the active session.
+     */
+    public function touchLastActivity(?string $sessionId = null): void
+    {
+        if ($sessionId !== null && $this->active_session_id !== $sessionId) {
+            return;
+        }
+
+        $this->update([
+            'last_activity_at' => now(),
+        ]);
+    }
 }
+

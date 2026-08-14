@@ -10,10 +10,10 @@
 @section('content')
 <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
-        <h4 class="mb-1 fw-bold text-dark d-flex align-items-center gap-2">
+        <h4 class="mb-1 fw-bold text-body d-flex align-items-center gap-2">
             <i class="bi bi-chat-dots-fill text-primary"></i>Staff Messaging Hub
         </h4>
-        <p class="text-muted small mb-0">Secure internal communication between HIMS staff members</p>
+        <p class="text-body-secondary small mb-0">Secure internal communication between HIMS staff members</p>
     </div>
     <a href="{{ route('messages.create') }}" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm">
         <i class="bi bi-pencil-square me-1"></i>+ New Message
@@ -25,24 +25,24 @@
     <div class="row g-0 h-100">
         
         {{-- Left: Conversation Sidebar Panel --}}
-        <div class="col-12 col-md-4 col-lg-3 border-end bg-white d-flex flex-column h-100 messenger-sidebar-panel">
+        <div class="col-12 col-md-4 col-lg-3 border-end bg-card d-flex flex-column h-100 messenger-sidebar-panel">
             
             {{-- Search Bar Header --}}
-            <div class="p-3 border-bottom bg-light-subtle">
+            <div class="p-3 border-bottom bg-body-tertiary">
                 <form action="{{ route('messages.index') }}" method="GET" id="searchForm" onsubmit="return false;">
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white border-end-0 text-muted ps-2.5">
+                        <span class="input-group-text bg-body-tertiary border-end-0 text-body-secondary ps-2.5">
                             <i class="bi bi-search"></i>
                         </span>
                         <input type="text" 
                                id="conversationSearchInput" 
                                name="q" 
-                               class="form-control border-start-0 ps-1 shadow-none" 
+                               class="form-control border-start-0 ps-1 shadow-none bg-body-tertiary text-body" 
                                placeholder="Search conversations..." 
                                value="{{ $searchQuery }}"
                                autocomplete="off">
                         @if($searchQuery)
-                            <a href="{{ route('messages.index') }}" class="input-group-text bg-white border-start-0 text-muted text-decoration-none">
+                            <a href="{{ route('messages.index') }}" class="input-group-text bg-body-tertiary border-start-0 text-body-secondary text-decoration-none">
                                 <i class="bi bi-x-circle-fill"></i>
                             </a>
                         @endif
@@ -57,7 +57,7 @@
                         $isActive = $activeConversation && $activeConversation->id === $conv->id;
                     @endphp
                     <a href="{{ route('messages.index', ['conversation_id' => $conv->id]) }}" 
-                       class="list-group-item list-group-item-action p-3 border-0 border-bottom conversation-item {{ $isActive ? 'active-conv-item bg-light-subtle border-start border-4 border-primary' : '' }}"
+                       class="list-group-item list-group-item-action p-3 border-0 border-bottom conversation-item {{ $isActive ? 'active-conv-item bg-body-secondary border-start border-4 border-primary' : '' }}"
                        data-conv-id="{{ $conv->id }}"
                        data-user-name="{{ strtolower($conv->other_user_name) }}"
                        data-user-role="{{ strtolower($conv->other_user_role) }}"
@@ -72,22 +72,22 @@
                             <div class="flex-grow-1 min-w-0">
                                 {{-- Name & Timestamp --}}
                                 <div class="d-flex align-items-center justify-content-between mb-0.5">
-                                    <h6 class="mb-0 text-truncate font-body {{ $conv->is_unread ? 'fw-bold text-dark' : 'fw-semibold text-dark' }}" style="font-size: 0.86rem;">
+                                    <h6 class="mb-0 text-truncate font-body {{ $conv->is_unread ? 'fw-bold text-body' : 'fw-semibold text-body' }}" style="font-size: 0.86rem;">
                                         {{ $conv->other_user_name }}
                                     </h6>
-                                    <span class="conv-time text-muted flex-shrink-0 ms-1" style="font-size: 0.68rem; font-family: var(--font-mono);">
+                                    <span class="conv-time text-body-secondary flex-shrink-0 ms-1" style="font-size: 0.68rem; font-family: var(--font-mono);">
                                         {{ $conv->time_formatted }}
                                     </span>
                                 </div>
 
                                 {{-- Role & Department --}}
-                                <div class="text-muted text-truncate mb-1" style="font-size: 0.72rem; line-height: 1.2;">
+                                <div class="text-body-secondary text-truncate mb-1" style="font-size: 0.72rem; line-height: 1.2;">
                                     {{ $conv->other_user_role }}
                                 </div>
 
                                 {{-- Message Preview & Unread Badge --}}
                                 <div class="d-flex align-items-center justify-content-between gap-1">
-                                    <p class="mb-0 text-truncate conv-preview {{ $conv->is_unread ? 'fw-bold text-dark' : 'text-muted' }}" style="font-size: 0.76rem; max-width: 160px;">
+                                    <p class="mb-0 text-truncate conv-preview {{ $conv->is_unread ? 'fw-bold text-body' : 'text-body-secondary' }}" style="font-size: 0.76rem; max-width: 160px;">
                                         {{ $conv->latest_message ? $conv->latest_message->message : 'No messages yet' }}
                                     </p>
                                     @if($conv->unread_count > 0)
@@ -101,15 +101,15 @@
                     </a>
                 @empty
                     <div class="text-center py-5 px-3" id="noConversationsPlaceholder">
-                        <i class="bi bi-chat-square-dots text-muted fs-2 mb-2 d-block opacity-40"></i>
-                        <p class="text-muted small mb-0">No active staff conversations found.</p>
+                        <i class="bi bi-chat-square-dots text-body-secondary fs-2 mb-2 d-block opacity-40"></i>
+                        <p class="text-body-secondary small mb-0">No active staff conversations found.</p>
                     </div>
                 @endforelse
             </div>
         </div>
 
         {{-- Right: Active Chat Main Panel --}}
-        <div class="col-12 col-md-8 col-lg-9 d-flex flex-column h-100 bg-white messenger-chat-panel">
+        <div class="col-12 col-md-8 col-lg-9 d-flex flex-column h-100 bg-card messenger-chat-panel">
             @if($activeConversation)
                 @php
                     $otherUser = $activeConversation->participants->firstWhere('id', '!=', auth()->id());
@@ -119,10 +119,10 @@
                 @endphp
 
                 {{-- Active Chat Header --}}
-                <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-white flex-shrink-0" id="chatHeader">
+                <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-card flex-shrink-0" id="chatHeader">
                     <div class="d-flex align-items-center gap-2.5">
                         {{-- Mobile Back Arrow Button --}}
-                        <button type="button" class="btn btn-sm btn-light border-0 rounded-circle me-1 d-md-none" id="mobileBackBtn" aria-label="Back to conversations">
+                        <button type="button" class="btn btn-sm btn-outline-secondary border-0 rounded-circle me-1 d-md-none" id="mobileBackBtn" aria-label="Back to conversations">
                             <i class="bi bi-arrow-left fs-5"></i>
                         </button>
 
@@ -132,8 +132,8 @@
                         </div>
 
                         <div>
-                            <h6 class="mb-0 fw-bold text-dark" id="chatHeaderName">{{ $otherUser?->name ?? 'Staff Member' }}</h6>
-                            <small class="text-muted d-block" id="chatHeaderRole" style="font-size: 0.74rem;">{{ $roleDept }}</small>
+                            <h6 class="mb-0 fw-bold text-body" id="chatHeaderName">{{ $otherUser?->name ?? 'Staff Member' }}</h6>
+                            <small class="text-body-secondary d-block" id="chatHeaderRole" style="font-size: 0.74rem;">{{ $roleDept }}</small>
                         </div>
                     </div>
 
@@ -154,7 +154,7 @@
                 </div>
 
                 {{-- Chat Message Thread Container --}}
-                <div class="flex-grow-1 p-3 p-md-4 overflow-auto bg-light-subtle" id="chatMessageArea" style="scroll-behavior: smooth;">
+                <div class="flex-grow-1 p-3 p-md-4 overflow-auto bg-body-tertiary" id="chatMessageArea" style="scroll-behavior: smooth;">
                     @php $lastDateHeader = null; @endphp
                     @forelse($activeConversation->messages as $msg)
                         @php 
@@ -169,7 +169,7 @@
 
                         @if($lastDateHeader !== $msgDate)
                             <div class="text-center my-3">
-                                <span class="badge bg-white text-muted border shadow-2xs font-mono fw-normal" style="font-size: 0.68rem; padding: 4px 10px; border-radius: 12px;">
+                                <span class="badge bg-card text-body-secondary border shadow-2xs font-mono fw-normal" style="font-size: 0.68rem; padding: 4px 10px; border-radius: 12px;">
                                     {{ $dateLabel }}
                                 </span>
                             </div>
@@ -177,7 +177,7 @@
                         @endif
 
                         <div class="d-flex {{ $isMine ? 'justify-content-end' : 'justify-content-start' }} mb-2.5 message-row">
-                            <div class="message-bubble shadow-2xs p-3 position-relative {{ $isMine ? 'bg-primary text-white bubble-sent' : 'bg-white text-dark border bubble-received' }}" 
+                            <div class="message-bubble shadow-2xs p-3 position-relative {{ $isMine ? 'bg-primary text-white bubble-sent' : 'bg-card text-body border bubble-received' }}" 
                                  style="max-width: 78%; word-break: break-word;">
                                 
                                 @if(!$isMine)
@@ -192,7 +192,7 @@
                             </div>
                         </div>
                     @empty
-                        <div class="text-center py-5 my-auto text-muted" id="emptyThreadPlaceholder">
+                        <div class="text-center py-5 my-auto text-body-secondary" id="emptyThreadPlaceholder">
                             <i class="bi bi-chat-left-text fs-2 mb-2 d-block opacity-40"></i>
                             <p class="small mb-0">No messages in this conversation yet. Send a message to get started.</p>
                         </div>
@@ -200,15 +200,15 @@
                 </div>
 
                 {{-- Chat Composer Footer --}}
-                <div class="p-3 border-top bg-white flex-shrink-0">
+                <div class="p-3 border-top bg-card flex-shrink-0">
                     <form id="sendMessageForm" action="{{ route('messages.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="conversation_id" id="conversationIdInput" value="{{ $activeConversation->id }}">
                         
-                        <div class="input-group align-items-end gap-2 bg-light p-2 rounded-4 border focus-within-ring">
+                        <div class="input-group align-items-end gap-2 bg-body-tertiary p-2 rounded-4 border focus-within-ring">
                             <textarea name="message" 
                                       id="chatInput" 
-                                      class="form-control border-0 bg-transparent shadow-none" 
+                                      class="form-control border-0 bg-transparent shadow-none text-body" 
                                       rows="1" 
                                       placeholder="Type a message..." 
                                       required 
@@ -223,19 +223,19 @@
                             </button>
                         </div>
                         <div class="d-flex align-items-center justify-content-between px-2 mt-1">
-                            <small class="text-muted" style="font-size: 0.65rem;">Press <kbd class="px-1 py-0 bg-light text-dark border">Enter</kbd> to send, <kbd class="px-1 py-0 bg-light text-dark border">Shift+Enter</kbd> for new line</small>
+                            <small class="text-body-secondary" style="font-size: 0.65rem;">Press <kbd class="px-1 py-0 bg-body-secondary text-body border">Enter</kbd> to send, <kbd class="px-1 py-0 bg-body-secondary text-body border">Shift+Enter</kbd> for new line</small>
                             <small class="text-danger d-none" id="inputErrorText" style="font-size: 0.68rem;"></small>
                         </div>
                     </form>
                 </div>
             @else
                 {{-- Empty State: No Active Conversation Selected --}}
-                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-5 bg-light-subtle" id="noActiveConvState">
-                    <div class="p-4 rounded-circle bg-white shadow-sm mb-3">
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-5 bg-body-tertiary" id="noActiveConvState">
+                    <div class="p-4 rounded-circle bg-card shadow-sm mb-3">
                         <i class="bi bi-chat-left-dots text-primary fs-1"></i>
                     </div>
-                    <h5 class="fw-bold text-dark mb-1">Staff Internal Communication</h5>
-                    <p class="text-muted small mb-4" style="max-width: 380px;">
+                    <h5 class="fw-bold text-body mb-1">Staff Internal Communication</h5>
+                    <p class="text-body-secondary small mb-4" style="max-width: 380px;">
                         Select a staff conversation from the left sidebar to view messages, or start a new direct message.
                     </p>
                     <a href="{{ route('messages.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
@@ -273,6 +273,24 @@
 
 .bubble-received {
     border-radius: 18px 18px 18px 4px !important;
+}
+
+/* Dark Mode Overrides for Messenger */
+html[data-theme="dark"] .bubble-received,
+html[data-bs-theme="dark"] .bubble-received {
+    background-color: #172d28 !important;
+    border-color: #1e3630 !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .conversation-item:hover,
+html[data-bs-theme="dark"] .conversation-item:hover {
+    background-color: rgba(20, 199, 154, 0.12) !important;
+}
+
+html[data-theme="dark"] .active-conv-item,
+html[data-bs-theme="dark"] .active-conv-item {
+    background-color: #172d28 !important;
 }
 
 /* Responsive Mobile Panels Switching */
@@ -387,9 +405,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Highlight active item in list
             conversationList.querySelectorAll('.conversation-item').forEach(el => {
-                el.classList.remove('active-conv-item', 'bg-light-subtle', 'border-start', 'border-4', 'border-primary');
+                el.classList.remove('active-conv-item', 'bg-body-secondary', 'border-start', 'border-4', 'border-primary');
             });
-            item.classList.add('active-conv-item', 'bg-light-subtle', 'border-start', 'border-4', 'border-primary');
+            item.classList.add('active-conv-item', 'bg-body-secondary', 'border-start', 'border-4', 'border-primary');
 
             // Toggle mobile view state
             if (messengerContainer) {
@@ -453,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!messages || messages.length === 0) {
             chatMessageArea.innerHTML = `
-                <div class="text-center py-5 my-auto text-muted" id="emptyThreadPlaceholder">
+                <div class="text-center py-5 my-auto text-body-secondary" id="emptyThreadPlaceholder">
                     <i class="bi bi-chat-left-text fs-2 mb-2 d-block opacity-40"></i>
                     <p class="small mb-0">No messages in this conversation yet. Send a message to get started.</p>
                 </div>
@@ -468,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dateHeader = document.createElement('div');
                 dateHeader.className = 'text-center my-3';
                 dateHeader.innerHTML = `
-                    <span class="badge bg-white text-muted border shadow-2xs font-mono fw-normal" style="font-size: 0.68rem; padding: 4px 10px; border-radius: 12px;">
+                    <span class="badge bg-card text-body-secondary border shadow-2xs font-mono fw-normal" style="font-size: 0.68rem; padding: 4px 10px; border-radius: 12px;">
                         ${msg.date_label}
                     </span>
                 `;
@@ -480,8 +498,8 @@ document.addEventListener('DOMContentLoaded', function() {
             msgRow.className = `d-flex ${msg.is_mine ? 'justify-content-end' : 'justify-content-start'} mb-2.5 message-row`;
 
             const bubble = document.createElement('div');
-            bubble.className = `message-bubble shadow-2xs p-3 position-relative ${msg.is_mine ? 'bg-primary text-white' : 'bg-white text-dark border'}`;
-            bubble.style.cssText = `max-width: 78%; border-radius: ${msg.is_mine ? '18px 18px 4px 18px' : '18px 18px 18px 4px'}; word-break: break-word;`;
+            bubble.className = `message-bubble shadow-2xs p-3 position-relative ${msg.is_mine ? 'bg-primary text-white bubble-sent' : 'bg-card text-body border bubble-received'}`;
+            bubble.style.cssText = `max-width: 78%; word-break: break-word;`;
 
             if (!msg.is_mine) {
                 const senderName = document.createElement('div');
@@ -593,8 +611,8 @@ document.addEventListener('DOMContentLoaded', function() {
         msgRow.className = 'd-flex justify-content-end mb-2.5 message-row';
 
         const bubble = document.createElement('div');
-        bubble.className = 'message-bubble shadow-2xs p-3 position-relative bg-primary text-white';
-        bubble.style.cssText = 'max-width: 78%; border-radius: 18px 18px 4px 18px; word-break: break-word;';
+        bubble.className = 'message-bubble shadow-2xs p-3 position-relative bg-primary text-white bubble-sent';
+        bubble.style.cssText = 'max-width: 78%; word-break: break-word;';
 
         const content = document.createElement('div');
         content.className = 'message-content';
@@ -647,4 +665,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endsection
-

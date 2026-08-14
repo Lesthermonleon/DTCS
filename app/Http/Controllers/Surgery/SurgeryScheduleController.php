@@ -58,6 +58,8 @@ class SurgeryScheduleController extends Controller
 
     public function create(Request $request): View
     {
+        abort_if(! Auth::user()?->hasRole('or-coordinator'), 403, 'Only OR coordinators can schedule surgical procedures.');
+
         $this->ensureRoomsAndTeamsExist();
 
         $selectedRequestId = $request->query('request');
@@ -70,6 +72,8 @@ class SurgeryScheduleController extends Controller
 
     public function store(StoreSurgeryScheduleRequest $request): RedirectResponse
     {
+        abort_if(! Auth::user()?->hasRole('or-coordinator'), 403, 'Only OR coordinators can schedule surgical procedures.');
+
         $schedule = SurgerySchedule::create(array_merge($request->validated(), [
             'scheduled_by' => Auth::id(),
             'status'       => 'Scheduled',
@@ -91,6 +95,7 @@ class SurgeryScheduleController extends Controller
 
     public function edit(SurgerySchedule $surgerySchedule): View
     {
+        abort_if(! Auth::user()?->hasRole('or-coordinator'), 403, 'Only OR coordinators can edit surgical schedules.');
         abort_if($surgerySchedule->status === 'Completed', 403, 'Completed schedules cannot be edited.');
 
         $this->ensureRoomsAndTeamsExist();
@@ -143,35 +148,58 @@ class SurgeryScheduleController extends Controller
         return back()->with('success', 'Surgery marked as completed.');
     }
 
-    /** FullCalendar JSON events feed. */
-    public function calendarEvents(): \Illuminate\Http\JsonResponse
+    /** Print-friendly view for surgery schedule. */
+    public function print(SurgerySchedule $surgerySchedule): View
     {
-        $events = SurgerySchedule::with('surgeryRequest.patient', 'surgeryRequest.doctor', 'operatingRoom', 'surgicalTeam.surgeon')
-                  ->whereNotIn('status', ['Cancelled'])
-                  ->get()
-                  ->map(fn($s) => [
-                      'id'    => $s->id,
-                      'title' => ($s->surgeryRequest->patient->last_name ?? '?') . ' — ' . ($s->surgeryRequest->procedure_name ?? 'Procedure'),
-                      'start' => $s->scheduled_at->toIso8601String(),
-                      'end'   => $s->scheduled_at->copy()->addMinutes($s->duration_minutes)->toIso8601String(),
-                      'color' => match ($s->status) {
-                          'Scheduled'   => '#3b82f6',
-                          'In Progress' => '#f59e0b',
-                          'Completed'   => '#10b981',
-                          'Postponed'   => '#64748b',
-                          default       => '#ef4444',
-                      },
-                      'extendedProps' => [
-                          'or'           => $s->operatingRoom->name ?? 'OR',
-                          'status'       => $s->status,
-                          'patient_name' => ($s->surgeryRequest->patient->first_name ?? '') . ' ' . ($s->surgeryRequest->patient->last_name ?? ''),
-                          'surgeon'      => $s->surgicalTeam->surgeon->name ?? 'Surgeon',
-                          'request_by'   => $s->surgeryRequest->doctor->name ?? 'Doctor',
-                          'procedure'    => $s->surgeryRequest->procedure_name ?? 'Procedure',
-                          'duration'     => $s->duration_minutes,
-                          'scheduled_at' => $s->scheduled_at->format('M d, Y · h:i A'),
-                      ],
-                  ]);
+        $surgerySchedule->load('surgeryRequest.patient', 'surgeryRequest.doctor', 'coordinator');
+
+        return view('surgery.schedules.print', compact('surgerySchedule'));
+    }
+
+    /** FullCalendar JSON events feed. */
+    public function calendarEvents(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $query = SurgerySchedule::with('surgeryRequest.patient', 'surgeryRequest.doctor', 'operatingRoom', 'surgicalTeam.surgeon')
+                  ->whereNotIn('status', ['Cancelled']);
+
+        if ($request->filled('operating_room_id')) {
+            $query->where('operating_room_id', $request->operating_room_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $events = $query->get()->map(fn($s) => [
+            'id'    => $s->id,
+            'title' => ($s->surgeryRequest->patient->last_name ?? '?') . ' — ' . ($s->surgeryRequest->procedure_name ?? 'Procedure'),
+            'start' => $s->scheduled_at->toIso8601String(),
+            'end'   => $s->scheduled_at->copy()->addMinutes($s->duration_minutes ?? 60)->toIso8601String(),
+            'color' => match ($s->status) {
+                'Scheduled'   => '#0d6efd',
+                'In Progress' => '#fd7e14',
+                'Completed'   => '#198754',
+                'Postponed'   => '#6c757d',
+                default       => '#dc3545',
+            },
+            'extendedProps' => [
+                'or'             => $s->operatingRoom->name ?? 'OR',
+                'or_id'          => $s->operating_room_id,
+                'status'         => $s->status,
+                'patient_name'   => ($s->surgeryRequest->patient->first_name ?? '') . ' ' . ($s->surgeryRequest->patient->last_name ?? ''),
+                'patient_no'     => $s->surgeryRequest->patient->patient_no ?? '',
+                'surgeon'        => $s->surgicalTeam->surgeon->name ?? 'Surgeon',
+                'request_by'     => $s->surgeryRequest->doctor->name ?? 'Doctor',
+                'request_no'     => $s->surgeryRequest->request_no ?? '',
+                'procedure'      => $s->surgeryRequest->procedure_name ?? 'Procedure',
+                'urgency'        => $s->surgeryRequest->urgency ?? 'Elective',
+                'duration'       => $s->duration_minutes ?? 60,
+                'scheduled_at'   => $s->scheduled_at->format('M d, Y · h:i A'),
+                'scheduled_date' => $s->scheduled_at->format('Y-m-d'),
+                'start_time'     => $s->scheduled_at->format('g:i A'),
+                'end_time'       => $s->scheduled_at->copy()->addMinutes($s->duration_minutes ?? 60)->format('g:i A'),
+            ],
+        ]);
 
         return response()->json($events);
     }
@@ -179,7 +207,15 @@ class SurgeryScheduleController extends Controller
     /** Calendar view page. */
     public function calendar(): View
     {
-        return view('surgery.calendar');
+        $operatingRooms = OperatingRoom::where('is_active', true)->get();
+        $upcomingSchedules = SurgerySchedule::with('surgeryRequest.patient', 'operatingRoom', 'surgicalTeam.surgeon')
+            ->where('scheduled_at', '>=', now()->startOfDay())
+            ->whereNotIn('status', ['Cancelled', 'Completed'])
+            ->orderBy('scheduled_at', 'asc')
+            ->take(30)
+            ->get();
+
+        return view('surgery.calendar', compact('operatingRooms', 'upcomingSchedules'));
     }
 
     /** Helper to ensure sample ORs and Teams exist if database lacks them. */

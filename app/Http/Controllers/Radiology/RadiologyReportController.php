@@ -126,4 +126,13 @@ class RadiologyReportController extends Controller
 
         return back()->with('success', 'Radiology report officially released to referring doctor.');
     }
+
+    /** Print-friendly view for radiology report. */
+    public function print(RadiologyReport $radiologyReport): View
+    {
+        $this->authorize('view', $radiologyReport);
+        $radiologyReport->load('radiologyRequest.patient', 'radiologyRequest.doctor', 'radiologist');
+
+        return view('radiology.reports.print', compact('radiologyReport'));
+    }
 }

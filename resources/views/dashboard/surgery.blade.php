@@ -9,19 +9,19 @@
 
 {{-- ── Quick Action Bar ── --}}
 <div class="card mb-4 border-0 shadow-sm bg-body">
-    <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-danger bg-opacity-10 text-danger fs-6 px-3 py-2">
+    <div class="card-body p-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 gap-sm-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-danger bg-opacity-10 text-danger fs-6 px-3 py-2 text-nowrap">
                 <i class="bi bi-scissors me-1"></i> OR Coordinator Operational Center
             </span>
-            <span class="text-muted small">Manage operating room allocations, surgical scheduling, and preoperative requests.</span>
+            <span class="text-muted small text-nowrap d-none d-md-inline">Manage operating room allocations, surgical scheduling, and preoperative requests.</span>
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('surgery.requests.index') }}" class="btn btn-sm btn-primary">
+        <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-sm-auto justify-content-start justify-content-sm-end">
+            <a href="{{ route('surgery.requests.index') }}" class="btn btn-sm btn-primary text-nowrap flex-grow-1 flex-sm-grow-0">
                 <i class="bi bi-file-earmark-plus me-1"></i> Surgery Requests
             </a>
             @if(Route::has('surgery.schedules.index'))
-            <a href="{{ route('surgery.schedules.index') }}" class="btn btn-sm btn-outline-danger">
+            <a href="{{ route('surgery.schedules.index') }}" class="btn btn-sm btn-outline-danger text-nowrap flex-grow-1 flex-sm-grow-0">
                 <i class="bi bi-calendar3 me-1"></i> OR Master Schedule
             </a>
             @endif
@@ -127,15 +127,39 @@
                 </h6>
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">All Time</span>
             </div>
-            <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                <div style="position:relative;width:140px;height:140px;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center p-3">
+                <div style="position:relative;width:145px;height:145px;" class="mb-2">
                     <canvas id="surgStatusDonut"></canvas>
+                    <div class="position-absolute top-50 start-50 translate-middle text-center" style="pointer-events: none;">
+                        <div class="fs-4 fw-bold text-body mb-0">{{ array_sum([$stats['pending'], $stats['scheduled'], $stats['completed'], $stats['cancelled']]) }}</div>
+                        <div class="text-muted" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Total Cases</div>
+                    </div>
                 </div>
-                <div class="mt-3 w-100 small">
-                    <div class="d-flex justify-content-between mb-1"><span class="text-muted"><span class="d-inline-block rounded-circle me-2" style="width:8px;height:8px;background:#ffc107;"></span>Pending</span><strong>{{ $stats['pending'] }}</strong></div>
-                    <div class="d-flex justify-content-between mb-1"><span class="text-muted"><span class="d-inline-block rounded-circle me-2" style="width:8px;height:8px;background:#0dcaf0;"></span>Scheduled</span><strong>{{ $stats['scheduled'] }}</strong></div>
-                    <div class="d-flex justify-content-between mb-1"><span class="text-muted"><span class="d-inline-block rounded-circle me-2" style="width:8px;height:8px;background:#198754;"></span>Completed</span><strong>{{ $stats['completed'] }}</strong></div>
-                    <div class="d-flex justify-content-between"><span class="text-muted"><span class="d-inline-block rounded-circle me-2" style="width:8px;height:8px;background:#dc3545;"></span>Cancelled</span><strong>{{ $stats['cancelled'] }}</strong></div>
+                <div class="w-100 mt-2 p-2 rounded-3 bg-body-tertiary border border-border-subtle">
+                    <div class="d-flex justify-content-between align-items-center py-1.5 px-2 border-bottom border-border-subtle">
+                        <span class="small text-body d-flex align-items-center">
+                            <span class="d-inline-block rounded-circle me-2" style="width:8px;height:8px;background:#ffc107;"></span>Pending
+                        </span>
+                        <span class="badge bg-warning-subtle text-warning-emphasis fw-bold px-2 py-1">{{ $stats['pending'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-1.5 px-2 border-bottom border-border-subtle">
+                        <span class="small text-body d-flex align-items-center">
+                            <span class="d-inline-block rounded-circle me-2" style="width:8px;height:8px;background:#0dcaf0;"></span>Scheduled
+                        </span>
+                        <span class="badge bg-info-subtle text-info-emphasis fw-bold px-2 py-1">{{ $stats['scheduled'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-1.5 px-2 border-bottom border-border-subtle">
+                        <span class="small text-body d-flex align-items-center">
+                            <span class="d-inline-block rounded-circle me-2" style="width:8px;height:8px;background:#198754;"></span>Completed
+                        </span>
+                        <span class="badge bg-success-subtle text-success-emphasis fw-bold px-2 py-1">{{ $stats['completed'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-1.5 px-2">
+                        <span class="small text-body d-flex align-items-center">
+                            <span class="d-inline-block rounded-circle me-2" style="width:8px;height:8px;background:#dc3545;"></span>Cancelled
+                        </span>
+                        <span class="badge bg-danger-subtle text-danger-emphasis fw-bold px-2 py-1">{{ $stats['cancelled'] }}</span>
+                    </div>
                 </div>
             </div>
         </div>

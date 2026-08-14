@@ -108,6 +108,7 @@ Route::middleware(['auth'])->group(function () {
          ->name('admin.')
          ->group(function () {
              Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+             Route::get('/users/print', [UserController::class, 'print'])->name('users.print');
              Route::resource('users', UserController::class);
              Route::resource('roles', RoleController::class);
              Route::post('users/{user}/assign-role', [UserController::class, 'assignRole'])->name('users.assign-role');
@@ -142,7 +143,7 @@ Route::middleware(['auth'])->group(function () {
 
              // Additional actions on lab requests
              Route::patch('requests/{labRequest}/receive', [LabRequestController::class, 'receive'])
-                  ->middleware('role:admin,med-tech')
+                  ->middleware('role:med-tech')
                   ->name('requests.receive');
 
              Route::get('requests/{labRequest}/print', [LabRequestController::class, 'print'])
@@ -150,15 +151,20 @@ Route::middleware(['auth'])->group(function () {
                   ->name('requests.print');
 
              // Lab Results (Med-Tech encodes)
+             Route::get('results/{labResult}/print', [LabResultController::class, 'print'])
+                  ->middleware('role:admin,med-tech,doctor')
+                  ->name('results.print');
+
              Route::resource('results', LabResultController::class)
+                  ->parameters(['results' => 'labResult'])
                   ->middleware('role:admin,med-tech,doctor');
 
              Route::patch('results/{labResult}/validate', [LabResultController::class, 'validate'])
-                  ->middleware('role:admin,med-tech')
+                  ->middleware('role:med-tech')
                   ->name('results.validate');
 
              Route::patch('results/{labResult}/release', [LabResultController::class, 'release'])
-                  ->middleware('role:admin,med-tech')
+                  ->middleware('role:med-tech')
                   ->name('results.release');
          });
 
@@ -178,15 +184,15 @@ Route::middleware(['auth'])->group(function () {
                   ->middleware('role:admin,doctor,rad-tech,radiologist');
 
              Route::patch('requests/{radiologyRequest}/schedule', [RadiologyRequestController::class, 'schedule'])
-                  ->middleware('role:admin,rad-tech')
+                  ->middleware('role:rad-tech')
                   ->name('requests.schedule');
 
              Route::patch('requests/{radiologyRequest}/start', [RadiologyRequestController::class, 'start'])
-                  ->middleware('role:admin,rad-tech')
+                  ->middleware('role:rad-tech')
                   ->name('requests.start');
 
              Route::post('requests/{radiologyRequest}/upload', [RadiologyRequestController::class, 'uploadImage'])
-                  ->middleware('role:rad-tech,admin')
+                  ->middleware('role:rad-tech')
                   ->name('requests.upload');
 
              Route::get('images/{image}/view', [RadiologyRequestController::class, 'viewImage'])
@@ -194,19 +200,23 @@ Route::middleware(['auth'])->group(function () {
                   ->name('images.view');
 
              Route::patch('requests/{radiologyRequest}/complete', [RadiologyRequestController::class, 'complete'])
-                  ->middleware('role:admin,rad-tech')
+                  ->middleware('role:rad-tech')
                   ->name('requests.complete');
 
              Route::resource('reports', RadiologyReportController::class)
                   ->parameters(['reports' => 'radiologyReport'])
                   ->middleware('role:admin,radiologist,doctor,rad-tech');
 
+             Route::get('reports/{radiologyReport}/print', [RadiologyReportController::class, 'print'])
+                  ->middleware('role:admin,radiologist,doctor,rad-tech')
+                  ->name('reports.print');
+
              Route::patch('reports/{radiologyReport}/approve', [RadiologyReportController::class, 'approve'])
-                  ->middleware('role:admin,radiologist')
+                  ->middleware('role:radiologist')
                   ->name('reports.approve');
 
              Route::patch('reports/{radiologyReport}/release', [RadiologyReportController::class, 'release'])
-                  ->middleware('role:admin,radiologist')
+                  ->middleware('role:radiologist')
                   ->name('reports.release');
          });
 
@@ -221,12 +231,20 @@ Route::middleware(['auth'])->group(function () {
                   ->middleware('role:admin,doctor,pharmacist')
                   ->name('dashboard');
 
+             Route::get('prescriptions/{prescription}/print', [PrescriptionController::class, 'print'])
+                  ->middleware('role:admin,doctor,pharmacist')
+                  ->name('prescriptions.print');
+
              Route::resource('prescriptions', PrescriptionController::class)
                   ->middleware('role:admin,doctor,pharmacist');
 
              Route::patch('prescriptions/{prescription}/verify', [PrescriptionController::class, 'verify'])
-                  ->middleware('role:pharmacist,admin')
+                  ->middleware('role:pharmacist')
                   ->name('prescriptions.verify');
+
+             Route::get('dispensing/{dispensing}/print', [DispensingController::class, 'print'])
+                  ->middleware('role:admin,pharmacist')
+                  ->name('dispensing.print');
 
              Route::resource('dispensing', DispensingController::class)
                   ->middleware('role:admin,pharmacist');
@@ -256,19 +274,23 @@ Route::middleware(['auth'])->group(function () {
                   ->middleware('role:admin,doctor,or-coordinator');
 
              Route::patch('requests/{surgeryRequest}/cancel', [SurgeryRequestController::class, 'cancel'])
-                  ->middleware('role:admin,doctor,or-coordinator')
+                  ->middleware('role:doctor,or-coordinator')
                   ->name('requests.cancel');
+
+             Route::get('schedules/{surgerySchedule}/print', [SurgeryScheduleController::class, 'print'])
+                  ->middleware('role:admin,doctor,or-coordinator')
+                  ->name('schedules.print');
 
              Route::resource('schedules', SurgeryScheduleController::class)
                   ->parameters(['schedules' => 'surgerySchedule'])
                   ->middleware('role:admin,doctor,or-coordinator');
 
              Route::patch('schedules/{surgerySchedule}/start', [SurgeryScheduleController::class, 'start'])
-                  ->middleware('role:admin,doctor,or-coordinator')
+                  ->middleware('role:or-coordinator')
                   ->name('schedules.start');
 
              Route::patch('schedules/{surgerySchedule}/complete', [SurgeryScheduleController::class, 'complete'])
-                  ->middleware('role:admin,doctor,or-coordinator')
+                  ->middleware('role:or-coordinator')
                   ->name('schedules.complete');
          });
 
@@ -284,13 +306,19 @@ Route::middleware(['auth'])->group(function () {
                   ->name('dashboard');
 
              Route::resource('requests', DietRequestController::class)
+                  ->parameters(['requests' => 'dietRequest'])
                   ->middleware('role:admin,doctor,dietitian');
 
+             Route::get('plans/{dietPlan}/print', [DietPlanController::class, 'print'])
+                  ->middleware('role:admin,dietitian,doctor')
+                  ->name('plans.print');
+
              Route::resource('plans', DietPlanController::class)
+                  ->parameters(['plans' => 'dietPlan'])
                   ->middleware('role:admin,dietitian,doctor');
 
              Route::patch('plans/{dietPlan}/complete', [DietPlanController::class, 'complete'])
-                  ->middleware('role:dietitian,admin')
+                  ->middleware('role:dietitian')
                   ->name('plans.complete');
          });
 

@@ -89,6 +89,7 @@
                     </form>
                 @endif
 
+                <a href="{{ route('radiology.reports.print', $radiologyReport) }}" target="_blank" class="btn btn-outline-info w-100"><i class="bi bi-printer me-2"></i>Print Diagnostic Report</a>
                 <a href="{{ route('radiology.reports.index') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-chevron-left me-2"></i>Back to Reports</a>
             </div>
         </div>
