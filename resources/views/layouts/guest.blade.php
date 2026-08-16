@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Login') — DITC HMS</title>
+    <title>@yield('title', 'Login') — DTCS HIMS</title>
     <link rel="icon" href="{{ asset('assets/images/brand/favicon.svg') }}" type="image/svg+xml" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
@@ -277,7 +277,7 @@
                             stroke-linejoin="round"
                         />
                     </svg>
-                    <h3>DITC HMS</h3>
+                    <h3>DTCS HIMS</h3>
                 </div>
                 <p>Diagnostic, Treatment &amp; Clinical Services</p>
             </div>
