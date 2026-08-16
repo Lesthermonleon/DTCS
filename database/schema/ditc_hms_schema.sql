@@ -1,7 +1,7 @@
 -- ============================================================================
 -- DITC Hospital Management System — Complete Database Schema
 -- MySQL 8.x Compatible · Laravel Synchronized
--- Generated: 2026-08-04
+-- Generated: 2026-08-16
 --
 -- Import into MySQL Workbench via: File → Run SQL Script
 -- ============================================================================
@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS `users` (
     `password`          VARCHAR(255)    NOT NULL,
     `remember_token`    VARCHAR(100)    NULL DEFAULT NULL,
     `login_token`       VARCHAR(512)    NULL DEFAULT NULL,
+    `active_session_id` VARCHAR(255)    NULL DEFAULT NULL,
+    `last_activity_at`  TIMESTAMP       NULL DEFAULT NULL,
     `failed_attempts`   TINYINT UNSIGNED NOT NULL DEFAULT 0,
     `locked_at`         TIMESTAMP       NULL DEFAULT NULL,
     `lockout_until`     TIMESTAMP       NULL DEFAULT NULL,
@@ -577,6 +579,96 @@ CREATE TABLE IF NOT EXISTS `meal_schedules` (
     PRIMARY KEY (`id`),
     KEY `meal_schedules_diet_plan_id_foreign` (`diet_plan_id`),
     CONSTRAINT `meal_schedules_diet_plan_id_foreign` FOREIGN KEY (`diet_plan_id`) REFERENCES `diet_plans` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- MESSAGING & NOTIFICATIONS
+-- ════════════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS `notifications` (
+    `id`          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id`     BIGINT UNSIGNED NOT NULL,
+    `type`        VARCHAR(50)     NOT NULL DEFAULT 'general',
+    `title`       VARCHAR(255)    NOT NULL,
+    `message`     TEXT            NOT NULL,
+    `module`      VARCHAR(50)     NOT NULL DEFAULT 'clinical',
+    `target_url`  VARCHAR(255)    NULL DEFAULT NULL,
+    `priority`    ENUM('normal','urgent','critical') NOT NULL DEFAULT 'normal',
+    `is_read`     TINYINT(1)      NOT NULL DEFAULT 0,
+    `read_at`     TIMESTAMP       NULL DEFAULT NULL,
+    `created_at`  TIMESTAMP       NULL DEFAULT NULL,
+    `updated_at`  TIMESTAMP       NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `notifications_user_id_is_read_created_at_index` (`user_id`, `is_read`, `created_at`),
+    CONSTRAINT `notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `conversations` (
+    `id`              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `title`           VARCHAR(255)    NULL DEFAULT NULL,
+    `created_by`      BIGINT UNSIGNED NULL DEFAULT NULL,
+    `last_message_at` TIMESTAMP       NULL DEFAULT NULL,
+    `created_at`      TIMESTAMP       NULL DEFAULT NULL,
+    `updated_at`      TIMESTAMP       NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `conversations_created_by_foreign` (`created_by`),
+    CONSTRAINT `conversations_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `conversation_participants` (
+    `id`              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `conversation_id` BIGINT UNSIGNED NOT NULL,
+    `user_id`          BIGINT UNSIGNED NOT NULL,
+    `last_read_at`    TIMESTAMP       NULL DEFAULT NULL,
+    `created_at`      TIMESTAMP       NULL DEFAULT NULL,
+    `updated_at`      TIMESTAMP       NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `conversation_participants_conversation_id_user_id_unique` (`conversation_id`, `user_id`),
+    KEY `conversation_participants_user_id_foreign` (`user_id`),
+    CONSTRAINT `conversation_participants_conversation_id_foreign` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `conversation_participants_user_id_foreign`         FOREIGN KEY (`user_id`)         REFERENCES `users` (`id`)         ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `messages` (
+    `id`              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `conversation_id` BIGINT UNSIGNED NOT NULL,
+    `sender_id`       BIGINT UNSIGNED NOT NULL,
+    `message`         TEXT            NOT NULL,
+    `created_at`      TIMESTAMP       NULL DEFAULT NULL,
+    `updated_at`      TIMESTAMP       NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `messages_conversation_id_created_at_index` (`conversation_id`, `created_at`),
+    KEY `messages_sender_id_foreign` (`sender_id`),
+    CONSTRAINT `messages_conversation_id_foreign` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `messages_sender_id_foreign`       FOREIGN KEY (`sender_id`)       REFERENCES `users` (`id`)         ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- MEDISENSE AI
+-- ════════════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS `medisense_interactions` (
+    `id`               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id`          BIGINT UNSIGNED NOT NULL,
+    `user_role`        VARCHAR(50)     NOT NULL,
+    `capability`       VARCHAR(100)    NOT NULL,
+    `module`           VARCHAR(50)     NULL DEFAULT NULL,
+    `patient_id`       BIGINT UNSIGNED NULL DEFAULT NULL,
+    `user_prompt`      TEXT            NOT NULL,
+    `ai_response`      MEDIUMTEXT      NULL DEFAULT NULL,
+    `tokens_used`      INT             NULL DEFAULT NULL,
+    `response_time_ms` INT             NULL DEFAULT NULL,
+    `status`           ENUM('success','error','timeout','unauthorized') NOT NULL DEFAULT 'success',
+    `error_message`    TEXT            NULL DEFAULT NULL,
+    `created_at`       TIMESTAMP       NULL DEFAULT NULL,
+    `updated_at`       TIMESTAMP       NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `medisense_interactions_user_id_created_at_index` (`user_id`, `created_at`),
+    KEY `medisense_interactions_capability_index` (`capability`),
+    KEY `medisense_interactions_module_index` (`module`),
+    KEY `medisense_interactions_patient_id_foreign` (`patient_id`),
+    CONSTRAINT `medisense_interactions_user_id_foreign`    FOREIGN KEY (`user_id`)    REFERENCES `users` (`id`)    ON DELETE CASCADE  ON UPDATE CASCADE,
+    CONSTRAINT `medisense_interactions_patient_id_foreign` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ════════════════════════════════════════════════════════════════════════════
