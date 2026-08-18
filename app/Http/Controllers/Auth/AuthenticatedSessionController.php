@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\SessionReplaced;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\ActivityLog;
@@ -29,10 +30,10 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      *
-     * Enforces Single Active Session Policy:
-     * A user account may have ONLY ONE active authenticated session at a time.
-     * If an active session exists on another browser/device, the second login is rejected
-     * and a 5-second security countdown page is displayed without kicking out the original session.
+     * Single Active Session with Session Replacement Policy:
+     * When a user logs in from another browser or device, the new login proceeds normally,
+     * becomes the active session, and broadcasts a SessionReplaced event to immediately
+     * terminate the previous active session.
      */
     public function store(LoginRequest $request): RedirectResponse|View|Response
     {
@@ -58,38 +59,7 @@ class AuthenticatedSessionController extends Controller
             $request->authenticate();
         }
 
-        // 4. User credentials are VALID. Perform atomic check for existing active session.
-        $currentSessionId   = $request->session()->getId();
-        $isDuplicateSession = false;
-
-        DB::transaction(function () use ($user, $currentSessionId, &$isDuplicateSession) {
-            // Lock user record for update to eliminate simultaneous login race conditions
-            $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
-
-            if ($lockedUser && $lockedUser->hasActiveSession($currentSessionId)) {
-                $isDuplicateSession = true;
-            }
-        });
-
-        // 5. IF a valid active session ALREADY exists on another browser/device:
-        if ($isDuplicateSession) {
-            // Log security audit trail event
-            ActivityLog::create([
-                'user_id'      => $user->id,
-                'action'       => 'Duplicate Login Attempt Rejected',
-                'module'       => 'Authentication',
-                'description'  => "Duplicate login attempt for account {$user->email} was rejected due to an active session on another device/browser.",
-                'ip_address'   => $request->ip(),
-                'logged_at'    => now(),
-            ]);
-
-            // Return security view with 5-second countdown. User remains 100% unauthenticated.
-            return response()->view('auth.account-already-logged-in', [
-                'loginUrl' => route('login'),
-            ]);
-        }
-
-        // 6. NO active session exists — proceed with normal authentication
+        // 4. User credentials are VALID. Authenticate user.
         Auth::login($user, $request->boolean('remember'));
 
         // Handle Remember Account email persistence cookie (30 days)
@@ -103,8 +73,37 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
         $newSessionId = $request->session()->getId();
 
-        // Register active session & touch last activity timestamp
-        $user->setActiveSession($newSessionId);
+        $hadPreviousSession = false;
+
+        DB::transaction(function () use ($user, $newSessionId, &$hadPreviousSession) {
+            // Lock user record for update to eliminate simultaneous login race conditions
+            $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+            if ($lockedUser) {
+                if (! empty($lockedUser->active_session_id) && $lockedUser->active_session_id !== $newSessionId) {
+                    $hadPreviousSession = true;
+                }
+                $lockedUser->setActiveSession($newSessionId);
+            }
+        });
+
+        // Broadcast real-time SessionReplaced event so the old device/browser logs out immediately via WebSockets
+        if ($hadPreviousSession) {
+            try {
+                broadcast(new SessionReplaced($user->id))->toOthers();
+            } catch (\Throwable $e) {
+                // Log broadcasting error gracefully without crashing the login flow if Reverb server is offline
+                logger()->warning('Failed to broadcast SessionReplaced event (Reverb server might be offline): ' . $e->getMessage());
+            }
+
+            ActivityLog::create([
+                'user_id'      => $user->id,
+                'action'       => 'Session Replaced',
+                'module'       => 'Authentication',
+                'description'  => "Account {$user->email} logged in on a new device/browser. Previous active session was replaced.",
+                'ip_address'   => $request->ip(),
+                'logged_at'    => now(),
+            ]);
+        }
 
         // Generate encrypted login token
         $plainToken     = Str::random(64);
@@ -135,10 +134,14 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        $user             = $request->user();
+        $currentSessionId = $request->session()->getId();
+
         if ($user) {
-            $user->clearActiveSession();
-            $user->update(['login_token' => null]);
+            $user->clearActiveSession($currentSessionId);
+            if ($user->active_session_id === null) {
+                $user->update(['login_token' => null]);
+            }
         }
 
         Auth::guard('web')->logout();

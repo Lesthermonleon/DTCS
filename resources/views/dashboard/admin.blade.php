@@ -113,12 +113,12 @@
                 <div class="card-body p-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted small fw-semibold text-uppercase">Today Activity</span>
-                        <div class="bg-purple bg-opacity-10 text-purple rounded-circle p-2" style="background-color: rgba(111, 66, 193, 0.1); color: #6f42c1;">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2">
                             <i class="bi bi-clock-history fs-5"></i>
                         </div>
                     </div>
                     <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['today_activity_count']) }}</h3>
-                    <div class="small mt-2" style="color: #6f42c1;">
+                    <div class="small text-primary mt-2">
                         Audit Logs <i class="bi bi-arrow-right"></i>
                     </div>
                 </div>
@@ -293,7 +293,7 @@
             <div class="col-md-6 col-lg">
                 <div class="card border border-light-subtle shadow-xs h-100 p-3 bg-light bg-opacity-50">
                     <div class="d-flex align-items-center mb-2">
-                        <div class="bg-purple text-white rounded p-2 me-2" style="background-color: #6f42c1;">
+                        <div class="bg-primary text-white rounded p-2 me-2">
                             <i class="bi bi-activity fs-5"></i>
                         </div>
                         <h6 class="fw-bold mb-0 text-dark">Radiology (RIS)</h6>
@@ -500,7 +500,7 @@
                 labels: rolesData.map(r => r.name),
                 datasets: [{
                     data: rolesData.map(r => r.count),
-                    backgroundColor: ['#14C79A', '#4C7EA8', '#E0A030', '#E85C55', '#6F42C1', '#20C997', '#FD7E14', '#0D6EFD'],
+                    backgroundColor: ['#14C79A', '#0C8F6F', '#64748B', '#E85C55', '#475569', '#0A1F1C', '#94A3B8', '#13312B'],
                     borderWidth: 2,
                     borderColor: isDark ? '#172B26' : '#FFFFFF'
                 }]

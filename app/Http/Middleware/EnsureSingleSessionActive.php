@@ -29,7 +29,7 @@ class EnsureSingleSessionActive
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
-                return redirect()->route('login')->with('error', 'Your session has ended because your account logged in elsewhere or session expired.');
+                return redirect()->route('login')->with('session_replaced', true);
             }
 
             // Update activity timestamp for active session

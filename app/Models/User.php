@@ -228,8 +228,13 @@ class User extends Authenticatable
     /**
      * Clear active session registration on logout or expiration.
      */
-    public function clearActiveSession(): void
+    public function clearActiveSession(?string $currentSessionId = null): void
     {
+        // Prevent an old or stale session from clearing a newer active session
+        if ($currentSessionId !== null && $this->active_session_id !== $currentSessionId) {
+            return;
+        }
+
         $this->update([
             'active_session_id' => null,
             'last_activity_at'  => null,

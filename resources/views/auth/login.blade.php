@@ -8,6 +8,21 @@
         <div class="alert alert-success py-2 mb-3">{{ session('status') }}</div>
     @endif
 
+    {{-- Session Replaced Alert (Monochromatic Non-Colorful UI) --}}
+    @if (session('session_replaced') || request()->has('session_replaced'))
+        <div class="alert py-3 mb-4 shadow-sm border border-secondary-subtle rounded-3" role="alert" style="background-color: var(--bs-body-bg, #f8fafc); color: var(--bs-body-color, #0f172a);">
+            <div class="d-flex align-items-start">
+                <div class="me-3 text-secondary" style="font-size: 1.5rem; line-height: 1;">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1" style="font-family: 'Space Grotesk', sans-serif;">Session Ended</h6>
+                    <p class="mb-0 small text-secondary" style="line-height: 1.45;">Your account was signed in on another device. You have been logged out for security.</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Lockout Countdown Alert --}}
     @if (session('lockout_seconds'))
         @php $lockoutSeconds = (int) session('lockout_seconds'); @endphp

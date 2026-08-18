@@ -135,10 +135,10 @@
             {{-- 2. Urgent Surgeries Card --}}
             <div class="card shadow-sm border-0 mb-3" style="border-radius: 0.75rem; background: var(--card);">
                 <div class="card-header border-bottom py-2.5 px-3 d-flex justify-content-between align-items-center" style="background: rgba(0,0,0,0.02);">
-                    <h6 class="mb-0 fw-bold text-warning d-flex align-items-center gap-1.5" style="font-size: 0.88rem; color: #b58100 !important;">
-                        <i class="bi bi-exclamation-circle-fill text-warning"></i> Urgent Surgeries
+                    <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+                        <i class="bi bi-exclamation-circle-fill text-secondary"></i> Urgent Surgeries
                     </h6>
-                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-0.5" style="font-size: 0.68rem; color: #b58100 !important;">
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-0.5" style="font-size: 0.68rem;">
                         {{ $urgents->count() }} Urgent
                     </span>
                 </div>
@@ -427,8 +427,8 @@
     }
 
     .mini-day-cell:hover {
-        background: rgba(13, 110, 253, 0.1);
-        color: var(--bs-primary, #0d6efd);
+        background: rgba(20, 199, 154, 0.1);
+        color: #0C8F6F;
     }
 
     .mini-day-cell.other-month {
@@ -436,20 +436,20 @@
     }
 
     .mini-day-cell.is-today {
-        background: #0d6efd !important;
+        background: #14c79a !important;
         color: #ffffff !important;
         font-weight: 700 !important;
     }
 
     .mini-day-cell.is-selected {
-        box-shadow: 0 0 0 2px #0d6efd;
+        box-shadow: 0 0 0 2px #14c79a;
     }
 
     .mini-day-cell .event-dot {
         width: 4px;
         height: 4px;
         border-radius: 50%;
-        background-color: #0d6efd;
+        background-color: #14c79a;
         position: absolute;
         bottom: 2px;
     }
@@ -463,16 +463,16 @@
         transition: background-color 0.15s ease;
     }
     .agenda-item-card:hover {
-        background-color: rgba(13, 110, 253, 0.04) !important;
+        background-color: rgba(20, 199, 154, 0.04) !important;
     }
 
     /* ── FullCalendar Styling & Theme Variables ── */
     #calendar {
         font-family: var(--font-body), sans-serif;
         --fc-border-color: #e2e8f0;
-        --fc-today-bg-color: rgba(13, 110, 253, 0.04);
+        --fc-today-bg-color: rgba(20, 199, 154, 0.04);
         --fc-now-indicator-color: #dc3545;
-        --fc-list-event-hover-bg-color: rgba(13, 110, 253, 0.06);
+        --fc-list-event-hover-bg-color: rgba(20, 199, 154, 0.06);
     }
 
     html[data-theme="dark"] #calendar {

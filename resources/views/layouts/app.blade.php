@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/js/app.js'])
     <title>@yield('title', 'Dashboard') — HIMS DTCS</title>
 
     <link rel="icon" href="{{ asset('assets/images/brand/favicon.svg') }}" type="image/svg+xml" />
@@ -50,8 +51,20 @@
             --signal:       #14C79A;
             --signal-dark:  #0C8F6F;
             --coral:        #E85C55;
-            --amber:        #E0A030;
-            --steel:        #4C7EA8;
+            --amber:        #64748B;
+            --steel:        #475569;
+
+            --color-primary:        #14C79A;
+            --color-primary-dark:   #0C8F6F;
+            --color-primary-light:  rgba(20, 199, 154, 0.12);
+            --color-danger:         #E85C55;
+            --color-danger-dark:    #DC2626;
+            --color-danger-light:   rgba(232, 92, 85, 0.12);
+            --color-background:     #F7F5F0;
+            --color-surface:        #FFFFFF;
+            --color-border:         #E6E2D6;
+            --color-text:           #132420;
+            --color-text-muted:     #6E7C74;
 
             --sidebar-width: 260px;
             --sidebar-collapsed-width: 70px;
@@ -348,7 +361,21 @@
             color: #E2E8F0 !important;
         }
 
-        /* Status Pills & Badges */
+        /* Status Pills & Badges - Strictly Restricted Palette (Green, Dark Green, Red, Monochromatic) */
+        .pill-signal {
+            background: rgba(20, 199, 154, 0.12) !important;
+            color: var(--signal-dark) !important;
+        }
+        .pill-coral {
+            background: rgba(232, 92, 85, 0.12) !important;
+            color: var(--coral) !important;
+        }
+        .pill-amber,
+        .pill-steel,
+        .pill-muted {
+            background: rgba(100, 116, 139, 0.1) !important;
+            color: #475569 !important;
+        }
         html[data-theme="dark"] .pill-signal {
             background: rgba(20, 199, 154, 0.15) !important;
             color: var(--signal) !important;
@@ -357,18 +384,112 @@
             background: rgba(232, 92, 85, 0.15) !important;
             color: #FF766F !important;
         }
-        html[data-theme="dark"] .pill-amber {
-            background: rgba(224, 160, 48, 0.15) !important;
-            color: var(--amber) !important;
-        }
-        html[data-theme="dark"] .pill-steel {
-            background: rgba(76, 126, 168, 0.15) !important;
-            color: #72AAE2 !important;
-        }
+        html[data-theme="dark"] .pill-amber,
+        html[data-theme="dark"] .pill-steel,
         html[data-theme="dark"] .pill-muted {
             background: rgba(255, 255, 255, 0.08) !important;
             color: #CBD5E1 !important;
         }
+
+        /* ══════════════════════════════════════
+           SYSTEM-WIDE PALETTE OVERRIDES
+           (Green, Dark Green, Red & Monochromatic)
+        ══════════════════════════════════════ */
+        /* Neutralize Amber / Yellow Badges & Backgrounds */
+        .bg-warning, .bg-warning-subtle {
+            background-color: rgba(100, 116, 139, 0.12) !important;
+            color: #475569 !important;
+        }
+        .text-warning, .text-warning-emphasis {
+            color: #475569 !important;
+        }
+        .border-warning, .border-warning-subtle {
+            border-color: rgba(100, 116, 139, 0.3) !important;
+        }
+        .badge.bg-warning, .badge.bg-warning-subtle {
+            background-color: rgba(100, 116, 139, 0.12) !important;
+            color: #334155 !important;
+            border: 1px solid rgba(100, 116, 139, 0.2) !important;
+        }
+
+        /* Neutralize Info / Blue Badges & Backgrounds */
+        .bg-info, .bg-info-subtle {
+            background-color: rgba(71, 85, 105, 0.1) !important;
+            color: #334155 !important;
+        }
+        .text-info, .text-info-emphasis {
+            color: #334155 !important;
+        }
+        .border-info, .border-info-subtle {
+            border-color: rgba(71, 85, 105, 0.25) !important;
+        }
+        .badge.bg-info, .badge.bg-info-subtle {
+            background-color: rgba(71, 85, 105, 0.1) !important;
+            color: #334155 !important;
+            border: 1px solid rgba(71, 85, 105, 0.2) !important;
+        }
+
+        /* Neutralize Purple / Violet / Indigo / Cyan / Orange / Pink */
+        .bg-purple, .bg-purple-subtle,
+        .bg-indigo, .bg-indigo-subtle,
+        .bg-cyan, .bg-cyan-subtle,
+        .bg-orange, .bg-orange-subtle,
+        .bg-pink, .bg-pink-subtle {
+            background-color: rgba(100, 116, 139, 0.1) !important;
+            color: #334155 !important;
+        }
+        .text-purple, .text-indigo, .text-cyan, .text-orange, .text-pink {
+            color: #475569 !important;
+        }
+        .badge.bg-purple, .badge.bg-indigo, .badge.bg-cyan, .badge.bg-orange, .badge.bg-pink {
+            background-color: rgba(100, 116, 139, 0.12) !important;
+            color: #334155 !important;
+            border: 1px solid rgba(100, 116, 139, 0.2) !important;
+        }
+
+        /* Map Success / Primary to Signal Green & Dark Green */
+        .bg-success, .bg-success-subtle {
+            background-color: rgba(20, 199, 154, 0.12) !important;
+            color: var(--signal-dark) !important;
+        }
+        .text-success {
+            color: var(--signal-dark) !important;
+        }
+        html[data-theme="dark"] .text-success {
+            color: var(--signal) !important;
+        }
+
+        /* Dark Mode Color Overrides for all non-green/red elements */
+        html[data-theme="dark"] .bg-warning,
+        html[data-theme="dark"] .bg-warning-subtle,
+        html[data-theme="dark"] .badge.bg-warning,
+        html[data-theme="dark"] .badge.bg-warning-subtle,
+        html[data-theme="dark"] .bg-info,
+        html[data-theme="dark"] .bg-info-subtle,
+        html[data-theme="dark"] .badge.bg-info,
+        html[data-theme="dark"] .badge.bg-info-subtle,
+        html[data-theme="dark"] .bg-purple,
+        html[data-theme="dark"] .badge.bg-purple,
+        html[data-theme="dark"] .bg-indigo,
+        html[data-theme="dark"] .bg-cyan,
+        html[data-theme="dark"] .bg-orange,
+        html[data-theme="dark"] .bg-pink {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            color: #cbd5e1 !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+        }
+        html[data-theme="dark"] .text-warning,
+        html[data-theme="dark"] .text-warning-emphasis,
+        html[data-theme="dark"] .text-info,
+        html[data-theme="dark"] .text-info-emphasis,
+        html[data-theme="dark"] .text-purple,
+        html[data-theme="dark"] .text-indigo,
+        html[data-theme="dark"] .text-cyan,
+        html[data-theme="dark"] .text-orange,
+        html[data-theme="dark"] .text-pink {
+            color: #cbd5e1 !important;
+        }
+
         html[data-theme="dark"] a:not(.btn):not(.nav-link) {
             color: var(--signal) !important;
         }
@@ -3436,6 +3557,210 @@ document.addEventListener('DOMContentLoaded', function () {
     @unless(request()->routeIs('medisense.index'))
         @include('partials._medisense_fab')
     @endunless
+
+    {{-- Monochromatic Session Ended Warning Modal --}}
+    <div id="sessionEndedModal" class="session-ended-overlay d-none">
+        <div class="session-ended-dialog">
+            <div class="session-ended-icon">
+                <i class="bi bi-shield-lock"></i>
+            </div>
+            <h5 class="session-ended-title">Session Ended</h5>
+            <p class="session-ended-text">Your account was signed in on another device. You have been logged out for security.</p>
+            <div class="session-ended-countdown-wrap">
+                <span>Redirecting in <strong id="sessionEndedCountdown">5</strong>s</span>
+                <div class="session-ended-progress">
+                    <div id="sessionEndedProgressBar" class="session-ended-progress-bar"></div>
+                </div>
+            </div>
+            <button id="sessionEndedLoginBtn" class="session-ended-btn" type="button">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Log In Now
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .session-ended-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 15, 13, 0.82);
+            backdrop-filter: blur(5px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            animation: fadeInSessionModal 0.2s ease-out;
+        }
+        @keyframes fadeInSessionModal {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .session-ended-dialog {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+            padding: 1.75rem;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        html[data-theme="dark"] .session-ended-dialog {
+            background: #111c19;
+            color: #f8fafc;
+            border-color: #1e3630;
+        }
+        .session-ended-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1.25rem;
+            border: 1px solid #e2e8f0;
+        }
+        html[data-theme="dark"] .session-ended-icon {
+            background: #192b26;
+            color: #cbd5e1;
+            border-color: #27453d;
+        }
+        .session-ended-title {
+            font-family: var(--font-display, 'Space Grotesk', sans-serif);
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: inherit;
+        }
+        .session-ended-text {
+            font-size: 0.88rem;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 1.25rem;
+        }
+        html[data-theme="dark"] .session-ended-text {
+            color: #94a3b8;
+        }
+        .session-ended-countdown-wrap {
+            font-size: 0.82rem;
+            font-family: var(--font-mono, monospace);
+            color: #475569;
+            margin-bottom: 1.25rem;
+            background: #f8fafc;
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        html[data-theme="dark"] .session-ended-countdown-wrap {
+            background: #0b1412;
+            color: #cbd5e1;
+            border-color: #1e3630;
+        }
+        .session-ended-progress {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        html[data-theme="dark"] .session-ended-progress {
+            background: #1e3630;
+        }
+        .session-ended-progress-bar {
+            height: 100%;
+            width: 100%;
+            background: #334155;
+            transition: width 1s linear;
+        }
+        html[data-theme="dark"] .session-ended-progress-bar {
+            background: #94a3b8;
+        }
+        .session-ended-btn {
+            width: 100%;
+            padding: 0.65rem 1rem;
+            font-weight: 600;
+            font-size: 0.88rem;
+            border-radius: 8px;
+            border: 1px solid #0f172a;
+            background: #0f172a;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .session-ended-btn:hover {
+            background: #1e293b;
+            border-color: #1e293b;
+            color: #ffffff;
+        }
+        html[data-theme="dark"] .session-ended-btn {
+            background: #f8fafc;
+            color: #0f172a;
+            border-color: #f8fafc;
+        }
+        html[data-theme="dark"] .session-ended-btn:hover {
+            background: #e2e8f0;
+            border-color: #e2e8f0;
+        }
+    </style>
+
+    {{-- Real-time Single Active Session Replacement Listener --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const userId = Number("{{ auth()->id() }}");
+
+            function triggerSessionEndedModal() {
+                const modal = document.getElementById('sessionEndedModal');
+                const targetUrl = "{{ route('login') }}?session_replaced=1";
+
+                if (!modal) {
+                    window.location.href = targetUrl;
+                    return;
+                }
+
+                modal.classList.remove('d-none');
+                document.body.style.overflow = 'hidden';
+
+                let seconds = 5;
+                const countdownEl = document.getElementById('sessionEndedCountdown');
+                const progressBar = document.getElementById('sessionEndedProgressBar');
+                const loginBtn = document.getElementById('sessionEndedLoginBtn');
+
+                function goToLogin() {
+                    window.location.href = targetUrl;
+                }
+
+                if (loginBtn) {
+                    loginBtn.addEventListener('click', goToLogin);
+                }
+
+                const interval = setInterval(function () {
+                    seconds--;
+                    if (countdownEl) {
+                        countdownEl.textContent = seconds;
+                    }
+                    if (progressBar) {
+                        progressBar.style.width = ((seconds / 5) * 100) + '%';
+                    }
+
+                    if (seconds <= 0) {
+                        clearInterval(interval);
+                        goToLogin();
+                    }
+                }, 1000);
+            }
+
+            if (userId && typeof window.Echo !== 'undefined') {
+                window.Echo.private('user.' + userId)
+                    .listen('.SessionReplaced', function () {
+                        triggerSessionEndedModal();
+                    });
+            }
+        });
+    </script>
 @endauth
 
 @stack('scripts')

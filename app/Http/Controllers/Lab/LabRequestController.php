@@ -8,6 +8,7 @@ use App\Models\LabRequest;
 use App\Models\LabRequestItem;
 use App\Models\LabTest;
 use App\Models\Patient;
+use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class LabRequestController extends Controller
         $query = LabRequest::with('patient', 'doctor', 'items.labTest');
 
         // Role-based scoping: doctors only see their own requests
-        /** @var \App\Models\User|null $currentUser */
+        /** @var User|null $currentUser */
         $currentUser = Auth::user();
         if ($currentUser && $currentUser->hasRole('doctor')) {
             $query->where('doctor_id', $currentUser->id);
@@ -58,7 +59,9 @@ class LabRequestController extends Controller
 
     public function create(): View
     {
-        abort_if(! Auth::user()?->hasRole('doctor'), 403, 'Only physicians can create laboratory requests.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can create laboratory requests.');
 
         $patients  = Patient::orderBy('last_name')->get(['id', 'patient_no', 'first_name', 'last_name']);
         $labTests  = LabTest::with('category')->where('is_active', true)->orderBy('name')->get();
@@ -68,7 +71,9 @@ class LabRequestController extends Controller
 
     public function store(StoreLabRequestRequest $request): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('doctor'), 403, 'Only physicians can create laboratory requests.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can create laboratory requests.');
 
         $count = LabRequest::count() + 1;
 
@@ -164,7 +169,9 @@ class LabRequestController extends Controller
     /** Medical Technologist marks request as received. */
     public function receive(LabRequest $labRequest): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can receive laboratory specimens.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('med-tech'), 403, 'Only medical technologists can receive laboratory specimens.');
         abort_if($labRequest->status !== 'Pending', 400, 'Only pending laboratory requests can be marked as received.');
 
         DB::transaction(function () use ($labRequest) {

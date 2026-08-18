@@ -215,38 +215,26 @@
             font-family: 'Inter', sans-serif;
         }
         .alert-success {
-            background: #DCFCE7 !important;
-            border-left: 4px solid #10B981 !important;
-            color: #475569 !important;
+            background: rgba(20, 199, 154, 0.12) !important;
+            border-left: 4px solid #14C79A !important;
+            color: #0A1F1C !important;
         }
         .alert-danger {
-            background: #FEE2E2 !important;
-            border-left: 4px solid #EF4444 !important;
-            color: #475569 !important;
+            background: rgba(232, 92, 85, 0.12) !important;
+            border-left: 4px solid #E85C55 !important;
+            color: #0A1F1C !important;
         }
-        .alert-warning {
-            background: #FEF3C7 !important;
-            border-left: 4px solid #F59E0B !important;
-            color: #475569 !important;
-        }
-        .alert-info {
-            background: #DBEAFE !important;
-            border-left: 4px solid #3B82F6 !important;
-            color: #475569 !important;
-        }
-        .alert-neutral {
+        .alert-warning, .alert-info, .alert-neutral {
             background: #F1F5F9 !important;
             border-left: 4px solid #64748B !important;
-            color: #475569 !important;
+            color: #334155 !important;
         }
         .alert .alert-icon {
             align-self: flex-start;
         }
-        .alert-success .alert-icon { color: #10B981 !important; }
-        .alert-danger .alert-icon { color: #EF4444 !important; }
-        .alert-warning .alert-icon { color: #F59E0B !important; }
-        .alert-info .alert-icon { color: #3B82F6 !important; }
-        .alert-neutral .alert-icon { color: #64748B !important; }
+        .alert-success .alert-icon { color: #14C79A !important; }
+        .alert-danger .alert-icon { color: #E85C55 !important; }
+        .alert-warning .alert-icon, .alert-info .alert-icon, .alert-neutral .alert-icon { color: #64748B !important; }
         .invalid-feedback { font-size: .78rem; }
 
         /* ── Form check label ── */

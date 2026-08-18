@@ -94,12 +94,12 @@
                 <div class="card-body p-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted small fw-semibold text-uppercase">Imaging Reports</span>
-                        <div class="bg-purple bg-opacity-10 text-purple rounded-circle p-2" style="background-color: rgba(111, 66, 193, 0.1); color: #6f42c1;">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2">
                             <i class="bi bi-activity fs-5"></i>
                         </div>
                     </div>
                     <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['rad_awaiting']) }}</h3>
-                    <div class="small mt-2" style="color: #6f42c1;">
+                    <div class="small text-primary mt-2">
                         Open Reports <i class="bi bi-arrow-right"></i>
                     </div>
                 </div>
@@ -175,7 +175,7 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <div class="d-flex align-items-center mb-1">
-                                        <span class="badge bg-purple me-2" style="background-color: #6f42c1;">Radiology Report</span>
+                                        <span class="badge bg-secondary me-2">Radiology Report</span>
                                         <h6 class="mb-0 fw-bold text-dark">{{ $pt?->full_name ?? 'Patient Record' }}</h6>
                                     </div>
                                     <p class="small text-muted mb-1">
@@ -306,7 +306,7 @@
             <div class="col-md-6 col-lg">
                 <div class="card border border-light-subtle shadow-xs h-100 p-3 bg-light bg-opacity-50">
                     <div class="d-flex align-items-center mb-2">
-                        <div class="bg-purple text-white rounded p-2 me-2" style="background-color: #6f42c1;">
+                        <div class="bg-primary text-white rounded p-2 me-2">
                             <i class="bi bi-activity fs-5"></i>
                         </div>
                         <h6 class="fw-bold mb-0 text-dark">Radiology (RIS)</h6>
@@ -528,7 +528,7 @@
                 labels: ['Pending Lab', 'Pending Radiology', 'Pending Prescriptions', 'Pending Surgeries', 'Pending Diets'],
                 datasets: [{
                     data: [ordersData.lab, ordersData.rad, ordersData.pms, ordersData.sors, ordersData.dnms],
-                    backgroundColor: ['#0DCAF0', '#6F42C1', '#198754', '#DC3545', '#FFC107'],
+                    backgroundColor: ['#14C79A', '#0C8F6F', '#64748B', '#E85C55', '#475569'],
                     borderWidth: 2,
                     borderColor: isDark ? '#172B26' : '#FFFFFF'
                 }]
