@@ -1,62 +1,92 @@
 @extends('layouts.app')
-@section('title', 'Admin — Permission Details')
-@section('page-title', 'Permission Details')
+
+@section('title', 'Role Scope — ' . $role->name)
+
 @section('content')
-<div class="card">
-    <div class="card-header bg-light d-flex align-items-center justify-content-between">
-        <h5 class="mb-0 text-secondary"><i class="bi bi-shield-lock me-2"></i>{{ $role->name }} Access Scope</h5>
+<div class="container-fluid px-4 py-3">
+
+    {{-- Page Header --}}
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="fw-bold mb-0 text-body">
+                <i class="bi bi-shield-lock me-2 text-success"></i>{{ $role->name }}
+            </h4>
+        </div>
         <a href="{{ route('admin.roles.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Back to Permissions
+            <i class="bi bi-arrow-left me-1"></i> Back to Roles &amp; Permissions
         </a>
     </div>
-    <div class="card-body">
-        <div class="mb-4">
-            <h6 class="text-uppercase text-muted small fw-semibold">Role Name</h6>
-            <p class="fs-5 fw-semibold mb-0">{{ $role->name }}</p>
-        </div>
-        <div class="mb-4">
-            <h6 class="text-uppercase text-muted small fw-semibold">Role Identifier (Slug)</h6>
-            <p class="font-monospace text-primary mb-0">{{ $role->slug }}</p>
-        </div>
-        <div class="mb-4">
-            <h6 class="text-uppercase text-muted small fw-semibold">Role Description</h6>
-            <p class="mb-0 text-secondary">{{ $role->description ?? 'No description provided.' }}</p>
-        </div>
-        <div class="mb-4">
-            <h6 class="text-uppercase text-muted small fw-semibold">Accessible Modules</h6>
-            <div>
-                @php
-                    $modules = explode(', ', $role->accessible_modules);
-                @endphp
-                @foreach($modules as $m)
-                    <span class="badge bg-teal-soft fs-6 py-2 px-3 me-2 mb-2" style="background-color: rgba(20,199,154,0.12); color: var(--signal-dark); border: 1px solid rgba(20,199,154,0.25);">{{ $m }}</span>
-                @endforeach
+
+    {{-- Role Details Card --}}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between">
+            <span class="fw-bold text-body">
+                <i class="bi bi-person-badge me-2 text-success"></i>Role Details
+            </span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5">
+                    <i class="bi bi-check-circle me-1"></i>Status: Active
+                </span>
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5">
+                    <i class="bi bi-people me-1"></i>{{ $role->users_count ?? $role->users->count() }} Users
+                </span>
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5">
+                    <i class="bi bi-key me-1"></i>{{ $role->permissions->count() }} Permissions
+                </span>
             </div>
         </div>
-        
-        @if($role->permissions->isNotEmpty())
-        <div>
-            <h6 class="text-uppercase text-muted small fw-semibold mb-3">Specific System Capabilities</h6>
-            <ul class="list-group">
-                @foreach($role->permissions as $p)
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fw-semibold text-dark">{{ $p->name }}</span>
-                        @if($p->description)
-                            <div class="small text-muted">{{ $p->description }}</div>
-                        @endif
-                    </div>
-                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 small">Enabled</span>
-                </li>
-                @endforeach
-            </ul>
+
+        <div class="card-body">
+            <div class="row g-4 mb-3">
+                <div class="col-md-4">
+                    <span class="text-uppercase text-muted small fw-semibold d-block mb-1">Role Name</span>
+                    <span class="fs-6 fw-bold text-body">{{ $role->name }}</span>
+                </div>
+                <div class="col-md-4">
+                    <span class="text-uppercase text-muted small fw-semibold d-block mb-1">Identifier</span>
+                    <code class="font-monospace text-success fs-6">{{ $role->slug }}</code>
+                </div>
+                <div class="col-md-4">
+                    <span class="text-uppercase text-muted small fw-semibold d-block mb-1">Status</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-medium">
+                        <i class="bi bi-check-circle me-1"></i>Active
+                    </span>
+                </div>
+            </div>
+
+            @if($role->description)
+            <div class="mb-4 pt-3 border-top">
+                <span class="text-uppercase text-muted small fw-semibold d-block mb-1">Role Description</span>
+                <p class="text-body-secondary small mb-0">{{ $role->description }}</p>
+            </div>
+            @endif
+
+            <div class="pt-3 border-top">
+                <span class="text-uppercase text-muted small fw-semibold d-block mb-2">Access Scope</span>
+                <div class="d-flex flex-wrap gap-2">
+                    @php
+                        $rawModules = str_replace(['All Modules (', ')'], '', $role->accessible_modules);
+                        $modules = array_map('trim', explode(',', $rawModules));
+                        $isAllModules = str_contains($role->accessible_modules, 'All Modules') || in_array($role->slug, ['system-administrator', 'admin']);
+                    @endphp
+
+                    @if($isAllModules)
+                        <span class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3 fw-medium">
+                            <i class="bi bi-shield-check me-1"></i>All System Modules
+                        </span>
+                    @else
+                        @foreach($modules as $m)
+                            @if(!empty($m))
+                                <span class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3 fw-medium">
+                                    <i class="bi bi-check-circle me-1"></i>{{ $m }}
+                                </span>
+                            @endif
+                        @endforeach
+                    @endif
+                </div>
+            </div>
         </div>
-        @else
-        <div>
-            <h6 class="text-uppercase text-muted small fw-semibold mb-1">Specific System Capabilities</h6>
-            <p class="text-muted small">Inherits basic module level routing permissions.</p>
-        </div>
-        @endif
     </div>
+
 </div>
 @endsection

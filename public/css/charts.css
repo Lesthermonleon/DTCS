@@ -1,0 +1,123 @@
+/* ══════════════════════════════════════════════════════════════════
+   DITC HIMS — Standardized Chart UI System
+   ══════════════════════════════════════════════════════════════════ */
+
+.chart-card {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e8ebf1;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(20, 30, 50, 0.05);
+    transition: box-shadow 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+    min-width: 0;
+}
+
+.chart-card:hover {
+    box-shadow: 0 14px 35px rgba(20, 30, 50, 0.08);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+    min-width: 0;
+}
+
+.chart-header > div {
+    min-width: 0;
+}
+
+.chart-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #172033;
+    overflow-wrap: break-word;
+    word-break: normal;
+    line-height: 1.3;
+}
+
+.chart-subtitle {
+    margin: 5px 0 0;
+    font-size: 13px;
+    color: #8992a3;
+    overflow-wrap: break-word;
+    word-break: normal;
+    line-height: 1.4;
+}
+
+.chart-filter {
+    border: 1px solid #e2e6ed;
+    background: #ffffff;
+    padding: 9px 12px;
+    border-radius: 9px;
+    color: #596273;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    max-width: 100%;
+}
+
+.chart-filter:focus {
+    border-color: #2f8f6b;
+    box-shadow: 0 0 0 3px rgba(47, 143, 107, 0.15);
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 330px;
+}
+
+/* Responsive Overrides */
+@media (max-width: 700px) {
+    .chart-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .chart-container {
+        height: 260px;
+    }
+
+    .chart-filter {
+        width: 100%;
+        max-width: 220px;
+    }
+}
+
+/* ── Dark Mode Compatibility ── */
+html[data-theme="dark"] .chart-card {
+    background: #12221E;
+    border-color: #1E3630;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .chart-card:hover {
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .chart-title {
+    color: #F8FAFC;
+}
+
+html[data-theme="dark"] .chart-subtitle {
+    color: #94A3B8;
+}
+
+html[data-theme="dark"] .chart-filter {
+    background: #0B1412;
+    border-color: #1E3630;
+    color: #E2E8F0;
+}
+
+html[data-theme="dark"] .chart-filter option {
+    background: #12221E;
+    color: #E2E8F0;
+}

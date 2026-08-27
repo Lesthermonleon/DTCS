@@ -6,19 +6,21 @@ return [
     |--------------------------------------------------------------------------
     | Virtual MediSense AI Configuration
     |--------------------------------------------------------------------------
+    | MediSense AI backend functionality is temporarily disabled.
+    | The UI matrix and capabilities below are preserved for visual rendering.
     */
 
-    'api_key' => env('GEMINI_API_KEY') ?? env('MEDISENSE_API_KEY', ''),
-    'api_url' => env('GEMINI_API_URL') ?? env('MEDISENSE_API_URL', 'https://generativelanguage.googleapis.com/v1beta'),
-    'model'   => env('GEMINI_MODEL') ?? env('MEDISENSE_MODEL', 'gemini-pro-latest'),
-    'timeout' => (int) (env('GEMINI_TIMEOUT') ?? env('MEDISENSE_TIMEOUT', 30)),
-    'enable_web_search' => (bool) (env('GEMINI_ENABLE_WEB_SEARCH') ?? env('MEDISENSE_ENABLE_WEB_SEARCH', true)),
+    'api_key' => '',
+    'api_url' => '',
+    'model'   => '',
+    'timeout' => 30,
+    'enable_web_search' => false,
 
     /*
     |--------------------------------------------------------------------------
     | Role-Based AI Capability Matrix
     |--------------------------------------------------------------------------
-    | Defines allowed capabilities per user role slug.
+    | Defines allowed capabilities per user role slug for UI rendering.
     */
     'capabilities' => [
         'doctor' => [
@@ -171,6 +173,6 @@ return [
     | Clinical Safety Guidelines
     |--------------------------------------------------------------------------
     */
-    'safety_notice' => 'IMPORTANT: MediSense AI functions strictly as an Intelligent Clinical Decision Support Assistant. Responses are generated to assist authorized personnel and do NOT constitute autonomous medical diagnoses, binding prescriptions, or independent clinical decisions. Final decisions remain with authorized medical professionals.',
+    'safety_notice' => 'MediSense AI functionality is currently unavailable.',
 
 ];

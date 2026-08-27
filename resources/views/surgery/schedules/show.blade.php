@@ -164,12 +164,12 @@
         <!-- Actions Panel -->
         <div class="card shadow-sm border-0" style="border-radius: 0.75rem; background: var(--card);">
             <div class="card-body p-4 d-flex flex-column gap-2">
-                @if(auth()->user()->hasAnyRole(['admin','doctor','or-coordinator']))
+                @if(auth()->user()->hasAnyRole(['doctor','or-coordinator']))
                     @if($surgerySchedule->status === 'Scheduled')
                         <form action="{{ route('surgery.schedules.start', ['surgerySchedule' => $surgerySchedule->id]) }}" method="POST">
                             @csrf
                             @method('PATCH')
-                            <button type="submit" class="btn btn-warning w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
+                            <button type="submit" class="btn btn-success w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
                                 <i class="bi bi-play-circle"></i> Start Procedure (In Progress)
                             </button>
                         </form>
@@ -184,13 +184,15 @@
                             </button>
                         </form>
 
-                        <a href="{{ route('surgery.schedules.edit', ['surgerySchedule' => $surgerySchedule->id]) }}" class="btn btn-outline-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
-                            <i class="bi bi-pencil"></i> Edit Schedule
-                        </a>
+                        @if(auth()->user()->hasRole('or-coordinator'))
+                            <a href="{{ route('surgery.schedules.edit', ['surgerySchedule' => $surgerySchedule->id]) }}" class="btn btn-outline-success w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
+                                <i class="bi bi-pencil"></i> Edit Schedule
+                            </a>
+                        @endif
                     @endif
                 @endif
 
-                <a href="{{ route('surgery.schedules.print', $surgerySchedule) }}" target="_blank" class="btn btn-outline-info w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
+                <a href="{{ route('surgery.schedules.print', $surgerySchedule) }}" target="_blank" class="btn btn-outline-secondary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
                     <i class="bi bi-printer"></i> Print Schedule Document
                 </a>
                 <a href="{{ route('surgery.schedules.index') }}" class="btn btn-outline-secondary w-100" style="border-radius: 0.5rem;">

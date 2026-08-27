@@ -17,7 +17,7 @@
             <button class="btn btn-primary btn-sm d-none">Filter</button>
             @if(request()->hasAny(['search','status','urgency']))<a href="{{ route('surgery.requests.index') }}" class="btn btn-outline-secondary btn-sm" id="filter-clear">Clear</a>@endif
         </form>
-        @if(auth()->user()->hasAnyRole(['admin','doctor']))
+        @if(auth()->user()->hasRole('doctor'))
             <a href="{{ route('surgery.requests.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>New Request</a>
         @endif
     </div>
@@ -36,22 +36,22 @@
                     <td>{{ $sr->doctor->name }}</td>
                     <td><small>{{ $sr->requested_at?->format('M d, Y') }}</small></td>
                     <td>
-                        <div class="d-flex align-items-center gap-1">
-                            <a href="{{ route('surgery.requests.show', $sr) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
-                            @if($sr->status==='Pending' && auth()->user()->hasAnyRole(['admin','or-coordinator']))
-                                <a href="{{ route('surgery.schedules.create') }}?request={{ $sr->id }}" class="btn btn-sm btn-outline-success" title="Schedule"><i class="bi bi-calendar-plus"></i></a>
+                        <div class="table-actions">
+                            <a href="{{ route('surgery.requests.show', $sr) }}" class="table-action-btn action-view" title="View Request Details" aria-label="View Request Details"><i class="bi bi-eye"></i></a>
+                            @if($sr->status==='Pending' && auth()->user()->hasRole('or-coordinator'))
+                                <a href="{{ route('surgery.schedules.create') }}?request={{ $sr->id }}" class="table-action-btn action-success" title="Schedule Surgery" aria-label="Schedule Surgery"><i class="bi bi-calendar-plus"></i></a>
                             @endif
 
                             <div class="dropdown d-inline">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                                <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
                                     <i class="bi bi-three-dots"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                     @if($sr->status === 'Pending')
-                                        @if(auth()->user()->hasAnyRole(['admin','doctor']))
-                                            <li><a class="dropdown-item small" href="{{ route('surgery.requests.edit', $sr) }}"><i class="bi bi-pencil me-2 text-warning"></i>Edit Request</a></li>
+                                        @if(auth()->user()->hasRole('doctor'))
+                                            <li><a class="dropdown-item small" href="{{ route('surgery.requests.edit', $sr) }}"><i class="bi bi-pencil me-2 text-success"></i>Edit Request</a></li>
                                         @endif
-                                        @if(auth()->user()->hasAnyRole(['admin','doctor','or-coordinator']))
+                                        @if(auth()->user()->hasAnyRole(['doctor','or-coordinator']))
                                             <li>
                                                 <form action="{{ route('surgery.requests.cancel', $sr) }}" method="POST">
                                                     @csrf @method('PATCH')

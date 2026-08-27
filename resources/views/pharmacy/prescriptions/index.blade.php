@@ -13,7 +13,7 @@
             <button class="btn btn-primary btn-sm d-none">Filter</button>
             @if(request()->hasAny(['search','status']))<a href="{{ route('pharmacy.prescriptions.index') }}" class="btn btn-outline-secondary btn-sm" id="filter-clear">Clear</a>@endif
         </form>
-        @if(auth()->user()->hasAnyRole(['admin','doctor']))
+        @if(auth()->user()->hasRole('doctor'))
             <a href="{{ route('pharmacy.prescriptions.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>New Prescription</a>
         @endif
     </div>
@@ -32,25 +32,25 @@
                     <td><span class="badge bg-{{ $rx->statusBadge }}">{{ $rx->status }}</span></td>
                     <td><small>{{ $rx->prescribed_at?->format('M d, Y') }}</small></td>
                     <td>
-                        <div class="d-flex align-items-center gap-1">
-                            <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="btn btn-sm btn-outline-primary" title="View Prescription"><i class="bi bi-eye"></i></a>
-                            @if($rx->status==='Pending' && auth()->user()->hasAnyRole(['admin','pharmacist']))
+                        <div class="table-actions">
+                            <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="table-action-btn action-view" title="View Prescription" aria-label="View Prescription"><i class="bi bi-eye"></i></a>
+                            @if($rx->status==='Pending' && auth()->user()->hasRole('pharmacist'))
                                 <form method="POST" action="{{ route('pharmacy.prescriptions.verify', $rx) }}" class="d-inline">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Verify Prescription"><i class="bi bi-check-lg"></i> Verify</button>
+                                    <button type="submit" class="table-action-btn action-success" title="Verify Prescription" aria-label="Verify Prescription"><i class="bi bi-check-lg"></i></button>
                                 </form>
                             @else
-                                <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="btn btn-sm btn-outline-secondary" title="Details"><i class="bi bi-file-earmark-medical"></i></a>
+                                <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="table-action-btn action-info" title="Prescription Details" aria-label="Prescription Details"><i class="bi bi-file-earmark-medical"></i></a>
                             @endif
 
                             <div class="dropdown d-inline">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                                <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
                                     <i class="bi bi-three-dots"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    <li><a class="dropdown-item small" href="{{ route('pharmacy.prescriptions.show', $rx) }}"><i class="bi bi-folder2-open me-2 text-primary"></i>View Details</a></li>
-                                    @if($rx->status==='Pending' && auth()->user()->hasAnyRole(['admin','doctor']))
-                                        <li><a class="dropdown-item small" href="{{ route('pharmacy.prescriptions.edit', $rx) }}"><i class="bi bi-pencil me-2 text-warning"></i>Edit Prescription</a></li>
+                                    <li><a class="dropdown-item small" href="{{ route('pharmacy.prescriptions.show', $rx) }}"><i class="bi bi-folder2-open me-2 text-secondary"></i>View Details</a></li>
+                                    @if($rx->status==='Pending' && auth()->user()->hasRole('doctor'))
+                                        <li><a class="dropdown-item small" href="{{ route('pharmacy.prescriptions.edit', $rx) }}"><i class="bi bi-pencil me-2 text-success"></i>Edit Prescription</a></li>
                                     @endif
                                 </ul>
                             </div>

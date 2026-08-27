@@ -51,8 +51,8 @@ class MessengerInterfaceTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('messages.index');
-        $response->assertSee('Staff Messaging Hub');
-        $response->assertSee('+ New Message');
+        $response->assertSee('Messages');
+        $response->assertSee('New Message');
     }
 
     public function test_authenticated_user_can_send_message_via_ajax(): void

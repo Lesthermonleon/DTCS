@@ -8,10 +8,10 @@
 
 @php
 $barColors = [
-    'signal' => '#14C79A',
-    'coral'  => '#E85C55',
-    'amber'  => '#E0A030',
-    'steel'  => '#4C7EA8',
+    'signal' => '#15803d',
+    'coral'  => '#dc2626',
+    'amber'  => '#15803d',
+    'steel'  => '#648071',
 ];
 $bar = $barColors[$color] ?? $barColors['signal'];
 @endphp

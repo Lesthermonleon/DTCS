@@ -24,7 +24,7 @@
                 <a href="{{ route('lab.requests.index') }}" class="btn btn-outline-secondary btn-sm" id="filter-clear">Clear</a>
             @endif
         </form>
-        @if(auth()->user()->hasAnyRole(['admin','doctor']))
+        @if(auth()->user()->hasRole('doctor'))
             <a href="{{ route('lab.requests.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>New Request</a>
         @endif
     </div>
@@ -53,29 +53,29 @@
                     <td><span class="badge bg-{{ $req->statusBadge }}">{{ $req->status }}</span></td>
                     <td><small>{{ $req->requested_at->format('M d, Y H:i') }}</small></td>
                     <td>
-                        <div class="d-flex align-items-center gap-1">
-                            <a href="{{ route('lab.requests.show', $req) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
-                            @if($req->status==='Pending' && auth()->user()->hasAnyRole(['admin','med-tech']))
+                        <div class="table-actions">
+                            <a href="{{ route('lab.requests.show', $req) }}" class="table-action-btn action-view" title="View Request Details" aria-label="View Request Details"><i class="bi bi-eye"></i></a>
+                            @if($req->status==='Pending' && auth()->user()->hasRole('med-tech'))
                                 <form method="POST" action="{{ route('lab.requests.receive', $req) }}" class="d-inline">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Mark as Received" data-confirm="Are you sure you want to mark {{ $req->request_no }} as received?"><i class="bi bi-inbox-fill"></i></button>
+                                    <button type="submit" class="table-action-btn action-success" title="Mark as Received" aria-label="Mark as Received" data-confirm="Are you sure you want to mark {{ $req->request_no }} as received?"><i class="bi bi-inbox-fill"></i></button>
                                 </form>
                             @else
-                                <a href="{{ route('lab.requests.print', ['labRequest' => $req]) }}" class="btn btn-sm btn-outline-secondary" title="Print" target="_blank"><i class="bi bi-printer"></i></a>
+                                <a href="{{ route('lab.requests.print', ['labRequest' => $req]) }}" class="table-action-btn action-info" title="Print Request" aria-label="Print Request" target="_blank"><i class="bi bi-printer"></i></a>
                             @endif
 
                             <div class="dropdown d-inline">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                                <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
                                     <i class="bi bi-three-dots"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                     @if($req->status === 'Pending')
                                         <li><a class="dropdown-item small" href="{{ route('lab.requests.print', ['labRequest' => $req]) }}" target="_blank"><i class="bi bi-printer me-2 text-secondary"></i>Print Request</a></li>
-                                        @if(auth()->user()->hasAnyRole(['admin','doctor']))
-                                            <li><a class="dropdown-item small" href="{{ route('lab.requests.edit', $req) }}"><i class="bi bi-pencil me-2 text-warning"></i>Edit Request</a></li>
+                                        @if(auth()->user()->hasRole('doctor'))
+                                            <li><a class="dropdown-item small" href="{{ route('lab.requests.edit', $req) }}"><i class="bi bi-pencil me-2 text-success"></i>Edit Request</a></li>
                                         @endif
                                     @else
-                                        <li><a class="dropdown-item small" href="{{ route('lab.requests.show', $req) }}"><i class="bi bi-folder2-open me-2 text-primary"></i>Open Record</a></li>
+                                        <li><a class="dropdown-item small" href="{{ route('lab.requests.show', $req) }}"><i class="bi bi-folder2-open me-2 text-secondary"></i>Open Record</a></li>
                                     @endif
                                 </ul>
                             </div>

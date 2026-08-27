@@ -19,11 +19,12 @@
      ADMIN: collapsible dropdowns
 ────────────────────────────── --}}
 
+<div class="sb-nav-label" style="margin-top:.5rem;">MAIN</div>
 <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
     <i class="bi bi-speedometer2"></i> Dashboard
 </a>
 
-<div class="sb-nav-label" style="margin-top:.5rem;">Clinical Services</div>
+<div class="sb-nav-label" style="margin-top:.5rem;">CLINICAL</div>
 
 {{-- ── Laboratory (LIS) ── --}}
 <button class="nav-link sb-group-toggle {{ $labActive ? 'active' : '' }}"
@@ -170,7 +171,7 @@
 <div class="collapse {{ $reportsActive ? 'show' : '' }}" id="grp-reports">
     <div class="sb-group-body">
         <a href="{{ route('reports.index') }}" class="nav-link sb-sub {{ request()->routeIs('reports.index') ? 'active' : '' }}">
-            <i class="bi bi-grid"></i> Reports Hub
+            <i class="bi bi-grid"></i> Report Hub
         </a>
         <a href="{{ route('reports.laboratory.activity') }}" class="nav-link sb-sub {{ request()->routeIs('reports.laboratory.*') ? 'active' : '' }}">
             <i class="bi bi-clipboard2-pulse"></i> Laboratory
@@ -194,13 +195,10 @@
 </div>
 
 {{-- ── Administration ── --}}
-<div class="sb-nav-label" style="margin-top:.5rem;">Administration</div>
-<a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-    <i class="bi bi-person-badge"></i> User Management
-</a>
-<a href="{{ route('admin.roles.index') }}" class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-    <i class="bi bi-key"></i> Permission
-</a>
+<div class="sb-nav-label" style="margin-top:.5rem;">ADMINISTRATION</div>
+<a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"><i class="bi bi-person-badge"></i> Users</a>
+<a href="{{ route('admin.roles.index') }}" class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}"><i class="bi bi-key"></i> Roles & Permissions</a>
+<a href="{{ route('admin.audit-logs.index') }}" class="nav-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}"><i class="bi bi-journal-text"></i> System Audit Logs</a>
 
 
 
@@ -211,11 +209,10 @@
 ────────────────────────────── --}}
 
 @if($role === 'doctor')
-<a href="{{ route('doctor.dashboard') }}" class="nav-link {{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}">
-    <i class="bi bi-speedometer2"></i> Main Dashboard
-</a>
+<div class="sb-nav-label" style="margin-top:.5rem;">MAIN</div>
+<a href="{{ route('doctor.dashboard') }}" class="nav-link {{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
 
-<div class="sb-nav-label" style="margin-top:.5rem;">Clinical Services</div>
+<div class="sb-nav-label" style="margin-top:.5rem;">CLINICAL</div>
 
 {{-- ── Laboratory (LIS) ── --}}
 <button class="nav-link sb-group-toggle {{ $labActive ? 'active' : '' }}"
@@ -347,13 +344,21 @@
     </div>
 </div>
 
-@else
-{{-- ── Single-Department Clinical Roles: Flat Direct Navigation ── --}}
-<a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('*.dashboard') && !request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-    <i class="bi bi-speedometer2"></i> Main Dashboard
+{{-- ── Doctor Reports Entry Point ── --}}
+<div class="sb-nav-label" style="margin-top:.5rem;">REPORTS</div>
+<a href="{{ route('reports.index') }}" class="nav-link {{ $reportsActive ? 'active' : '' }}">
+    <i class="bi bi-file-earmark-bar-graph"></i> Clinical Reports
 </a>
 
-<div class="sb-nav-label" style="margin-top:.5rem;">Clinical Services</div>
+
+@else
+{{-- ── Single-Department Clinical Roles: Flat Direct Navigation ── --}}
+<div class="sb-nav-label" style="margin-top:.5rem;">MAIN</div>
+<a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('*.dashboard') && !request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+    <i class="bi bi-speedometer2"></i> Dashboard
+</a>
+
+<div class="sb-nav-label" style="margin-top:.5rem;">CLINICAL</div>
 
 @if($role === 'med-tech')
 <a href="{{ route('lab.requests.index') }}" class="nav-link {{ request()->routeIs('lab.requests.*') ? 'active' : '' }}">
@@ -361,6 +366,9 @@
 </a>
 <a href="{{ route('lab.results.index') }}" class="nav-link {{ request()->routeIs('lab.results.*') ? 'active' : '' }}">
     <i class="bi bi-journal-medical"></i> Lab Results
+</a>
+<a href="{{ route('reports.laboratory.activity') }}" class="nav-link {{ request()->routeIs('reports.laboratory.*') ? 'active' : '' }}">
+    <i class="bi bi-file-earmark-bar-graph"></i> Laboratory Reports
 </a>
 @endif
 
@@ -373,6 +381,9 @@
     <i class="bi bi-file-text"></i> Reports
 </a>
 @endif
+<a href="{{ route('reports.radiology.activity') }}" class="nav-link {{ request()->routeIs('reports.radiology.*') ? 'active' : '' }}">
+    <i class="bi bi-file-earmark-bar-graph"></i> Radiology Reports
+</a>
 @endif
 
 @if($role === 'pharmacist')
@@ -381,6 +392,9 @@
 </a>
 <a href="{{ route('pharmacy.dispensing.index') }}" class="nav-link {{ request()->routeIs('pharmacy.dispensing.*') ? 'active' : '' }}">
     <i class="bi bi-bag-plus"></i> Dispensing
+</a>
+<a href="{{ route('reports.pharmacy.activity') }}" class="nav-link {{ request()->routeIs('reports.pharmacy.*') ? 'active' : '' }}">
+    <i class="bi bi-file-earmark-bar-graph"></i> Pharmacy Reports
 </a>
 @endif
 
@@ -394,6 +408,9 @@
 <a href="{{ route('surgery.calendar') }}" class="nav-link {{ request()->routeIs('surgery.calendar') ? 'active' : '' }}">
     <i class="bi bi-calendar-week"></i> Surgery Calendar
 </a>
+<a href="{{ route('reports.surgery.activity') }}" class="nav-link {{ request()->routeIs('reports.surgery.*') ? 'active' : '' }}">
+    <i class="bi bi-file-earmark-bar-graph"></i> Surgery Reports
+</a>
 @endif
 
 @if($role === 'dietitian')
@@ -403,12 +420,13 @@
 <a href="{{ route('diet.plans.index') }}" class="nav-link {{ request()->routeIs('diet.plans.*') ? 'active' : '' }}">
     <i class="bi bi-clipboard2-heart"></i> Diet Plans
 </a>
+<a href="{{ route('reports.diet.activity') }}" class="nav-link {{ request()->routeIs('reports.diet.*') ? 'active' : '' }}">
+    <i class="bi bi-file-earmark-bar-graph"></i> Nutrition Reports
+</a>
 @endif
 
-<div class="sb-nav-label" style="margin-top:.5rem;">Reports</div>
-<a href="{{ route('reports.index') }}" class="nav-link {{ $reportsActive ? 'active' : '' }}">
-    <i class="bi bi-file-earmark-bar-graph"></i> Reports Hub
-</a>
+
+
 
 @endif
 @endif
@@ -418,11 +436,7 @@
 
 
 <div class="sb-nav-label" style="margin-top:.5rem;">Clinical AI Assistant</div>
-<a href="{{ route('medisense.index') }}" class="nav-link {{ request()->routeIs('medisense.*') ? 'active' : '' }}">
-    <i class="bi bi-cpu" style="color: var(--signal);"></i>
-    <span class="flex-grow-1">MediSense AI</span>
-    <span class="sb-badge" style="background: rgba(20,199,154,.15); color: var(--signal);">AI</span>
-</a>
+<a href="{{ route('medisense.index') }}" class="nav-link {{ request()->routeIs('medisense.*') ? 'active' : '' }}"><i class="bi bi-cpu" style="color: var(--signal);"></i><span class="flex-grow-1">MediSense AI</span><span class="sb-badge" style="background: rgba(20,199,154,.15); color: var(--signal);">AI</span></a>
 
 <div style="height: 2rem;"></div>
 
@@ -445,12 +459,17 @@
         transition: background-color 0.15s, color 0.15s, transform 0.1s;
     }
 
-    #sidebar .nav-link i:first-child {
-        width: 18px;
-        text-align: center;
+    #sidebar .nav-link i:first-child,
+    #sidebar .sb-group-toggle i:first-child,
+    #sidebar .nav-link.sb-sub i:first-child {
+        width: 20px !important;
+        text-align: center !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         font-size: 1rem;
         opacity: .75;
-        flex-shrink: 0;
+        flex-shrink: 0 !important;
         transition: transform 0.15s ease;
     }
 
@@ -464,13 +483,13 @@
     }
 
     #sidebar .nav-link.active {
-        background: rgba(20, 199, 154, 0.12) !important;
-        color: var(--signal) !important;
+        background: var(--sidebar-active-bg) !important;
+        color: var(--sidebar-active-text) !important;
         font-weight: 600;
     }
     #sidebar .nav-link.active i:first-child {
         opacity: 1;
-        color: var(--signal);
+        color: var(--sidebar-active-text);
     }
     #sidebar .nav-link:active {
         transform: scale(0.98);

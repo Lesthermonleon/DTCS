@@ -34,18 +34,20 @@
                     <td>{{ $result->technologist?->name ?? '—' }}</td>
                     <td>{{ $result->released_at?->format('M d, Y H:i') ?? '—' }}</td>
                     <td>
-                        <a href="{{ route('lab.results.show', $result) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
-                        @if($result->status==='Encoded')
-                            <form method="POST" action="{{ route('lab.results.validate', $result) }}" class="d-inline">
-                                @csrf @method('PATCH')
-                                <button class="btn btn-sm btn-outline-info" title="Validate">Validate</button>
-                            </form>
-                        @elseif($result->status==='Validated')
-                            <form method="POST" action="{{ route('lab.results.release', $result) }}" class="d-inline">
-                                @csrf @method('PATCH')
-                                <button class="btn btn-sm btn-outline-success">Release</button>
-                            </form>
-                        @endif
+                        <div class="table-actions">
+                            <a href="{{ route('lab.results.show', $result) }}" class="table-action-btn action-view" title="View Result Details" aria-label="View Result Details"><i class="bi bi-eye"></i></a>
+                            @if($result->status==='Encoded')
+                                <form method="POST" action="{{ route('lab.results.validate', $result) }}" class="d-inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="table-action-btn action-info" title="Validate Result" aria-label="Validate Result"><i class="bi bi-check-circle"></i></button>
+                                </form>
+                            @elseif($result->status==='Validated')
+                                <form method="POST" action="{{ route('lab.results.release', $result) }}" class="d-inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="table-action-btn action-success" title="Release Result" aria-label="Release Result"><i class="bi bi-send-check"></i></button>
+                                </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLabResultRequest;
+use App\Models\ActivityLog;
 use App\Models\LabRequest;
 use App\Models\LabRequestItem;
 use App\Models\LabResult;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +35,9 @@ class LabResultController extends Controller
 
     public function create(): View
     {
-        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can encode laboratory results.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('med-tech'), 403, 'Only medical technologists can encode laboratory results.');
 
         // List pending items that don't have a result yet
         $pendingItems = LabRequestItem::whereDoesntHave('result')
@@ -45,7 +49,9 @@ class LabResultController extends Controller
 
     public function store(StoreLabResultRequest $request): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can encode laboratory results.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('med-tech'), 403, 'Only medical technologists can encode laboratory results.');
 
         LabResult::create([
             'lab_request_item_id' => $request->lab_request_item_id,
@@ -71,7 +77,9 @@ class LabResultController extends Controller
 
     public function edit(LabResult $labResult): View
     {
-        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can edit laboratory results.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('med-tech'), 403, 'Only medical technologists can edit laboratory results.');
         abort_if($labResult->status === 'Released', 403, 'Released results cannot be edited.');
 
         return view('lab.results.edit', compact('labResult'));
@@ -79,7 +87,9 @@ class LabResultController extends Controller
 
     public function update(StoreLabResultRequest $request, LabResult $labResult): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can edit laboratory results.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('med-tech'), 403, 'Only medical technologists can edit laboratory results.');
         abort_if($labResult->status === 'Released', 403, 'Released results cannot be edited.');
 
         $labResult->update([
@@ -94,7 +104,9 @@ class LabResultController extends Controller
 
     public function destroy(LabResult $labResult): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can delete laboratory results.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('med-tech'), 403, 'Only medical technologists can delete laboratory results.');
         abort_if($labResult->status !== 'Encoded', 403, 'Only encoded results can be deleted.');
         $labResult->delete();
 
@@ -105,7 +117,9 @@ class LabResultController extends Controller
     /** Validate (approve) a lab result before release. */
     public function validate(LabResult $labResult): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can validate laboratory results.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('med-tech'), 403, 'Only medical technologists can validate laboratory results.');
         abort_if($labResult->status !== 'Encoded', 403, 'Only encoded results can be validated.');
 
         $labResult->update([
@@ -114,13 +128,28 @@ class LabResultController extends Controller
             'validated_at' => now(),
         ]);
 
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Lab Result Validated',
+            'module'        => 'Laboratory',
+            'severity'      => ActivityLog::SEVERITY_INFO,
+            'result'        => ActivityLog::RESULT_SUCCESS,
+            'description'   => "Lab result #{$labResult->id} validated and approved for release.",
+            'loggable_type' => LabResult::class,
+            'loggable_id'   => $labResult->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
+
         return back()->with('success', 'Result validated successfully.');
     }
 
     /** Release the validated result to the ordering doctor. */
     public function release(LabResult $labResult): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('med-tech'), 403, 'Only medical technologists can release laboratory results.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('med-tech'), 403, 'Only medical technologists can release laboratory results.');
         abort_if($labResult->status !== 'Validated', 403, 'Only validated results can be released.');
 
         $labResult->update([
@@ -151,6 +180,19 @@ class LabResultController extends Controller
                 'urgent'
             );
         }
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Lab Result Released',
+            'module'        => 'Laboratory',
+            'severity'      => ActivityLog::SEVERITY_INFO,
+            'result'        => ActivityLog::RESULT_SUCCESS,
+            'description'   => "Lab result #{$labResult->id} released to ordering physician.",
+            'loggable_type' => LabResult::class,
+            'loggable_id'   => $labResult->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return back()->with('success', 'Result released successfully.');
     }

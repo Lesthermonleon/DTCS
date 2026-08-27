@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
@@ -115,6 +116,10 @@ Route::middleware(['auth'])->group(function () {
              Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
              Route::post('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
              Route::post('users/{user}/unlock', [UserController::class, 'unlockAccount'])->name('users.unlock');
+
+             // ── Audit Logs (read-only) ────────────────────────────────
+             Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+             Route::get('audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit-logs.show');
          });
 
     // ═══════════════════════════════════════════════════════════════════

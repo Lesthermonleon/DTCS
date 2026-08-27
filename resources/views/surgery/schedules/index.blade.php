@@ -44,7 +44,7 @@
             <a href="{{ route('surgery.calendar') }}" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1.5" style="border-radius: 0.5rem; font-weight: 500;">
                 <i class="bi bi-calendar-week"></i> Calendar View
             </a>
-            @if(auth()->user()->hasAnyRole(['admin','or-coordinator']))
+            @if(auth()->user()->hasRole('or-coordinator'))
                 <a href="{{ route('surgery.schedules.create') }}" class="btn btn-sm btn-primary px-3 fw-semibold d-flex align-items-center gap-1.5" style="border-radius: 0.5rem;">
                     <i class="bi bi-plus-circle"></i> Schedule Surgery
                 </a>
@@ -102,10 +102,10 @@
                                 </span>
                             </td>
                             <td class="pe-4 text-end text-nowrap">
-                                <div class="d-inline-flex gap-1 align-items-center justify-content-end flex-nowrap text-nowrap">
+                                <div class="table-actions justify-content-end">
                                     {{-- Button 1: View Details (Primary) --}}
-                                    <a href="{{ route('surgery.schedules.show', $sched) }}" class="btn btn-xs btn-outline-primary d-inline-flex align-items-center gap-1 text-nowrap" title="View Schedule Details">
-                                        <i class="bi bi-eye"></i> View
+                                    <a href="{{ route('surgery.schedules.show', $sched) }}" class="table-action-btn action-view" title="View Schedule Details" aria-label="View Schedule Details">
+                                        <i class="bi bi-eye"></i>
                                     </a>
 
                                     {{-- Button 2: Primary Status Action (Start / Complete / Edit) --}}
@@ -113,32 +113,32 @@
                                         <form action="{{ route('surgery.schedules.start', $sched) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="btn btn-xs btn-warning d-inline-flex align-items-center gap-1 text-dark fw-semibold text-nowrap" title="Start Procedure">
-                                                <i class="bi bi-play-fill"></i> Start
+                                            <button type="submit" class="table-action-btn action-warning" title="Start Procedure" aria-label="Start Procedure">
+                                                <i class="bi bi-play-fill"></i>
                                             </button>
                                         </form>
                                     @elseif($sched->status === 'In Progress' && auth()->user()?->hasAnyRole(['doctor','or-coordinator']))
                                         <form action="{{ route('surgery.schedules.complete', $sched) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="btn btn-xs btn-success d-inline-flex align-items-center gap-1 fw-semibold text-nowrap" title="Mark as Completed">
-                                                <i class="bi bi-check-lg"></i> Complete
+                                            <button type="submit" class="table-action-btn action-success" title="Mark as Completed" aria-label="Mark as Completed">
+                                                <i class="bi bi-check-lg"></i>
                                             </button>
                                         </form>
-                                    @elseif($sched->status !== 'Completed' && auth()->user()?->hasAnyRole(['admin','or-coordinator']))
-                                        <a href="{{ route('surgery.schedules.edit', $sched) }}" class="btn btn-xs btn-outline-secondary d-inline-flex align-items-center gap-1 text-nowrap" title="Edit Schedule">
-                                            <i class="bi bi-pencil"></i> Edit
+                                    @elseif($sched->status !== 'Completed' && auth()->user()?->hasRole('or-coordinator'))
+                                        <a href="{{ route('surgery.schedules.edit', $sched) }}" class="table-action-btn action-edit" title="Edit Schedule" aria-label="Edit Schedule">
+                                            <i class="bi bi-pencil"></i>
                                         </a>
                                     @endif
 
                                     {{-- Meatballs Menu for extra secondary actions --}}
-                                    @if(auth()->user()?->hasAnyRole(['admin','doctor','or-coordinator']))
+                                    @if(auth()->user()?->hasAnyRole(['doctor','or-coordinator']))
                                         <div class="dropdown d-inline">
-                                            <button class="btn btn-xs btn-light text-muted border-0 p-1 rounded-circle text-nowrap" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
-                                                <i class="bi bi-three-dots-vertical fs-6"></i>
+                                            <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
+                                                <i class="bi bi-three-dots"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small">
-                                                @if($sched->status !== 'Completed' && auth()->user()?->hasAnyRole(['admin','or-coordinator']))
+                                                @if($sched->status !== 'Completed' && auth()->user()?->hasRole('or-coordinator'))
                                                     <li>
                                                         <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('surgery.schedules.edit', $sched) }}">
                                                             <i class="bi bi-pencil text-secondary"></i> Edit Schedule
@@ -150,7 +150,7 @@
                                                     <li>
                                                         <form action="{{ route('surgery.schedules.start', $sched) }}" method="POST">
                                                             @csrf @method('PATCH')
-                                                            <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-warning">
+                                                            <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-success">
                                                                 <i class="bi bi-play-circle"></i> Start Procedure
                                                             </button>
                                                         </form>
@@ -168,7 +168,7 @@
                                                     </li>
                                                 @endif
 
-                                                @if($sched->status !== 'Completed' && auth()->user()?->hasAnyRole(['admin','or-coordinator']))
+                                                @if($sched->status !== 'Completed' && auth()->user()?->hasRole('or-coordinator'))
                                                     <li><hr class="dropdown-divider my-1"></li>
                                                     <li>
                                                         <form action="{{ route('surgery.schedules.destroy', $sched) }}" method="POST" onsubmit="return confirm('Remove schedule and revert request to pending?');">

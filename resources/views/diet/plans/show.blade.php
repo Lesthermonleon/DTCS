@@ -114,14 +114,14 @@
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="p-2 bg-primary-subtle text-primary-emphasis rounded border border-primary-subtle">
+                        <div class="p-2 bg-secondary-subtle text-secondary-emphasis rounded border border-secondary-subtle">
                             <div class="small fw-bold">Carbs</div>
                             <div class="fw-bold">{{ $dietPlan->carb_grams ?? '0' }}g</div>
                             <small class="text-muted">{{ $carbKcal }} kcal</small>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="p-2 bg-warning-subtle text-warning-emphasis rounded border border-warning-subtle">
+                        <div class="p-2 bg-dark-subtle text-dark-emphasis rounded border border-dark-subtle">
                             <div class="small fw-bold">Fat</div>
                             <div class="fw-bold">{{ $dietPlan->fat_grams ?? '0' }}g</div>
                             <small class="text-muted">{{ $fatKcal }} kcal</small>
@@ -139,16 +139,16 @@
                             <div class="progress-bar-fill progress-bar text-center" data-width="{{ $proteinPct }}" role="progressbar" style="background-color: #E85C55; height:100%; display: flex; align-items: center; justify-content: center;" title="Protein: {{ $proteinPct }}%">P ({{ $proteinPct }}%)</div>
                         @endif
                         @if($carbPct > 0)
-                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $carbPct }}" role="progressbar" style="background-color: #4C7EA8; height:100%; display: flex; align-items: center; justify-content: center;" title="Carbs: {{ $carbPct }}%">C ({{ $carbPct }}%)</div>
+                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $carbPct }}" role="progressbar" style="background-color: #475569; height:100%; display: flex; align-items: center; justify-content: center;" title="Carbs: {{ $carbPct }}%">C ({{ $carbPct }}%)</div>
                         @endif
                         @if($fatPct > 0)
-                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $fatPct }}" role="progressbar" style="background-color: #E0A030; height:100%; display: flex; align-items: center; justify-content: center;" title="Fat: {{ $fatPct }}%">F ({{ $fatPct }}%)</div>
+                            <div class="progress-bar-fill progress-bar text-center" data-width="{{ $fatPct }}" role="progressbar" style="background-color: #334155; height:100%; display: flex; align-items: center; justify-content: center;" title="Fat: {{ $fatPct }}%">F ({{ $fatPct }}%)</div>
                         @endif
                     </div>
                     <div class="d-flex justify-content-between x-small text-muted" style="font-size:0.7rem;">
                         <span><i class="bi bi-circle-fill me-1" style="color:#E85C55;"></i>Protein (4kcal/g)</span>
-                        <span><i class="bi bi-circle-fill me-1" style="color:#4C7EA8;"></i>Carbs (4kcal/g)</span>
-                        <span><i class="bi bi-circle-fill me-1" style="color:#E0A030;"></i>Fat (9kcal/g)</span>
+                        <span><i class="bi bi-circle-fill me-1" style="color:#475569;"></i>Carbs (4kcal/g)</span>
+                        <span><i class="bi bi-circle-fill me-1" style="color:#334155;"></i>Fat (9kcal/g)</span>
                     </div>
                 @endif
             </div>
@@ -193,20 +193,20 @@
         <div class="card">
             <div class="card-header"><i class="bi bi-gear me-2"></i>Available Actions</div>
             <div class="card-body d-flex flex-column gap-2">
-                @if($dietPlan->status === 'Active' && auth()->user()->hasAnyRole(['admin','dietitian']))
+                @if($dietPlan->status === 'Active' && auth()->user()->hasRole('dietitian'))
                     <form method="POST" action="{{ route('diet.plans.complete', $dietPlan) }}">
                         @csrf @method('PATCH')
                         <button type="submit" class="btn btn-success w-100 text-start"><i class="bi bi-check-circle me-2"></i>Complete Diet Plan</button>
                     </form>
                     
-                    <a href="{{ route('diet.plans.edit', $dietPlan) }}" class="btn btn-warning w-100 text-start"><i class="bi bi-pencil me-2"></i>Edit Plan details</a>
+                    <a href="{{ route('diet.plans.edit', $dietPlan) }}" class="btn btn-outline-secondary w-100 text-start"><i class="bi bi-pencil me-2"></i>Edit Plan details</a>
                     
                     <form method="POST" action="{{ route('diet.plans.destroy', $dietPlan) }}" onsubmit="return confirm('DANGER: This will delete the diet plan and revert the request status back to Pending. Do you want to proceed?');">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100 text-start"><i class="bi bi-trash me-2"></i>Delete/Revert Plan</button>
                     </form>
                 @endif
-                <a href="{{ route('diet.plans.print', $dietPlan) }}" target="_blank" class="btn btn-outline-info w-100 text-start"><i class="bi bi-printer me-2"></i>Print Diet Plan</a>
+                <a href="{{ route('diet.plans.print', $dietPlan) }}" target="_blank" class="btn btn-outline-secondary w-100 text-start"><i class="bi bi-printer me-2"></i>Print Diet Plan</a>
                 <a href="{{ route('diet.plans.index') }}" class="btn btn-outline-secondary w-100 text-start"><i class="bi bi-chevron-left me-2"></i>Back to Plans</a>
             </div>
         </div>

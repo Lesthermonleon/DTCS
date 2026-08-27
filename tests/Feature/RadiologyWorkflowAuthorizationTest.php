@@ -7,8 +7,6 @@ use App\Models\RadiologyReport;
 use App\Models\RadiologyRequest;
 use App\Models\Role;
 use App\Models\User;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -28,10 +26,7 @@ class RadiologyWorkflowAuthorizationTest extends TestCase
     {
         parent::setUp();
 
-        if (Role::count() === 0) {
-            $this->seed(RoleSeeder::class);
-            $this->seed(PermissionSeeder::class);
-        }
+        $this->ensureRolesExist();
 
         $uniq = uniqid();
 
@@ -535,5 +530,23 @@ class RadiologyWorkflowAuthorizationTest extends TestCase
 
         $errors = session('errors')->get('images.0');
         $this->assertContains("The selected file type is not supported.", $errors);
+    }
+
+    protected function ensureRolesExist(): void
+    {
+        $roles = [
+            ['name' => 'System Administrator',    'slug' => 'admin',          'dashboard_route' => 'admin.dashboard'],
+            ['name' => 'Doctor',                  'slug' => 'doctor',         'dashboard_route' => 'doctor.dashboard'],
+            ['name' => 'Medical Technologist',    'slug' => 'med-tech',       'dashboard_route' => 'lab.dashboard'],
+            ['name' => 'Radiologic Technologist', 'slug' => 'rad-tech',       'dashboard_route' => 'radiology.dashboard'],
+            ['name' => 'Radiologist',             'slug' => 'radiologist',    'dashboard_route' => 'radiology.dashboard'],
+            ['name' => 'Pharmacist',              'slug' => 'pharmacist',     'dashboard_route' => 'pharmacy.dashboard'],
+            ['name' => 'Dietitian / Nutritionist','slug' => 'dietitian',      'dashboard_route' => 'diet.dashboard'],
+            ['name' => 'OR Coordinator',          'slug' => 'or-coordinator', 'dashboard_route' => 'surgery.dashboard'],
+        ];
+
+        foreach ($roles as $r) {
+            Role::firstOrCreate(['slug' => $r['slug']], $r);
+        }
     }
 }

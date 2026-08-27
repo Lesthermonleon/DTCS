@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Patient;
 use App\Models\Role;
 use App\Models\User;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -16,9 +15,7 @@ class PatientAuthorizationTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        if (Role::count() === 0) {
-            $this->seed(RoleSeeder::class);
-        }
+        $this->ensureRolesExist();
     }
 
     public function tearDown(): void
@@ -245,6 +242,24 @@ class PatientAuthorizationTest extends TestCase
             $response = $this->actingAs($user)->getJson(route('global-search', ['q' => 'John']));
             $response->assertStatus(200);
             $this->assertArrayNotHasKey('patients', $response->json('results'));
+        }
+    }
+
+    protected function ensureRolesExist(): void
+    {
+        $roles = [
+            ['name' => 'System Administrator',    'slug' => 'admin',          'dashboard_route' => 'admin.dashboard'],
+            ['name' => 'Doctor',                  'slug' => 'doctor',         'dashboard_route' => 'doctor.dashboard'],
+            ['name' => 'Medical Technologist',    'slug' => 'med-tech',       'dashboard_route' => 'lab.dashboard'],
+            ['name' => 'Radiologic Technologist', 'slug' => 'rad-tech',       'dashboard_route' => 'radiology.dashboard'],
+            ['name' => 'Radiologist',             'slug' => 'radiologist',    'dashboard_route' => 'radiology.dashboard'],
+            ['name' => 'Pharmacist',              'slug' => 'pharmacist',     'dashboard_route' => 'pharmacy.dashboard'],
+            ['name' => 'Dietitian / Nutritionist','slug' => 'dietitian',      'dashboard_route' => 'diet.dashboard'],
+            ['name' => 'OR Coordinator',          'slug' => 'or-coordinator', 'dashboard_route' => 'surgery.dashboard'],
+        ];
+
+        foreach ($roles as $r) {
+            Role::firstOrCreate(['slug' => $r['slug']], $r);
         }
     }
 }

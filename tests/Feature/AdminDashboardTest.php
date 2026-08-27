@@ -30,7 +30,6 @@ class AdminDashboardTest extends TestCase
             'systemAlerts',
             'recentActivity',
             'recentPatients',
-            'newUsers7d',
         ]);
     }
 

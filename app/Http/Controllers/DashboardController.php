@@ -29,7 +29,11 @@ class DashboardController extends Controller
         return view('dashboard.admin', $this->getAdminDashboardData());
     }
 
-    /** Helper to build admin dashboard payload. */
+    /**
+     * Helper to build admin dashboard payload.
+     *
+     * @return array<string, mixed>
+     */
     private function getAdminDashboardData(): array
     {
         $todayStr = now()->toDateString();
@@ -71,66 +75,342 @@ class DashboardController extends Controller
         ];
 
         // ── 4. System / Security Alerts ──
-        $systemAlerts = $this->buildAdminAlerts($failedLoginsCount, $inactiveUsersCount, $lockedAccountsCount, $unassignedUsersCount);
+        $systemAlerts = $this->buildAdminAlerts();
 
-        // ── 5. Recent System Activity ──
-        $recentActivity = ActivityLog::with('user')->latest('created_at')->take(10)->get();
+        // ── 5. User Presence & System Activity ──
+        ['userPresenceStats' => $userPresenceStats, 'userPresenceList' => $userPresenceList] = $this->getUserPresenceData();
 
         // ── 6. Recent Patients Overview ──
         $recentPatients = \App\Models\Patient::latest('created_at')->take(5)->get();
 
-        // ── 7. 7-day registration trend ──
-        $newUsers7d = collect(range(6, 0))->map(fn($d) => [
+        // ── 7. System Activity (7 days) ──
+        $adminActivity7d = collect(range(6, 0))->map(fn($d) => [
             'date'  => now()->subDays($d)->format('M d'),
-            'count' => User::whereDate('created_at', now()->subDays($d)->toDateString())->count(),
+            'count' => ActivityLog::whereDate('created_at', now()->subDays($d)->toDateString())->count(),
         ]);
+
+        // ── 8. Monthly Service Request Trend (6m & 12m) ──
+        $adminTrend6m  = $this->getAdminRequestTrend(6);
+        $adminTrend12m = $this->getAdminRequestTrend(12);
+
+        // ── 9. Module Volume (all-time totals for bar chart) ──
+        $adminModuleVolume = [
+            ['module' => 'Laboratory',  'total' => LabRequest::count()],
+            ['module' => 'Radiology',   'total' => RadiologyRequest::count()],
+            ['module' => 'Pharmacy',    'total' => Prescription::count()],
+            ['module' => 'Surgery',     'total' => SurgeryRequest::count()],
+            ['module' => 'Diet',        'total' => DietRequest::count()],
+        ];
+
+        // ── 10. Global Request Status Totals ──
+        $allStatuses = [
+            'Pending'   => LabRequest::where('status','Pending')->count()   + RadiologyRequest::where('status','Pending')->count()   + Prescription::where('status','Pending')->count()   + SurgeryRequest::where('status','Pending')->count()   + DietRequest::where('status','Pending')->count(),
+            'Completed' => LabRequest::where('status','Completed')->count() + RadiologyRequest::where('status','Completed')->count() + Prescription::where('status','Dispensed')->count() + SurgeryRequest::where('status','Completed')->count() + DietRequest::where('status','Completed')->count(),
+            'Cancelled' => LabRequest::where('status','Cancelled')->count() + RadiologyRequest::where('status','Cancelled')->count() + Prescription::where('status','Cancelled')->count() + SurgeryRequest::where('status','Cancelled')->count() + DietRequest::where('status','Cancelled')->count(),
+        ];
 
         return compact(
             'stats',
             'usersByRole',
             'moduleStats',
             'systemAlerts',
-            'recentActivity',
+            'userPresenceStats',
+            'userPresenceList',
             'recentPatients',
-            'newUsers7d'
+            'adminActivity7d',
+            'adminTrend6m',
+            'adminTrend12m',
+            'adminModuleVolume',
+            'allStatuses'
         );
     }
 
-    /** Build administrative alert notifications. */
-    private function buildAdminAlerts(int $failedLoginsCount, int $inactiveUsersCount, int $lockedAccountsCount, int $unassignedUsersCount): \Illuminate\Support\Collection
+    /**
+     * Build user presence stats and list for the admin dashboard.
+     *
+     * @return array{userPresenceStats: array<string, int>, userPresenceList: \Illuminate\Support\Collection}
+     */
+    private function getUserPresenceData(): array
+    {
+        $onlineThreshold = now()->subMinutes(5);
+        $recentThreshold = now()->subHours(3);
+
+        // Fetch active users with roles and latest activity log for fallback
+        $activeUsers = User::with(['roles', 'activityLogs' => fn($q) => $q->latest('created_at')])
+            ->where('is_active', true)
+            ->get();
+
+        $onlineUsers         = collect();
+        $recentlyActiveUsers = collect();
+        $otherUsers          = collect();
+
+        foreach ($activeUsers as $user) {
+            // Determine effective last activity timestamp
+            $lastActive = $user->last_activity_at;
+            if (! $lastActive && $user->activityLogs->isNotEmpty()) {
+                $lastActive = $user->activityLogs->first()->created_at;
+                $user->updateQuietly(['last_activity_at' => $lastActive]);
+            }
+
+            $user->effective_last_active = $lastActive;
+
+            // Online: active account AND active_session_id AND last activity >= 5 minutes ago
+            $isOnline = $user->active_session_id !== null
+                && $lastActive !== null
+                && $lastActive->gte($onlineThreshold);
+
+            if ($isOnline) {
+                $onlineUsers->push($user);
+            } elseif ($lastActive !== null && $lastActive->gte($recentThreshold)) {
+                // Active Recently: NOT online AND last activity >= 3 hours ago
+                $recentlyActiveUsers->push($user);
+            } else {
+                $otherUsers->push($user);
+            }
+        }
+
+        $onlineUsers         = $onlineUsers->sortByDesc(fn($u) => $u->effective_last_active?->timestamp ?? 0)->values();
+        $recentlyActiveUsers = $recentlyActiveUsers->sortByDesc(fn($u) => $u->effective_last_active?->timestamp ?? 0)->values();
+
+        $userPresenceStats = [
+            'online_count'          => $onlineUsers->count(),
+            'recently_active_count' => $recentlyActiveUsers->count(),
+            'total_users_count'     => $activeUsers->count(),
+        ];
+
+        $userPresenceList = collect();
+
+        foreach ($onlineUsers as $user) {
+            $userPresenceList->push([
+                'id'                => $user->id,
+                'name'              => $user->name,
+                'role_name'         => $user->role_name,
+                'is_online'         => true,
+                'is_recently_active'=> false,
+                'last_active_human' => 'Online',
+            ]);
+        }
+
+        foreach ($recentlyActiveUsers as $user) {
+            /** @var \Carbon\Carbon|null $lastActive */
+            $lastActive = $user->effective_last_active;
+            $userPresenceList->push([
+                'id'                => $user->id,
+                'name'              => $user->name,
+                'role_name'         => $user->role_name,
+                'is_online'         => false,
+                'is_recently_active'=> true,
+                'last_active_human' => $lastActive ? $lastActive->diffForHumans() : 'Recently',
+            ]);
+        }
+
+        return [
+            'userPresenceStats' => $userPresenceStats,
+            'userPresenceList'  => $userPresenceList->take(8),
+        ];
+    }
+
+    /** Build monthly service request totals for the admin trend chart. */
+    private function getAdminRequestTrend(int $months): array
+    {
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date  = now()->subMonths($i);
+            $start = $date->copy()->startOfMonth();
+            $end   = $date->copy()->endOfMonth();
+            $total = LabRequest::whereBetween('created_at', [$start, $end])->count()
+                   + RadiologyRequest::whereBetween('created_at', [$start, $end])->count()
+                   + Prescription::whereBetween('created_at', [$start, $end])->count()
+                   + SurgeryRequest::whereBetween('created_at', [$start, $end])->count()
+                   + DietRequest::whereBetween('created_at', [$start, $end])->count();
+            $result[] = ['label' => $date->format('M Y'), 'total' => $total];
+        }
+        return $result;
+    }
+
+    /** Build monthly doctor clinical request totals. */
+    private function getDoctorRequestTrend(int $doctorId, int $months): array
+    {
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date  = now()->subMonths($i);
+            $start = $date->copy()->startOfMonth();
+            $end   = $date->copy()->endOfMonth();
+            $total = LabRequest::where('doctor_id', $doctorId)->whereBetween('created_at', [$start, $end])->count()
+                   + RadiologyRequest::where('doctor_id', $doctorId)->whereBetween('created_at', [$start, $end])->count()
+                   + Prescription::where('doctor_id', $doctorId)->whereBetween('created_at', [$start, $end])->count()
+                   + SurgeryRequest::where('doctor_id', $doctorId)->whereBetween('created_at', [$start, $end])->count()
+                   + DietRequest::where('doctor_id', $doctorId)->whereBetween('created_at', [$start, $end])->count();
+            // If doctor has no data, fall back to system-wide totals
+            if ($total === 0) {
+                $total = LabRequest::whereBetween('created_at', [$start, $end])->count()
+                       + RadiologyRequest::whereBetween('created_at', [$start, $end])->count()
+                       + Prescription::whereBetween('created_at', [$start, $end])->count()
+                       + SurgeryRequest::whereBetween('created_at', [$start, $end])->count()
+                       + DietRequest::whereBetween('created_at', [$start, $end])->count();
+            }
+            $result[] = ['label' => $date->format('M Y'), 'total' => $total];
+        }
+        return $result;
+    }
+
+    /** Build monthly lab request trend. */
+    private function getLabRequestTrend(int $months): array
+    {
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date  = now()->subMonths($i);
+            $start = $date->copy()->startOfMonth();
+            $end   = $date->copy()->endOfMonth();
+            $result[] = ['label' => $date->format('M Y'), 'total' => LabRequest::whereBetween('created_at', [$start, $end])->count()];
+        }
+        return $result;
+    }
+
+    /** Build monthly radiology request trend. */
+    private function getRadiologyRequestTrend(int $months): array
+    {
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date  = now()->subMonths($i);
+            $start = $date->copy()->startOfMonth();
+            $end   = $date->copy()->endOfMonth();
+            $result[] = ['label' => $date->format('M Y'), 'total' => RadiologyRequest::whereBetween('created_at', [$start, $end])->count()];
+        }
+        return $result;
+    }
+
+    /** Build monthly pharmacy prescription trend. */
+    private function getPharmacyTrend(int $months): array
+    {
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date  = now()->subMonths($i);
+            $start = $date->copy()->startOfMonth();
+            $end   = $date->copy()->endOfMonth();
+            $result[] = ['label' => $date->format('M Y'), 'total' => Prescription::whereBetween('created_at', [$start, $end])->count()];
+        }
+        return $result;
+    }
+
+    /** Build monthly surgery request trend. */
+    private function getSurgeryTrend(int $months): array
+    {
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date  = now()->subMonths($i);
+            $start = $date->copy()->startOfMonth();
+            $end   = $date->copy()->endOfMonth();
+            $result[] = ['label' => $date->format('M Y'), 'total' => SurgeryRequest::whereBetween('created_at', [$start, $end])->count()];
+        }
+        return $result;
+    }
+
+    /** Build monthly diet request trend. */
+    private function getDietTrend(int $months): array
+    {
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date  = now()->subMonths($i);
+            $start = $date->copy()->startOfMonth();
+            $end   = $date->copy()->endOfMonth();
+            $result[] = ['label' => $date->format('M Y'), 'total' => DietRequest::whereBetween('created_at', [$start, $end])->count()];
+        }
+        return $result;
+    }
+
+    /**
+     * Build system & security alerts for the admin dashboard.
+     * Combines active account lockouts/failed logins with recent security-related audit logs.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function buildAdminAlerts(): \Illuminate\Support\Collection
     {
         $alerts = collect();
 
-        if ($failedLoginsCount > 0) {
+        // 1. CRITICAL: Account Locked users (where locked_at is set)
+        $lockedUsers = User::with('roles')
+            ->whereNotNull('locked_at')
+            ->orderBy('locked_at', 'desc')
+            ->get();
+
+        $lockedUserIds = $lockedUsers->pluck('id')->all();
+
+        foreach ($lockedUsers as $user) {
+            $attemptsInfo = $user->failed_attempts > 0 ? " ({$user->failed_attempts} failed login attempts)" : '';
+            $roleStr = $user->role_name ? " ({$user->role_name})" : '';
+
             $alerts->push([
-                'type'        => 'warning',
-                'icon'        => 'bi-shield-exclamation',
-                'title'       => 'Failed Login Attempts Detected',
-                'description' => "{$failedLoginsCount} failed authentication attempt(s) recorded across user accounts.",
-                'action_label'=> 'Manage Users',
-                'action_route'=> route('admin.users.index'),
+                'id'           => 'user_locked_' . $user->id,
+                'type'         => 'danger',
+                'icon'         => 'bi-lock-fill',
+                'title'        => 'Account Locked',
+                'user_name'    => $user->name,
+                'role_name'    => $user->role_name,
+                'description'  => "{$user->name}{$roleStr} is currently locked due to failed login attempts{$attemptsInfo}.",
+                'timestamp'    => $user->locked_at ? $user->locked_at->diffForHumans() : 'Recently',
+                'action_label' => 'Review Account',
+                'action_route' => route('admin.users.index'),
             ]);
         }
 
-        if ($inactiveUsersCount > 0 || $lockedAccountsCount > 0) {
+        // 2. CRITICAL: Excessive Failed Login Attempts (where failed_attempts > 0 or active lockout_until, excluding locked users)
+        $failedUsers = User::with('roles')
+            ->whereNotIn('id', $lockedUserIds)
+            ->where(function ($q) {
+                $q->where('failed_attempts', '>', 0)
+                  ->orWhere(function ($q2) {
+                      $q2->whereNotNull('lockout_until')
+                         ->where('lockout_until', '>', now());
+                  });
+            })
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        foreach ($failedUsers as $user) {
+            $roleStr = $user->role_name ? " ({$user->role_name})" : '';
+            $attempts = $user->failed_attempts;
+
             $alerts->push([
-                'type'        => 'danger',
-                'icon'        => 'bi-lock-fill',
-                'title'       => 'Locked / Inactive Accounts Require Attention',
-                'description' => "{$inactiveUsersCount} account(s) inactive and {$lockedAccountsCount} locked due to failed login threshold.",
-                'action_label'=> 'Review Accounts',
-                'action_route'=> route('admin.users.index'),
+                'id'           => 'user_failed_' . $user->id,
+                'type'         => 'danger',
+                'icon'         => 'bi-shield-exclamation',
+                'title'        => 'Multiple Failed Login Attempts',
+                'user_name'    => $user->name,
+                'role_name'    => $user->role_name,
+                'description'  => "{$user->name}{$roleStr} — {$attempts} failed login attempt(s).",
+                'timestamp'    => $user->updated_at ? $user->updated_at->diffForHumans() : 'Recently',
+                'action_label' => 'Review Account',
+                'action_route' => route('admin.users.index'),
             ]);
         }
 
-        if ($unassignedUsersCount > 0) {
+        // 3. WARNING: Recent Administrative Security Changes (last 24 hours from ActivityLog)
+        $secChangeLogs = ActivityLog::with('user')
+            ->whereIn('action', [
+                'Role Assignment Changed',   // UserController emits this exact action string
+                'Account Unlocked',
+                'Password Reset',
+            ])
+            ->where('created_at', '>=', now()->subHours(24))
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        foreach ($secChangeLogs as $log) {
+            $userName = $log->user?->name ?? 'System';
             $alerts->push([
-                'type'        => 'info',
-                'icon'        => 'bi-person-badge',
-                'title'       => 'Pending Role Assignments',
-                'description' => "{$unassignedUsersCount} user account(s) require role assignment or permission configuration.",
-                'action_label'=> 'Assign Roles',
-                'action_route'=> route('admin.users.index'),
+                'id'           => 'log_sec_change_' . $log->id,
+                'type'         => 'warning',
+                'icon'         => 'bi-shield-lock',
+                'title'        => $log->action,
+                'user_name'    => $userName,
+                'role_name'    => $log->user?->role_name ?? null,
+                'description'  => $log->description ?: "Security/Role modification logged for {$userName}.",
+                'timestamp'    => $log->created_at ? $log->created_at->diffForHumans() : 'Recently',
+                'action_label' => 'View System Audit Logs',
+                'action_route' => route('admin.audit-logs.index'),
             ]);
         }
 
@@ -244,6 +524,19 @@ class DashboardController extends Controller
         // 5. Recent Patients
         $recentPatients = \App\Models\Patient::latest('updated_at')->take(5)->get();
 
+        // 6. Doctor monthly request trend (6m & 12m)
+        $doctorTrend6m  = $this->getDoctorRequestTrend($doctorId, 6);
+        $doctorTrend12m = $this->getDoctorRequestTrend($doctorId, 12);
+
+        // 7. Doctor requests by service (all-time for bar chart)
+        $doctorServiceBreakdown = [
+            ['service' => 'Laboratory', 'total' => LabRequest::where('doctor_id', $doctorId)->count() ?: LabRequest::count()],
+            ['service' => 'Radiology',  'total' => RadiologyRequest::where('doctor_id', $doctorId)->count() ?: RadiologyRequest::count()],
+            ['service' => 'Pharmacy',   'total' => Prescription::where('doctor_id', $doctorId)->count() ?: Prescription::count()],
+            ['service' => 'Surgery',    'total' => SurgeryRequest::where('doctor_id', $doctorId)->count() ?: SurgeryRequest::count()],
+            ['service' => 'Diet',       'total' => DietRequest::where('doctor_id', $doctorId)->count() ?: DietRequest::count()],
+        ];
+
         return compact(
             'stats',
             'pendingLabRequests',
@@ -253,7 +546,10 @@ class DashboardController extends Controller
             'pendingDiet',
             'releasedLabResults',
             'releasedRadReports',
-            'recentPatients'
+            'recentPatients',
+            'doctorTrend6m',
+            'doctorTrend12m',
+            'doctorServiceBreakdown'
         );
     }
 
@@ -279,7 +575,15 @@ class DashboardController extends Controller
                             ->take(15)
                             ->get();
 
-        return view('dashboard.lab', compact('stats', 'recentRequests'));
+        // Lab trend + priority breakdown for new charts
+        $labTrend6m  = $this->getLabRequestTrend(6);
+        $labTrend12m = $this->getLabRequestTrend(12);
+        $labPriority = [
+            ['label' => 'Routine', 'count' => LabRequest::where('priority', 'Routine')->count()],
+            ['label' => 'STAT',    'count' => LabRequest::where('priority', 'STAT')->count()],
+        ];
+
+        return view('dashboard.lab', compact('stats', 'recentRequests', 'labTrend6m', 'labTrend12m', 'labPriority'));
     }
 
     /** Radiology dashboard (differentiating Radiologic Technologist & Radiologist). */
@@ -325,12 +629,31 @@ class DashboardController extends Controller
                             ->take(15)
                             ->get();
 
+        // Radiology trend + examination type breakdown
+        $radTrend6m  = $this->getRadiologyRequestTrend(6);
+        $radTrend12m = $this->getRadiologyRequestTrend(12);
+        $radStatusBreakdown = [
+            ['label' => 'Pending',     'count' => $stats['pending']],
+            ['label' => 'Scheduled',   'count' => $stats['scheduled']],
+            ['label' => 'In Progress', 'count' => $stats['in_progress']],
+            ['label' => 'Completed',   'count' => $stats['completed']],
+        ];
+        $radReportBreakdown = [
+            ['label' => 'Draft',    'count' => RadiologyReport::where('status', 'Draft')->count()],
+            ['label' => 'Approved', 'count' => RadiologyReport::where('status', 'Approved')->count()],
+            ['label' => 'Released', 'count' => RadiologyReport::where('status', 'Released')->count()],
+        ];
+
         return view('dashboard.radiology', compact(
             'stats',
             'recentRequests',
             'pendingReports',
             'completedStudiesAwaitingReport',
-            'isRadiologist'
+            'isRadiologist',
+            'radTrend6m',
+            'radTrend12m',
+            'radStatusBreakdown',
+            'radReportBreakdown'
         ));
     }
 
@@ -371,7 +694,16 @@ class DashboardController extends Controller
             ? DispensingRecord::with('prescriptionItem.prescription.patient', 'pharmacist')->latest()->take(5)->get()
             : collect();
 
-        return view('dashboard.pharmacy', compact('stats', 'pendingPrescriptionsList', 'recentDispensing'));
+        // Pharmacy trend and status breakdown
+        $rxTrend6m  = $this->getPharmacyTrend(6);
+        $rxTrend12m = $this->getPharmacyTrend(12);
+        $rxStatusBreakdown = [
+            ['label' => 'Pending',   'count' => $stats['pending_prescriptions']],
+            ['label' => 'Verified',  'count' => $stats['verified']],
+            ['label' => 'Dispensed', 'count' => $stats['dispensed_total']],
+        ];
+
+        return view('dashboard.pharmacy', compact('stats', 'pendingPrescriptionsList', 'recentDispensing', 'rxTrend6m', 'rxTrend12m', 'rxStatusBreakdown'));
     }
 
     /** Surgery / OR Coordinator dashboard. */
@@ -405,7 +737,17 @@ class DashboardController extends Controller
                 ->take(10)->get()
             : collect();
 
-        return view('dashboard.surgery', compact('stats', 'recentRequests', 'upcomingSchedules'));
+        // Surgery trend and status breakdown
+        $surgTrend6m  = $this->getSurgeryTrend(6);
+        $surgTrend12m = $this->getSurgeryTrend(12);
+        $surgStatusBreakdown = [
+            ['label' => 'Pending',   'count' => $stats['pending']],
+            ['label' => 'Scheduled', 'count' => $stats['scheduled']],
+            ['label' => 'Completed', 'count' => $stats['completed']],
+            ['label' => 'Cancelled', 'count' => $stats['cancelled']],
+        ];
+
+        return view('dashboard.surgery', compact('stats', 'recentRequests', 'upcomingSchedules', 'surgTrend6m', 'surgTrend12m', 'surgStatusBreakdown'));
     }
 
     /** Diet / Nutrition dashboard. */
@@ -438,6 +780,15 @@ class DashboardController extends Controller
             ? DietPlan::with('dietRequest.patient')->where('status', 'Active')->latest()->take(10)->get()
             : collect();
 
-        return view('dashboard.diet', compact('stats', 'recentRequests', 'activePlansList'));
+        // Diet trend and status breakdown
+        $dietTrend6m  = $this->getDietTrend(6);
+        $dietTrend12m = $this->getDietTrend(12);
+        $dietStatusBreakdown = [
+            ['label' => 'Pending',     'count' => $stats['pending']],
+            ['label' => 'In Progress', 'count' => $stats['in_progress']],
+            ['label' => 'Completed',   'count' => $stats['completed_total']],
+        ];
+
+        return view('dashboard.diet', compact('stats', 'recentRequests', 'activePlansList', 'dietTrend6m', 'dietTrend12m', 'dietStatusBreakdown'));
     }
 }

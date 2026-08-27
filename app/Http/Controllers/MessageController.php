@@ -136,9 +136,9 @@ class MessageController extends Controller
         $activeConversation = null;
         $activeConversationFormatted = null;
 
-        if ($request->filled('conversation_id')) {
+        if ($request->filled('conversation')) {
             $activeConversation = $user->conversations()
-                ->where('conversations.id', $request->conversation_id)
+                ->where('conversations.id', $request->conversation)
                 ->with(['messages.sender', 'participants.roles'])
                 ->first();
         } elseif ($conversations->isNotEmpty()) {
@@ -166,11 +166,19 @@ class MessageController extends Controller
 
         $globalUnreadCount = $this->getGlobalUnreadCount($user);
 
+        // Get active staff users (except current user) for inline New Message modal
+        $staffUsers = User::where('id', '!=', $user->id)
+            ->where('is_active', true)
+            ->with('roles')
+            ->orderBy('name')
+            ->get();
+
         return view('messages.index', compact(
             'conversations',
             'activeConversation',
             'searchQuery',
-            'globalUnreadCount'
+            'globalUnreadCount',
+            'staffUsers'
         ));
     }
 
@@ -239,10 +247,13 @@ class MessageController extends Controller
         return response()->json([
             'conversation_id' => $conversation->id,
             'other_user' => [
-                'id'       => $otherUser?->id,
-                'name'     => $otherUser?->name ?? 'Staff Member',
-                'role'     => $roleDept,
-                'initials' => strtoupper(substr($otherUser?->name ?? 'S', 0, 1)),
+                'id'         => $otherUser?->id,
+                'name'       => $otherUser?->name ?? 'Staff Member',
+                'role'       => $roleDept,
+                'raw_role'   => $roleName,
+                'department' => $dept ?? 'General Healthcare',
+                'email'      => $otherUser?->email ?? 'N/A',
+                'initials'   => strtoupper(substr($otherUser?->name ?? 'S', 0, 1)),
             ],
             'messages'     => $messages,
             'unread_count' => $this->getGlobalUnreadCount($user),
@@ -257,11 +268,12 @@ class MessageController extends Controller
         $request->validate([
             'recipient_id'    => 'nullable|exists:users,id',
             'conversation_id' => 'nullable|exists:conversations,id',
-            'message'         => 'required|string|max:2000',
+            'message'         => 'nullable|string|max:2000',
         ]);
 
         $sender = $request->user();
         $conversation = null;
+        $messageText = '';
 
         if ($request->filled('conversation_id')) {
             $conversation = $sender->conversations()->where('conversations.id', $request->conversation_id)->first();
@@ -271,6 +283,15 @@ class MessageController extends Controller
                 }
                 abort(403, 'Unauthorized access to conversation.');
             }
+
+            if (!$request->filled('message')) {
+                if ($request->wantsJson()) {
+                    return response()->json(['error' => 'Message content is required.'], 422);
+                }
+                return back()->withErrors(['message' => 'Message content is required.']);
+            }
+            $messageText = trim($request->message);
+
         } elseif ($request->filled('recipient_id')) {
             $recipientId = (int) $request->recipient_id;
             if ($recipientId === $sender->id) {
@@ -280,7 +301,9 @@ class MessageController extends Controller
                 return back()->withErrors(['recipient_id' => 'Cannot message yourself.']);
             }
 
-            // Find existing 1-on-1 conversation or create new
+            $recipient = User::findOrFail($recipientId);
+
+            // Find existing 1-on-1 direct conversation or create new
             $conversation = Conversation::whereHas('participants', function ($q) use ($sender) {
                 $q->where('users.id', $sender->id);
             })->whereHas('participants', function ($q) use ($recipientId) {
@@ -294,6 +317,22 @@ class MessageController extends Controller
                 ]);
                 $conversation->participants()->attach([$sender->id, $recipientId]);
             }
+
+            if ($request->filled('message')) {
+                $messageText = trim($request->message);
+            } else {
+                // If no message is provided (e.g. selecting a staff member via New Message),
+                // reuse/create the conversation and open it without creating any message.
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success'         => true,
+                        'conversation_id' => $conversation->id,
+                        'unread_count'    => $this->getGlobalUnreadCount($sender),
+                    ]);
+                }
+
+                return redirect()->route('messages.index', ['conversation' => $conversation->id]);
+            }
         } else {
             if ($request->wantsJson()) {
                 return response()->json(['error' => 'Specify a conversation or recipient.'], 422);
@@ -301,11 +340,11 @@ class MessageController extends Controller
             return back()->withErrors(['message' => 'Specify a conversation or recipient.']);
         }
 
-        // Create the message
+        // Create the message (only executed when explicit message text is provided)
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id'       => $sender->id,
-            'message'         => trim($request->message),
+            'message'         => $messageText,
         ]);
 
         $conversation->update(['last_message_at' => now()]);
@@ -333,7 +372,7 @@ class MessageController extends Controller
             ]);
         }
 
-        return redirect()->route('messages.index', ['conversation_id' => $conversation->id])
+        return redirect()->route('messages.index', ['conversation' => $conversation->id])
             ->with('success', 'Message sent successfully.');
     }
 

@@ -18,16 +18,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink:         #0A1F1C;
-            --ink-soft:    #13312B;
-            --paper:       #F7F5F0;
+            --ink:         #173b2a;
+            --ink-soft:    #173b2a;
+            --paper:       #f3faf5;
             --card:        #FFFFFF;
-            --line:        #E6E2D6;
-            --text:        #132420;
-            --text-soft:   #6E7C74;
-            --signal:      #14C79A;
-            --signal-dark: #0C8F6F;
-            --coral:       #E85C55;
+            --line:        #d9e8de;
+            --text:        #173b2a;
+            --text-soft:   #648071;
+            --signal:      #15803d;
+            --signal-dark: #166534;
+            --coral:       #dc2626;
         }
 
         *, *::before, *::after { box-sizing: border-box; }

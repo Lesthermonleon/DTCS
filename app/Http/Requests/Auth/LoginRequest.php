@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -94,6 +95,17 @@ class LoginRequest extends FormRequest
         $attempts = $user->failed_attempts + 1;
         $updateData = ['failed_attempts' => $attempts];
 
+        ActivityLog::create([
+            'user_id'     => $user->id,
+            'action'      => 'Failed Login',
+            'module'      => 'Authentication',
+            'severity'    => ActivityLog::SEVERITY_WARNING,
+            'result'      => ActivityLog::RESULT_FAILED,
+            'description' => "Failed login attempt (#{$attempts}) for user account [{$user->email}].",
+            'ip_address'  => $this->ip(),
+            'logged_at'   => now(),
+        ]);
+
         switch ($attempts) {
             case 1:
                 $user->update($updateData);
@@ -121,6 +133,18 @@ class LoginRequest extends FormRequest
                 $updateData['locked_at']  = now();
                 $updateData['is_active']  = false;
                 $user->update($updateData);
+
+                ActivityLog::create([
+                    'user_id'     => $user->id,
+                    'action'      => 'Account Locked',
+                    'module'      => 'Authentication',
+                    'severity'    => ActivityLog::SEVERITY_CRITICAL,
+                    'result'      => ActivityLog::RESULT_BLOCKED,
+                    'description' => "User account [{$user->email}] was locked due to 4 consecutive failed login attempts.",
+                    'ip_address'  => $this->ip(),
+                    'logged_at'   => now(),
+                ]);
+
                 throw ValidationException::withMessages([
                     'email' => 'Your account has been locked due to multiple failed login attempts. Please contact your System Administrator to unlock your account.',
                 ]);

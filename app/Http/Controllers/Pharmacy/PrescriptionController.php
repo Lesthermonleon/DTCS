@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Pharmacy;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePrescriptionRequest;
+use App\Models\ActivityLog;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\PrescriptionItem;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -21,11 +24,13 @@ class PrescriptionController extends Controller
     {
         $query = Prescription::with('patient', 'doctor', 'items');
 
-        if (auth()->user()->hasRole('doctor')) {
-            $query->where('doctor_id', auth()->id());
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user?->hasRole('doctor')) {
+            $query->where('doctor_id', Auth::id());
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('prescription_no', 'like', "%{$search}%")
                   ->orWhereHas('patient', fn($p) => $p->where('first_name', 'like', "%{$search}%")
@@ -33,7 +38,7 @@ class PrescriptionController extends Controller
             });
         }
 
-        if ($s = $request->get('status')) { $query->where('status', $s); }
+        if ($s = $request->input('status')) { $query->where('status', $s); }
 
         $prescriptions = $query->latest()->paginate(15)->withQueryString();
         $statuses      = ['Pending', 'Verified', 'Partially Dispensed', 'Dispensed', 'Cancelled'];
@@ -43,7 +48,9 @@ class PrescriptionController extends Controller
 
     public function create(): View
     {
-        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can create prescriptions.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can create prescriptions.');
         $patients = Patient::orderBy('last_name')->get(['id', 'patient_no', 'first_name', 'last_name']);
 
         return view('pharmacy.prescriptions.create', compact('patients'));
@@ -51,14 +58,16 @@ class PrescriptionController extends Controller
 
     public function store(StorePrescriptionRequest $request): RedirectResponse
     {
-        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can create prescriptions.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can create prescriptions.');
         $count = Prescription::count() + 1;
 
         DB::transaction(function () use ($request, $count) {
             $prescription = Prescription::create([
                 'prescription_no' => 'RX-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT),
                 'patient_id'      => $request->patient_id,
-                'doctor_id'       => auth()->id(),
+                'doctor_id'       => Auth::id(),
                 'diagnosis'       => $request->diagnosis,
                 'notes'           => $request->notes,
                 'status'          => 'Pending',
@@ -69,6 +78,20 @@ class PrescriptionController extends Controller
                 PrescriptionItem::create(array_merge($item, ['prescription_id' => $prescription->id]));
             }
         });
+
+        $latest = Prescription::where('doctor_id', Auth::id())->latest()->first();
+        if ($latest) {
+            ActivityLog::create([
+                'user_id'       => Auth::id(),
+                'action'        => 'Prescription Created',
+                'module'        => 'Pharmacy',
+                'description'   => "Prescription [{$latest->prescription_no}] was created.",
+                'loggable_type' => Prescription::class,
+                'loggable_id'   => $latest->id,
+                'ip_address'    => request()->ip(),
+                'logged_at'     => now(),
+            ]);
+        }
 
         return redirect()->route('pharmacy.prescriptions.index')
                          ->with('success', 'Prescription created successfully.');
@@ -83,7 +106,9 @@ class PrescriptionController extends Controller
 
     public function edit(Prescription $prescription): View
     {
-        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can edit prescriptions.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can edit prescriptions.');
         abort_if($prescription->status !== 'Pending', 403, 'Only pending prescriptions can be edited.');
         $patients = Patient::orderBy('last_name')->get(['id', 'patient_no', 'first_name', 'last_name']);
 
@@ -92,7 +117,9 @@ class PrescriptionController extends Controller
 
     public function update(StorePrescriptionRequest $request, Prescription $prescription): RedirectResponse
     {
-        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can edit prescriptions.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can edit prescriptions.');
         abort_if($prescription->status !== 'Pending', 403, 'Only pending prescriptions can be edited.');
 
         DB::transaction(function () use ($request, $prescription) {
@@ -107,15 +134,39 @@ class PrescriptionController extends Controller
             }
         });
 
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Prescription Updated',
+            'module'        => 'Pharmacy',
+            'description'   => "Prescription [{$prescription->prescription_no}] was updated.",
+            'loggable_type' => Prescription::class,
+            'loggable_id'   => $prescription->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
+
         return redirect()->route('pharmacy.prescriptions.show', $prescription)
                          ->with('success', 'Prescription updated.');
     }
 
     public function destroy(Prescription $prescription): RedirectResponse
     {
-        abort_if(! auth()->user()->hasRole('doctor'), 403, 'Only physicians can cancel prescriptions.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can cancel prescriptions.');
         abort_if($prescription->status !== 'Pending', 403, 'Only pending prescriptions can be cancelled.');
         $prescription->update(['status' => 'Cancelled']);
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Prescription Cancelled',
+            'module'        => 'Pharmacy',
+            'description'   => "Prescription [{$prescription->prescription_no}] was cancelled.",
+            'loggable_type' => Prescription::class,
+            'loggable_id'   => $prescription->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return redirect()->route('pharmacy.prescriptions.index')
                          ->with('success', 'Prescription cancelled.');
@@ -124,13 +175,26 @@ class PrescriptionController extends Controller
     /** Pharmacist verifies the prescription before dispensing. */
     public function verify(Prescription $prescription): RedirectResponse
     {
-        abort_if(! auth()->user()->hasRole('pharmacist'), 403, 'Only pharmacists can verify prescriptions.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('pharmacist'), 403, 'Only pharmacists can verify prescriptions.');
         abort_if($prescription->status !== 'Pending', 403, 'Only pending prescriptions can be verified.');
 
         $prescription->update([
             'status'      => 'Verified',
-            'verified_by' => auth()->id(),
+            'verified_by' => Auth::id(),
             'verified_at' => now(),
+        ]);
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Prescription Verified',
+            'module'        => 'Pharmacy',
+            'description'   => "Prescription [{$prescription->prescription_no}] was verified by pharmacist.",
+            'loggable_type' => Prescription::class,
+            'loggable_id'   => $prescription->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
         ]);
 
         return back()->with('success', 'Prescription verified. Ready for dispensing.');

@@ -24,7 +24,7 @@
                 <a href="{{ route('radiology.requests.index') }}" class="btn btn-outline-secondary btn-sm" id="filter-clear">Clear</a>
             @endif
         </form>
-        @if(auth()->user()->hasAnyRole(['admin','doctor']))
+        @if(auth()->user()->hasRole('doctor'))
             <a href="{{ route('radiology.requests.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>New Request</a>
         @endif
     </div>
@@ -53,44 +53,44 @@
                     <td><span class="badge bg-{{ $req->statusBadge }}">{{ $req->status }}</span></td>
                     <td><small>{{ $req->requested_at->format('M d, Y H:i') }}</small></td>
                     <td>
-                        <div class="d-flex align-items-center gap-1">
-                            <a href="{{ route('radiology.requests.show', $req) }}" class="btn btn-sm btn-outline-primary" title="View Request Details"><i class="bi bi-eye"></i></a>
+                        <div class="table-actions">
+                            <a href="{{ route('radiology.requests.show', $req) }}" class="table-action-btn action-view" title="View Request Details" aria-label="View Request Details"><i class="bi bi-eye"></i></a>
                             
                             {{-- Primary State Action --}}
-                            @if($req->status === 'Pending' && auth()->user()->hasAnyRole(['admin', 'rad-tech']))
+                            @if($req->status === 'Pending' && auth()->user()->hasRole('rad-tech'))
                                 <form method="POST" action="{{ route('radiology.requests.schedule', $req) }}" class="d-inline">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Schedule Procedure"><i class="bi bi-calendar-event"></i></button>
+                                    <button type="submit" class="table-action-btn action-success" title="Schedule Procedure" aria-label="Schedule Procedure"><i class="bi bi-calendar-event"></i></button>
                                 </form>
-                            @elseif($req->status === 'Scheduled' && auth()->user()->hasAnyRole(['admin', 'rad-tech']))
+                            @elseif($req->status === 'Scheduled' && auth()->user()->hasRole('rad-tech'))
                                 <form method="POST" action="{{ route('radiology.requests.start', $req) }}" class="d-inline">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="Start Imaging Procedure"><i class="bi bi-play-circle"></i></button>
+                                    <button type="submit" class="table-action-btn action-view" title="Start Imaging Procedure" aria-label="Start Imaging Procedure"><i class="bi bi-play-circle"></i></button>
                                 </form>
-                            @elseif(in_array($req->status, ['Scheduled', 'In Progress']) && auth()->user()->hasAnyRole(['admin', 'rad-tech']))
+                            @elseif(in_array($req->status, ['Scheduled', 'In Progress']) && auth()->user()->hasRole('rad-tech'))
                                 <form method="POST" action="{{ route('radiology.requests.complete', $req) }}" class="d-inline" data-confirm="Complete procedure and send study for radiologist interpretation?">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-outline-info" title="Complete Procedure"><i class="bi bi-check-circle"></i></button>
+                                    <button type="submit" class="table-action-btn action-info" title="Complete Procedure" aria-label="Complete Procedure"><i class="bi bi-check-circle"></i></button>
                                 </form>
-                            @elseif(in_array($req->status, ['Completed', 'In Progress']) && auth()->user()->hasAnyRole(['admin', 'radiologist']) && !$req->report)
-                                <a href="{{ route('radiology.reports.create') }}?radiology_request_id={{ $req->id }}" class="btn btn-sm btn-outline-success" title="Create Diagnostic Report"><i class="bi bi-journal-medical"></i></a>
+                            @elseif(in_array($req->status, ['Completed', 'In Progress']) && auth()->user()->hasRole('radiologist') && !$req->report)
+                                <a href="{{ route('radiology.reports.create') }}?radiology_request_id={{ $req->id }}" class="table-action-btn action-success" title="Create Diagnostic Report" aria-label="Create Diagnostic Report"><i class="bi bi-journal-medical"></i></a>
                             @elseif($req->report)
-                                <a href="{{ route('radiology.reports.show', $req->report) }}" class="btn btn-sm btn-outline-info" title="View Diagnostic Report"><i class="bi bi-file-earmark-medical"></i></a>
+                                <a href="{{ route('radiology.reports.show', $req->report) }}" class="table-action-btn action-info" title="View Diagnostic Report" aria-label="View Diagnostic Report"><i class="bi bi-file-earmark-medical"></i></a>
                             @endif
 
                             {{-- Meatballs Menu Dropdown --}}
                             <div class="dropdown d-inline">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                                <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
                                     <i class="bi bi-three-dots"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    @if($req->status === 'Pending' && auth()->user()->hasAnyRole(['admin', 'doctor']))
-                                        <li><a class="dropdown-item small" href="{{ route('radiology.requests.edit', $req) }}"><i class="bi bi-pencil me-2 text-warning"></i>Edit Request</a></li>
+                                    @if($req->status === 'Pending' && auth()->user()->hasRole('doctor'))
+                                        <li><a class="dropdown-item small" href="{{ route('radiology.requests.edit', $req) }}"><i class="bi bi-pencil me-2 text-success"></i>Edit Request</a></li>
                                     @endif
                                     @if($req->report)
-                                        <li><a class="dropdown-item small" href="{{ route('radiology.reports.show', $req->report) }}"><i class="bi bi-file-earmark-medical me-2 text-info"></i>View Diagnostic Report</a></li>
+                                        <li><a class="dropdown-item small" href="{{ route('radiology.reports.show', $req->report) }}"><i class="bi bi-file-earmark-medical me-2 text-success"></i>View Diagnostic Report</a></li>
                                     @endif
-                                    <li><a class="dropdown-item small" href="{{ route('radiology.requests.show', $req) }}"><i class="bi bi-folder2-open me-2 text-primary"></i>Open Request Record</a></li>
+                                    <li><a class="dropdown-item small" href="{{ route('radiology.requests.show', $req) }}"><i class="bi bi-folder2-open me-2 text-secondary"></i>Open Request Record</a></li>
                                 </ul>
                             </div>
                         </div>

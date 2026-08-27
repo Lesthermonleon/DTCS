@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -98,6 +99,17 @@ class UserController extends Controller
 
         $user->roles()->attach($data['role_id']);
 
+        ActivityLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'User Created',
+            'module'      => 'User Management',
+            'severity'    => ActivityLog::SEVERITY_INFO,
+            'result'      => ActivityLog::RESULT_SUCCESS,
+            'description' => "User account [{$user->email}] ({$user->name}) was created by admin.",
+            'ip_address'  => request()->ip(),
+            'logged_at'   => now(),
+        ]);
+
         return redirect()->route('admin.users.index')
                          ->with('success', 'User created successfully.');
     }
@@ -148,6 +160,17 @@ class UserController extends Controller
         // Sync role
         $user->roles()->sync([$data['role_id']]);
 
+        ActivityLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'User Updated',
+            'module'      => 'User Management',
+            'severity'    => ActivityLog::SEVERITY_INFO,
+            'result'      => ActivityLog::RESULT_SUCCESS,
+            'description' => "User account [{$user->email}] ({$user->name}) was updated by admin.",
+            'ip_address'  => request()->ip(),
+            'logged_at'   => now(),
+        ]);
+
         return redirect()->route('admin.users.index')
                          ->with('success', 'User updated successfully.');
     }
@@ -155,7 +178,20 @@ class UserController extends Controller
     public function destroy(User $user): RedirectResponse
     {
         abort_if($user->id === Auth::id(), 403, 'You cannot delete your own account.');
+        $email = $user->email;
+        $name  = $user->name;
         $user->delete();
+
+        ActivityLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'User Archived',
+            'module'      => 'User Management',
+            'severity'    => ActivityLog::SEVERITY_WARNING,
+            'result'      => ActivityLog::RESULT_SUCCESS,
+            'description' => "User account [{$email}] ({$name}) was archived by admin.",
+            'ip_address'  => request()->ip(),
+            'logged_at'   => now(),
+        ]);
 
         return redirect()->route('admin.users.index')
                          ->with('success', 'User account archived successfully.');
@@ -176,6 +212,17 @@ class UserController extends Controller
         $request->validate(['role_id' => 'required|exists:roles,id']);
         $user->roles()->sync([$request->role_id]);
 
+        ActivityLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'Role Assignment Changed',
+            'module'      => 'User Management',
+            'severity'    => ActivityLog::SEVERITY_WARNING,
+            'result'      => ActivityLog::RESULT_SUCCESS,
+            'description' => "Role assignment changed for user [{$user->email}] ({$user->name}) by admin.",
+            'ip_address'  => request()->ip(),
+            'logged_at'   => now(),
+        ]);
+
         return back()->with('success', 'Role assigned successfully.');
     }
 
@@ -183,6 +230,17 @@ class UserController extends Controller
     {
         $user->update([
             'password' => Hash::make('password'),
+        ]);
+
+        ActivityLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'Password Reset',
+            'module'      => 'User Management',
+            'severity'    => ActivityLog::SEVERITY_WARNING,
+            'result'      => ActivityLog::RESULT_SUCCESS,
+            'description' => "Password for user [{$user->email}] ({$user->name}) was reset by admin.",
+            'ip_address'  => request()->ip(),
+            'logged_at'   => now(),
         ]);
 
         return redirect()->route('admin.users.index')
@@ -196,6 +254,17 @@ class UserController extends Controller
             'locked_at'       => null,
             'lockout_until'   => null,
             'is_active'       => true,
+        ]);
+
+        ActivityLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'Account Unlocked',
+            'module'      => 'User Management',
+            'severity'    => ActivityLog::SEVERITY_INFO,
+            'result'      => ActivityLog::RESULT_SUCCESS,
+            'description' => "Locked account for user [{$user->email}] ({$user->name}) was unlocked by admin.",
+            'ip_address'  => request()->ip(),
+            'logged_at'   => now(),
         ]);
 
         return redirect()->route('admin.users.index')

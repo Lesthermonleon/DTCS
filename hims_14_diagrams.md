@@ -11,7 +11,7 @@
 ```mermaid
 graph LR
     subgraph PO["Product Owner"]
-        PB["📋 Product Backlog\n──────────────\n• User Management\n• Patient Records\n• LIS Module\n• RIS Module\n• PMS Module\n• SORS Module\n• DNMS Module\n• MediSense AI\n• Reports Module\n• UI/UX Design"]
+        PB["Product Backlog\n──────────────\n• User Management\n• Patient Records\n• LIS Module\n• RIS Module\n• PMS Module\n• SORS Module\n• DNMS Module\n• MediSense AI\n• Reports Module\n• UI/UX Design"]
     end
 
     subgraph SPRINT_CYCLE["Scrum Sprint Cycle (2–3 Weeks per Sprint)"]
@@ -22,7 +22,7 @@ graph LR
         DS["Daily Scrum\n(Progress sync)"]
         SR["Sprint Review\n(Demo to stakeholders)"]
         RETRO["Sprint Retrospective\n(Team improvement)"]
-        INC["✅ Product Increment\n(Working software)"]
+        INC["Product Increment\n(Working software)"]
 
         SP --> SB --> S
         S --> DS
@@ -72,7 +72,7 @@ xychart-beta
 ```mermaid
 graph TB
     subgraph CLIENT["Client Layer"]
-        BROWSER["🌐 Web Browser\n(Chrome / Firefox / Edge)"]
+        BROWSER["Web Browser\n(Chrome / Firefox / Edge)"]
     end
 
     subgraph APP["HIMS Laravel 13 Application — Modular Monolith"]
@@ -85,11 +85,11 @@ graph TB
 
         subgraph MODULES["Clinical Modules"]
             direction LR
-            LIS["🧪 LIS\nLab Request\nLab Result"]
-            RIS["🩻 RIS\nRadiology Request\nRadiology Report"]
-            PMS["💊 PMS\nPrescription\nDispensing"]
-            SORS["🏥 SORS\nSurgery Request\nOR Schedule"]
-            DNMS["🥗 DNMS\nDiet Request\nDiet Plan"]
+            LIS["LIS\nLab Request\nLab Result"]
+            RIS["RIS\nRadiology Request\nRadiology Report"]
+            PMS["PMS\nPrescription\nDispensing"]
+            SORS["SORS\nSurgery Request\nOR Schedule"]
+            DNMS["DNMS\nDiet Request\nDiet Plan"]
         end
 
         subgraph SHARED["Shared Services"]
@@ -102,7 +102,7 @@ graph TB
         end
 
         subgraph AI["AI Layer"]
-            MEDISENSE["🤖 MediSense AI\n(Clinical Decision Support)"]
+            MEDISENSE["MediSense AI\n(Clinical Decision Support)"]
         end
     end
 
@@ -111,8 +111,8 @@ graph TB
     end
 
     subgraph DATA["Data Layer"]
-        MYSQL["🗄️ MySQL Database"]
-        STORAGE["📁 File Storage\n(Radiology Images)"]
+        MYSQL["MySQL Database"]
+        STORAGE["File Storage\n(Radiology Images)"]
     end
 
     BROWSER -->|HTTPS Request| AUTH_MW
@@ -177,16 +177,16 @@ sequenceDiagram
 ```mermaid
 graph TB
     subgraph EXTERNAL_ENTITIES["External Entities"]
-        DOC["👨‍⚕️ Doctor / Physician"]
-        ADMIN["🔧 System Administrator"]
-        PATIENT["🧑‍🤝‍🧑 Patient"]
-        MEDTECH["🔬 Medical Technologist"]
-        RADTECH["📡 Radiologic Technologist"]
-        RAD["🩻 Radiologist"]
-        PHARM["💊 Pharmacist"]
-        DIET["🥗 Dietitian / Nutritionist"]
-        ORC["🏥 OR Coordinator"]
-        GEMINI["🤖 Google Gemini AI"]
+        DOC["Doctor / Physician"]
+        ADMIN["System Administrator"]
+        PATIENT["Patient"]
+        MEDTECH["Medical Technologist"]
+        RADTECH["Radiologic Technologist"]
+        RAD["Radiologist"]
+        PHARM["Pharmacist"]
+        DIET["Dietitian / Nutritionist"]
+        ORC["OR Coordinator"]
+        GEMINI["Google Gemini AI"]
     end
 
     subgraph HIMS["HIMS — Diagnostic, Treatment & Clinical Services System"]
@@ -269,47 +269,47 @@ graph TB
 ```mermaid
 graph LR
     subgraph DEV["Developer Workstation"]
-        CODE["📝 Write Code\n(VS Code / PHPStorm)"]
+        CODE["Write Code\n(VS Code / PHPStorm)"]
         GIT_COMMIT["git commit & push"]
     end
 
     subgraph REPO["Version Control"]
-        GITHUB["📦 GitHub Repository\n(main / feature branches)"]
+        GITHUB["GitHub Repository\n(main / feature branches)"]
         PR["Pull Request\n& Code Review"]
     end
 
     subgraph CI["Continuous Integration (Proposed)"]
         direction TB
-        BUILD["🔨 Build\nnpm run build\ncomposer install"]
-        TEST["🧪 Automated Tests\nphp artisan test\n(PHPUnit)"]
-        LINT["✅ Code Quality\nLaravel Pint\n(PHP CS Fixer)"]
+        BUILD["Build\nnpm run build\ncomposer install"]
+        TEST["Automated Tests\nphp artisan test\n(PHPUnit)"]
+        LINT["Code Quality\nLaravel Pint\n(PHP CS Fixer)"]
     end
 
     subgraph CD["Continuous Deployment (Proposed)"]
         direction TB
-        MIGRATE["🗄️ DB Migration\nphp artisan migrate"]
-        DEPLOY["🚀 Deploy\nphp artisan optimize\nnpm run build"]
-        SMOKE["🔍 Smoke Test\nBasic endpoint check"]
+        MIGRATE["SQL Schema Import\nditc_hms_schema.sql"]
+        DEPLOY["Deploy\nphp artisan optimize\nnpm run build"]
+        SMOKE["Smoke Test\nBasic endpoint check"]
     end
 
     subgraph PROD["Production Environment (Proposed)"]
-        SERVER["🖥️ Apache / Nginx\n+ PHP 8.3 FPM"]
-        DB["🗄️ MySQL Server"]
-        STORAGE["📁 File Storage\n(Radiology Images)"]
+        SERVER["Apache / Nginx\n+ PHP 8.3 FPM"]
+        DB["MySQL Server"]
+        STORAGE["File Storage\n(Radiology Images)"]
     end
 
     CODE --> GIT_COMMIT --> GITHUB
     GITHUB --> PR --> BUILD
     BUILD --> TEST --> LINT
-    LINT -->|✅ Pass| MIGRATE
-    LINT -->|❌ Fail| DEV
+    LINT -->|Pass| MIGRATE
+    LINT -->|Fail| DEV
     MIGRATE --> DEPLOY --> SMOKE
     SMOKE --> SERVER
     SERVER --> DB
     SERVER --> STORAGE
 ```
 
-**Diagram Description:** This proposed CI/CD pipeline defines the recommended automation workflow for the HIMS project. Developers push code to GitHub, triggering automated builds, PHPUnit tests, and Laravel Pint linting. On success, the pipeline proceeds to database migration, deployment to the production server, and a smoke test. The pipeline uses tools already present in the project (`phpunit`, `pint`, [artisan](file:///c:/Users/Jhonl/OneDrive/Desktop/DITC/artisan)).
+**Diagram Description:** This proposed CI/CD pipeline defines the recommended automation workflow for the HIMS project. Developers push code to GitHub, triggering automated builds, PHPUnit tests, and Laravel Pint linting. The HIMS database schema is maintained in `database/schema/ditc_hms_schema.sql`. Laravel migrations are not used. Deployment proceeds to optimization and server deployment.
 
 ---
 
@@ -320,29 +320,29 @@ graph LR
 ```mermaid
 graph TB
     subgraph DEV_TEAM["Development Team"]
-        DEV["👨‍💻 Developer"]
+        DEV["Developer"]
     end
 
     subgraph VCS["Version Control (Proposed)"]
-        GIT["📦 GitHub Repository\n(Application Code +\nIaC Config Files)"]
+        GIT["GitHub Repository\n(Application Code +\nIaC Config Files)"]
     end
 
     subgraph IAC_TOOLS["IaC Tooling (Proposed)"]
-        DOCKER["🐳 Docker\n(Containerization)\ndocker-compose.yml"]
-        COMPOSER_IAC["📦 Composer\n(PHP dependencies)"]
-        NPM_IAC["📦 NPM / Vite\n(Frontend assets)"]
+        DOCKER["Docker\n(Containerization)\ndocker-compose.yml"]
+        COMPOSER_IAC["Composer\n(PHP dependencies)"]
+        NPM_IAC["NPM / Vite\n(Frontend assets)"]
         ENV_IAC[".env / .env.example\n(Environment config)"]
     end
 
     subgraph APP_INFRA["Application Infrastructure (Proposed)"]
         direction LR
-        WEB["🖥️ Web Container\n(PHP 8.3 + Laravel 13\n+ Apache/Nginx)"]
-        DB_CONT["🗄️ MySQL Container\n(Hospital Database)"]
-        CACHE["⚡ Cache Layer\n(Laravel File Cache)"]
+        WEB["Web Container\n(PHP 8.3 + Laravel 13\n+ Apache/Nginx)"]
+        DB_CONT["MySQL Container\n(Hospital Database)"]
+        CACHE["Cache Layer\n(Laravel File Cache)"]
     end
 
     subgraph STORAGE_INFRA["Storage (Proposed)"]
-        FILES["📁 Volume Mount\n(Radiology Images\n+ Application Logs)"]
+        FILES["Volume Mount\n(Radiology Images\n+ Application Logs)"]
     end
 
     DEV -->|Push config| GIT
@@ -358,7 +358,7 @@ graph TB
     WEB --> FILES
 ```
 
-**Diagram Description:** This proposed IaC diagram defines how the HIMS infrastructure would be reproducibly provisioned using Docker and configuration files. The [.env](file:///c:/Users/Jhonl/OneDrive/Desktop/DITC/.env) and `docker-compose.yml` files codify environment configuration, replacing manual server setup. Web and database containers are isolated and reproducible. This architecture is recommended for future deployment of the project.
+**Diagram Description:** This proposed IaC diagram defines how the HIMS infrastructure would be reproducibly provisioned using Docker and configuration files. The `.env` and `docker-compose.yml` files codify environment configuration, replacing manual server setup. Web and database containers are isolated and reproducible. This architecture is recommended for future deployment of the project.
 
 ---
 
@@ -369,23 +369,23 @@ graph TB
 ```mermaid
 graph TD
     subgraph APP_LAYER["Application Layer (Implemented)"]
-        LARAVEL["⚙️ Laravel 13 Application"]
-        PHP_LOG["📄 Laravel Log\n(storage/logs/laravel.log)"]
-        PAIL["🔍 Laravel Pail\n(Real-time log tail\nduring development)"]
-        NOTIF["🔔 In-App Notifications\n(NotificationService)"]
+        LARAVEL["Laravel 13 Application"]
+        PHP_LOG["Laravel Log\n(storage/logs/laravel.log)"]
+        PAIL["Laravel Pail\n(Real-time log tail\nduring development)"]
+        NOTIF["In-App Notifications\n(NotificationService)"]
     end
 
     subgraph PROPOSED["Monitoring & Alerting (Proposed)"]
         direction TB
-        SYSLOG["📊 Server Logs\n(Apache / Nginx access logs)"]
-        DBMON["🗄️ MySQL Query Monitor\n(Slow query log)"]
-        MON_SYS["📈 Monitoring System\n(e.g., Laravel Telescope\nor Grafana)"]
-        ALERT_SYS["🚨 Alerting System\n(e.g., email alerts /\nslack notifications)"]
+        SYSLOG["Server Logs\n(Apache / Nginx access logs)"]
+        DBMON["MySQL Query Monitor\n(Slow query log)"]
+        MON_SYS["Monitoring System\n(e.g., Laravel Telescope\nor Grafana)"]
+        ALERT_SYS["Alerting System\n(e.g., email alerts /\nslack notifications)"]
     end
 
     subgraph ADMIN_LAYER["Administrator"]
-        SYS_ADMIN["🔧 System Administrator"]
-        DASHBOARD_MON["📋 Admin Dashboard\n(HIMS Admin Panel)"]
+        SYS_ADMIN["System Administrator"]
+        DASHBOARD_MON["Admin Dashboard\n(HIMS Admin Panel)"]
     end
 
     LARAVEL -->|Writes| PHP_LOG
@@ -415,37 +415,37 @@ graph TB
         direction TB
 
         subgraph CORE["Core Platform"]
-            AUTH["🔐 Authentication\n(Laravel Breeze)"]
-            RBAC["🛡️ Role-Based Access\nControl (RBAC)"]
-            PATIENT_MOD["🧑‍🤝‍🧑 Patient Information\nModule"]
-            NOTIF_SVC["🔔 Notification Service"]
-            MSG_SVC["💬 Messaging Module"]
+            AUTH["Authentication\n(Laravel Breeze)"]
+            RBAC["Role-Based Access\nControl (RBAC)"]
+            PATIENT_MOD["Patient Information\nModule"]
+            NOTIF_SVC["Notification Service"]
+            MSG_SVC["Messaging Module"]
         end
 
         subgraph CLINICAL["Clinical Modules"]
-            LIS["🧪 LIS\nLab Request ↔ Lab Result"]
-            RIS["🩻 RIS\nRadiology Request ↔\nRadiology Report ↔ Image"]
-            PMS["💊 PMS\nPrescription ↔ Dispensing"]
-            SORS["🏥 SORS\nSurgery Request ↔ OR Schedule"]
-            DNMS["🥗 DNMS\nDiet Request ↔ Diet Plan"]
+            LIS["LIS\nLab Request ↔ Lab Result"]
+            RIS["RIS\nRadiology Request ↔\nRadiology Report ↔ Image"]
+            PMS["PMS\nPrescription ↔ Dispensing"]
+            SORS["SORS\nSurgery Request ↔ OR Schedule"]
+            DNMS["DNMS\nDiet Request ↔ Diet Plan"]
         end
 
         subgraph ANALYTICS["Reports & Analytics"]
-            REPORTS["📊 Reports Module\n(Lab / Radiology / Pharmacy /\nSurgery / Diet / Clinical)"]
+            REPORTS["Reports Module\n(Lab / Radiology / Pharmacy /\nSurgery / Diet / Clinical)"]
         end
 
         subgraph AI_MOD["AI Module"]
-            MEDISENSE["🤖 MediSense AI\nClinical Decision Support"]
+            MEDISENSE["MediSense AI\nClinical Decision Support"]
         end
     end
 
     subgraph EXTERNAL["External Integration"]
-        GEMINI_EXT["🌐 Google Gemini API\n(generativelanguage.googleapis.com)"]
+        GEMINI_EXT["Google Gemini API\n(generativelanguage.googleapis.com)"]
     end
 
     subgraph DB_LAYER["Shared Data Layer"]
-        MYSQL_DB["🗄️ MySQL Database"]
-        FILE_STORE["📁 File Storage\n(Radiology Images)"]
+        MYSQL_DB["MySQL Database"]
+        FILE_STORE["File Storage\n(Radiology Images)"]
     end
 
     AUTH --> RBAC
@@ -473,17 +473,17 @@ graph TB
 ```mermaid
 graph TB
     subgraph CLIENTS["Client Applications (Proposed)"]
-        WEB_CLIENT["🌐 Web Browser\n(Current: Blade Views)"]
-        MOBILE["📱 Mobile App\n(Proposed)"]
-        THIRD_PARTY["🔗 Third-Party Systems\n(Proposed)"]
+        WEB_CLIENT["Web Browser\n(Current: Blade Views)"]
+        MOBILE["Mobile App\n(Proposed)"]
+        THIRD_PARTY["Third-Party Systems\n(Proposed)"]
     end
 
     subgraph GATEWAY["API Gateway Layer (Proposed)"]
-        AG["🚪 API Gateway\n(e.g., Laravel Sanctum\nor Kong / AWS API GW)"]
-        AG_AUTH["🔐 Authentication\n(Token / Session)"]
-        AG_RBAC["🛡️ Authorization\n(Role Check)"]
-        RATE["⏱️ Rate Limiting"]
-        ROUTE["🔁 Request Routing"]
+        AG["API Gateway\n(e.g., Laravel Sanctum\nor Kong / AWS API GW)"]
+        AG_AUTH["Authentication\n(Token / Session)"]
+        AG_RBAC["Authorization\n(Role Check)"]
+        RATE["Rate Limiting"]
+        ROUTE["Request Routing"]
     end
 
     subgraph SERVICES["Backend Services — HIMS Modules"]
@@ -498,8 +498,8 @@ graph TB
     end
 
     subgraph DATA_LAYER["Data Layer"]
-        DB["🗄️ MySQL Database"]
-        GEMINI_GW["🤖 Google Gemini API"]
+        DB["MySQL Database"]
+        GEMINI_GW["Google Gemini API"]
     end
 
     WEB_CLIENT & MOBILE & THIRD_PARTY -->|HTTPS Request| AG
@@ -524,14 +524,14 @@ graph TB
 ```mermaid
 graph TB
     subgraph ACTORS["External Entities"]
-        DOC["👨‍⚕️ Doctor"]
-        MEDTECH["🔬 Medical\nTechnologist"]
-        RADTECH["📡 Radiologic\nTechnologist"]
-        RAD["🩻 Radiologist"]
-        PHARM["💊 Pharmacist"]
-        DIET["🥗 Dietitian"]
-        ORC["🏥 OR Coordinator"]
-        PAT["🧑 Patient"]
+        DOC["Doctor"]
+        MEDTECH["Medical\nTechnologist"]
+        RADTECH["Radiologic\nTechnologist"]
+        RAD["Radiologist"]
+        PHARM["Pharmacist"]
+        DIET["Dietitian"]
+        ORC["OR Coordinator"]
+        PAT["Patient"]
     end
 
     subgraph LIS_FLOW["LIS — Laboratory Process"]
@@ -604,7 +604,7 @@ graph TB
 
 ## Figure 12. Use Case Diagram
 
-> **Status: IMPLEMENTED** — Based on verified roles and routes from [routes/web.php](file:///c:/Users/Jhonl/OneDrive/Desktop/DITC/routes/web.php) and [app/Models/Role.php](file:///c:/Users/Jhonl/OneDrive/Desktop/DITC/app/Models/Role.php).
+> **Status: IMPLEMENTED** — Based on verified roles and routes from `routes/web.php` and `app/Models/Role.php`.
 
 ```mermaid
 graph LR
@@ -636,14 +636,14 @@ graph LR
         UC23["Receive Notifications"]
     end
 
-    ADMIN["👤 System\nAdministrator"]
-    DOCTOR["👤 Doctor /\nPhysician"]
-    MEDTECH["👤 Medical\nTechnologist"]
-    RADTECH["👤 Radiologic\nTechnologist"]
-    RAD["👤 Radiologist"]
-    PHARM["👤 Pharmacist"]
-    DIET["👤 Dietitian /\nNutritionist"]
-    ORC["👤 OR Coordinator"]
+    ADMIN["System\nAdministrator"]
+    DOCTOR["Doctor /\nPhysician"]
+    MEDTECH["Medical\nTechnologist"]
+    RADTECH["Radiologic\nTechnologist"]
+    RAD["Radiologist"]
+    PHARM["Pharmacist"]
+    DIET["Dietitian /\nNutritionist"]
+    ORC["OR Coordinator"]
 
     ADMIN --- UC1 & UC2 & UC3 & UC4 & UC20 & UC21 & UC22 & UC23
     DOCTOR --- UC1 & UC4 & UC5 & UC9 & UC12 & UC15 & UC18 & UC20 & UC21 & UC22 & UC23
@@ -661,7 +661,7 @@ graph LR
 
 ## Figure 13. Sequence Diagram
 
-> **Status: IMPLEMENTED** — Laboratory Test Request and Result Workflow (the most complete end-to-end clinical workflow in the system, verified against [LabRequestController.php](file:///c:/Users/Jhonl/OneDrive/Desktop/DITC/app/Http/Controllers/Lab/LabRequestController.php) and `LabResultController.php`).
+> **Status: IMPLEMENTED** — Laboratory Test Request and Result Workflow (the most complete end-to-end clinical workflow in the system, verified against `LabRequestController.php` and `LabResultController.php`).
 
 ```mermaid
 sequenceDiagram
@@ -675,7 +675,7 @@ sequenceDiagram
 
     Note over DOC,DB: Phase 1 — Laboratory Test Request
 
-    DOC->>+SYS: Navigate to Lab → Create Request
+    DOC->>+SYS: Navigate to Lab -> Create Request
     SYS->>DB: Fetch patient list & active lab tests
     DB-->>SYS: Patient & test data
     SYS-->>-DOC: Display request form
@@ -690,7 +690,7 @@ sequenceDiagram
     NOTIF-->>-LAB_CTL: OK
     LAB_CTL->>DB: COMMIT
     LAB_CTL-->>-SYS: Redirect with success
-    SYS-->>-DOC: ✅ "Laboratory request created successfully."
+    SYS-->>-DOC: "Laboratory request created successfully."
 
     Note over DOC,DB: Phase 2 — Specimen Receipt
 
@@ -704,7 +704,7 @@ sequenceDiagram
     LAB_CTL->>DB: UPDATE lab_requests SET status='In Progress', received_at=now()
     LAB_CTL->>DB: UPDATE lab_request_items SET status='In Progress'
     LAB_CTL-->>-SYS: Redirect back
-    SYS-->>-MTECH: ✅ "Request marked as received."
+    SYS-->>-MTECH: "Request marked as received."
 
     Note over DOC,DB: Phase 3 — Result Encoding & Release
 
@@ -725,7 +725,7 @@ sequenceDiagram
     NOTIF->>DB: INSERT notification (for requesting doctor)
     NOTIF-->>-RES_CTL: OK
     RES_CTL-->>-SYS: Redirect
-    SYS-->>-MTECH: ✅ "Result released."
+    SYS-->>-MTECH: "Result released."
 
     Note over DOC,DB: Phase 4 — Doctor Views Result
 
@@ -745,7 +745,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    START([▶ Start])
+    START([Start])
     OPEN_BROWSER["Open HIMS in Browser\n(http://localhost:8000)"]
     REDIRECT{"Authenticated?"}
     LOGIN_PAGE["Display Login Page\n(Laravel Breeze)"]
@@ -783,7 +783,7 @@ flowchart TD
 
     CONTINUE{"Continue\nWorking?"}
     LOGOUT["Logout\n(Laravel Breeze)"]
-    END_NODE([⏹ End])
+    END_NODE([End])
 
     START --> OPEN_BROWSER --> REDIRECT
     REDIRECT -->|No| LOGIN_PAGE

@@ -161,9 +161,11 @@
                                 <div class="small fw-semibold"><i class="bi bi-person-badge me-1"></i>{{ $record->pharmacist?->name ?? 'Pharmacist' }}</div>
                             </td>
                             <td class="text-end pe-3">
-                                <a href="{{ route('pharmacy.dispensing.show', $record) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye me-1"></i> View Receipt
-                                </a>
+                                <div class="table-actions justify-content-end">
+                                    <a href="{{ route('pharmacy.dispensing.show', $record) }}" class="table-action-btn action-view" title="View Receipt" aria-label="View Receipt">
+                                        <i class="bi bi-receipt"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty

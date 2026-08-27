@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Radiology;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRadiologyRequestRequest;
+use App\Models\ActivityLog;
 use App\Models\RadiologyImage;
 use App\Models\RadiologyRequest;
 use App\Models\Patient;
@@ -73,6 +74,20 @@ class RadiologyRequestController extends Controller
             'requested_at' => now(),
         ]));
 
+        $created = RadiologyRequest::where('doctor_id', Auth::id())->latest()->first();
+        if ($created) {
+            ActivityLog::create([
+                'user_id'       => Auth::id(),
+                'action'        => 'Radiology Request Created',
+                'module'        => 'Radiology',
+                'description'   => "Radiology request [{$created->request_no}] was created.",
+                'loggable_type' => RadiologyRequest::class,
+                'loggable_id'   => $created->id,
+                'ip_address'    => request()->ip(),
+                'logged_at'     => now(),
+            ]);
+        }
+
         return redirect()->route('radiology.requests.index')
                          ->with('success', 'Radiology request created successfully.');
     }
@@ -102,6 +117,17 @@ class RadiologyRequestController extends Controller
 
         $radiologyRequest->update($request->validated());
 
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Radiology Request Updated',
+            'module'        => 'Radiology',
+            'description'   => "Radiology request [{$radiologyRequest->request_no}] was updated.",
+            'loggable_type' => RadiologyRequest::class,
+            'loggable_id'   => $radiologyRequest->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
+
         return redirect()->route('radiology.requests.show', $radiologyRequest)
                          ->with('success', 'Radiology request updated.');
     }
@@ -111,6 +137,17 @@ class RadiologyRequestController extends Controller
         $this->authorize('delete', $radiologyRequest);
 
         $radiologyRequest->update(['status' => 'Cancelled']);
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Radiology Request Cancelled',
+            'module'        => 'Radiology',
+            'description'   => "Radiology request [{$radiologyRequest->request_no}] was cancelled.",
+            'loggable_type' => RadiologyRequest::class,
+            'loggable_id'   => $radiologyRequest->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return redirect()->route('radiology.requests.index')
                          ->with('success', 'Radiology request cancelled.');

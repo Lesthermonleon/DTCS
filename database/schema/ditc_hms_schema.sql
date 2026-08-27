@@ -684,12 +684,15 @@ CREATE TABLE IF NOT EXISTS `activity_logs` (
     `loggable_type`  VARCHAR(255)    NULL DEFAULT NULL,
     `loggable_id`    BIGINT UNSIGNED NULL DEFAULT NULL,
     `ip_address`     VARCHAR(45)     NULL DEFAULT NULL,
+    `severity`       VARCHAR(20)     NOT NULL DEFAULT 'INFO',
+    `result`         VARCHAR(20)     NULL DEFAULT NULL,
     `logged_at`      TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `created_at`     TIMESTAMP       NULL DEFAULT NULL,
     `updated_at`     TIMESTAMP       NULL DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `activity_logs_loggable_type_loggable_id_index` (`loggable_type`, `loggable_id`),
     KEY `idx_activity_user_created` (`user_id`, `created_at`),
+    KEY `idx_activity_module_severity` (`module`, `severity`),
     CONSTRAINT `activity_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

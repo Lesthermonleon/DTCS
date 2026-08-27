@@ -13,11 +13,18 @@ use Illuminate\View\View;
  */
 class RoleController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
-        $roles = Role::withCount('users', 'permissions')->get();
+        $roles = Role::with(['permissions'])->withCount('users', 'permissions')->get();
 
-        return view('admin.roles.index', compact('roles'));
+        $selectedSlug = $request->query('role', $roles->first()?->slug ?? 'admin');
+        $selectedRole = $roles->firstWhere('slug', $selectedSlug) ?? $roles->first();
+
+        if ($request->ajax() || $request->wantsJson() || $request->query('partial')) {
+            return view('admin.roles._role_details', compact('selectedRole'));
+        }
+
+        return view('admin.roles.index', compact('roles', 'selectedRole'));
     }
 
     public function create(): View

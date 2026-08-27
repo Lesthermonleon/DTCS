@@ -59,15 +59,15 @@
                             <td><span class="badge bg-{{ $rpt->statusBadge }}">{{ $rpt->status }}</span></td>
                             <td><small class="text-muted">{{ $rpt->created_at->format('M d, Y H:i') }}</small></td>
                             <td class="text-end">
-                                <div class="btn-group">
-                                    <a href="{{ route('radiology.reports.show', $rpt) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                                <div class="table-actions justify-content-end">
+                                    <a href="{{ route('radiology.reports.show', $rpt) }}" class="table-action-btn action-view" title="View Diagnostic Report" aria-label="View Diagnostic Report"><i class="bi bi-eye"></i></a>
                                     @if($rpt->status !== 'Released' && auth()->user()?->hasRole('radiologist'))
-                                        <a href="{{ route('radiology.reports.edit', $rpt) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="bi bi-pencil"></i></a>
+                                        <a href="{{ route('radiology.reports.edit', $rpt) }}" class="table-action-btn action-edit" title="Edit Diagnostic Report" aria-label="Edit Diagnostic Report"><i class="bi bi-pencil"></i></a>
                                     @endif
                                     @if($rpt->status === 'Draft' && auth()->user()?->hasRole('radiologist'))
                                         <form method="POST" action="{{ route('radiology.reports.destroy', $rpt) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this draft report?');">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                            <button type="submit" class="table-action-btn action-danger" title="Delete Draft Report" aria-label="Delete Draft Report"><i class="bi bi-trash"></i></button>
                                         </form>
                                     @endif
                                 </div>

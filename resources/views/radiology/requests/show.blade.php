@@ -53,21 +53,21 @@
             <div class="card-header"><i class="bi bi-gear me-2"></i>Actions</div>
             <div class="card-body d-flex flex-column gap-2">
                 {{-- Technologist Procedure Lifecycle Actions --}}
-                @if($radiologyRequest->status === 'Pending' && auth()->user()->hasAnyRole(['admin', 'rad-tech']))
+                @if($radiologyRequest->status === 'Pending' && auth()->user()->hasRole('rad-tech'))
                     <form method="POST" action="{{ route('radiology.requests.schedule', $radiologyRequest) }}">
                         @csrf @method('PATCH')
                         <button type="submit" class="btn btn-success w-100"><i class="bi bi-calendar-event me-2"></i>Schedule Procedure</button>
                     </form>
                 @endif
 
-                @if($radiologyRequest->status === 'Scheduled' && auth()->user()->hasAnyRole(['admin', 'rad-tech']))
+                @if($radiologyRequest->status === 'Scheduled' && auth()->user()->hasRole('rad-tech'))
                     <form method="POST" action="{{ route('radiology.requests.start', $radiologyRequest) }}">
                         @csrf @method('PATCH')
                         <button type="submit" class="btn btn-primary w-100"><i class="bi bi-play-circle me-2"></i>Start Imaging Procedure</button>
                     </form>
                 @endif
 
-                @if(in_array($radiologyRequest->status, ['Scheduled', 'In Progress']) && auth()->user()->hasAnyRole(['admin', 'rad-tech']))
+                @if(in_array($radiologyRequest->status, ['Scheduled', 'In Progress']) && auth()->user()->hasRole('rad-tech'))
                     <form method="POST" action="{{ route('radiology.requests.complete', $radiologyRequest) }}" onsubmit="return confirm('Complete imaging procedure and send study for radiologist interpretation?');">
                         @csrf @method('PATCH')
                         <button type="submit" class="btn btn-info text-white w-100"><i class="bi bi-check-circle me-2"></i>Complete Procedure & Send to Radiologist</button>
@@ -75,8 +75,8 @@
                 @endif
 
                 {{-- Doctor / Admin Request Management --}}
-                @if($radiologyRequest->status === 'Pending' && auth()->user()->hasAnyRole(['admin', 'doctor']))
-                    <a href="{{ route('radiology.requests.edit', $radiologyRequest) }}" class="btn btn-warning w-100"><i class="bi bi-pencil me-2"></i>Edit Request</a>
+                @if($radiologyRequest->status === 'Pending' && auth()->user()->hasRole('doctor'))
+                    <a href="{{ route('radiology.requests.edit', $radiologyRequest) }}" class="btn btn-success w-100"><i class="bi bi-pencil me-2"></i>Edit Request</a>
                     <form method="POST" action="{{ route('radiology.requests.destroy', $radiologyRequest) }}" onsubmit="return confirm('Are you sure you want to cancel this request?');">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100"><i class="bi bi-x-circle me-2"></i>Cancel Request</button>
@@ -84,7 +84,7 @@
                 @endif
 
                 {{-- Radiologist Diagnostic Reporting Actions --}}
-                @if(in_array($radiologyRequest->status, ['Completed', 'In Progress']) && auth()->user()->hasAnyRole(['admin', 'radiologist']) && !$radiologyRequest->report)
+                @if(in_array($radiologyRequest->status, ['Completed', 'In Progress']) && auth()->user()->hasRole('radiologist') && !$radiologyRequest->report)
                     <a href="{{ route('radiology.reports.create') }}?radiology_request_id={{ $radiologyRequest->id }}" class="btn btn-primary w-100"><i class="bi bi-journal-medical me-2"></i>Create Diagnostic Report</a>
                 @endif
 
@@ -181,7 +181,7 @@
         </div>
 
         {{-- Multi-File Upload Form for Rad-Tech / Admin --}}
-        @if(in_array($radiologyRequest->status, ['Scheduled', 'In Progress']) && auth()->user()->hasAnyRole(['admin', 'rad-tech']))
+        @if(in_array($radiologyRequest->status, ['Scheduled', 'In Progress']) && auth()->user()->hasRole('rad-tech'))
             <div class="card mb-3 border-primary shadow-sm">
                 <div class="card-header bg-primary text-white font-semibold d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-cloud-arrow-up-fill me-2"></i>Upload Imaging Study & Documents</span>

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePatientRequest;
+use App\Models\ActivityLog;
 use App\Models\Patient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -56,7 +58,18 @@ class PatientController extends Controller
         $data  = $request->validated();
         $data['patient_no'] = 'P-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
-        Patient::create($data);
+        $patient = Patient::create($data);
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Patient Created',
+            'module'        => 'Patient Records',
+            'description'   => "Patient record [{$patient->patient_no}] {$patient->last_name}, {$patient->first_name} was created.",
+            'loggable_type' => Patient::class,
+            'loggable_id'   => $patient->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return redirect()->route('patients.index')
                          ->with('success', 'Patient record created successfully.');
@@ -90,6 +103,17 @@ class PatientController extends Controller
 
         $patient->update($request->validated());
 
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Patient Updated',
+            'module'        => 'Patient Records',
+            'description'   => "Patient record [{$patient->patient_no}] {$patient->last_name}, {$patient->first_name} was updated.",
+            'loggable_type' => Patient::class,
+            'loggable_id'   => $patient->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
+
         return redirect()->route('patients.show', $patient)
                          ->with('success', 'Patient record updated successfully.');
     }
@@ -98,7 +122,21 @@ class PatientController extends Controller
     {
         $this->authorize('delete', $patient);
 
+        $patientNo   = $patient->patient_no;
+        $patientName = "{$patient->last_name}, {$patient->first_name}";
+        $patientId   = $patient->id;
         $patient->delete(); // SoftDelete
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Patient Archived',
+            'module'        => 'Patient Records',
+            'description'   => "Patient record [{$patientNo}] {$patientName} was archived.",
+            'loggable_type' => Patient::class,
+            'loggable_id'   => $patientId,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return redirect()->route('patients.index')
                          ->with('success', 'Patient record archived successfully.');

@@ -237,7 +237,7 @@ class User extends Authenticatable
 
         $this->update([
             'active_session_id' => null,
-            'last_activity_at'  => null,
+            // Keep last_activity_at timestamp intact so recent activity remains accurate
         ]);
     }
 

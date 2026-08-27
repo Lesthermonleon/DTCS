@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLabRequestRequest;
+use App\Models\ActivityLog;
 use App\Models\LabRequest;
 use App\Models\LabRequestItem;
 use App\Models\LabTest;
@@ -109,6 +110,23 @@ class LabRequestController extends Controller
             );
         });
 
+        $createdRequest = LabRequest::whereDate('created_at', now()->toDateString())
+            ->where('doctor_id', Auth::id())
+            ->latest()->first();
+
+        if ($createdRequest) {
+            ActivityLog::create([
+                'user_id'       => Auth::id(),
+                'action'        => 'Lab Request Created',
+                'module'        => 'Laboratory',
+                'description'   => "Lab request [{$createdRequest->request_no}] created for patient.",
+                'loggable_type' => LabRequest::class,
+                'loggable_id'   => $createdRequest->id,
+                'ip_address'    => request()->ip(),
+                'logged_at'     => now(),
+            ]);
+        }
+
         return redirect()->route('lab.requests.index')
                          ->with('success', 'Laboratory request created successfully.');
     }
@@ -122,6 +140,11 @@ class LabRequestController extends Controller
 
     public function edit(LabRequest $labRequest): View
     {
+        // Only the originating Doctor may edit their own lab request
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can edit lab requests.');
+        abort_if($labRequest->doctor_id !== Auth::id(), 403, 'You can only edit your own lab requests.');
         abort_if($labRequest->status !== 'Pending', 403, 'Only pending requests can be edited.');
 
         $patients = Patient::orderBy('last_name')->get(['id', 'patient_no', 'first_name', 'last_name']);
@@ -132,6 +155,11 @@ class LabRequestController extends Controller
 
     public function update(StoreLabRequestRequest $request, LabRequest $labRequest): RedirectResponse
     {
+        // Only the originating Doctor may update their own lab request
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can update lab requests.');
+        abort_if($labRequest->doctor_id !== Auth::id(), 403, 'You can only update your own lab requests.');
         abort_if($labRequest->status !== 'Pending', 403, 'Only pending requests can be edited.');
 
         DB::transaction(function () use ($request, $labRequest) {
@@ -152,15 +180,42 @@ class LabRequestController extends Controller
             }
         });
 
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Lab Request Updated',
+            'module'        => 'Laboratory',
+            'description'   => "Lab request [{$labRequest->request_no}] was updated.",
+            'loggable_type' => LabRequest::class,
+            'loggable_id'   => $labRequest->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
+
         return redirect()->route('lab.requests.show', $labRequest)
                          ->with('success', 'Lab request updated successfully.');
     }
 
     public function destroy(LabRequest $labRequest): RedirectResponse
     {
+        // Only the originating Doctor may cancel their own lab request
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('doctor'), 403, 'Only physicians can cancel lab requests.');
+        abort_if($labRequest->doctor_id !== Auth::id(), 403, 'You can only cancel your own lab requests.');
         abort_if($labRequest->status !== 'Pending', 403, 'Only pending requests can be cancelled.');
 
         $labRequest->update(['status' => 'Cancelled']);
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Lab Request Cancelled',
+            'module'        => 'Laboratory',
+            'description'   => "Lab request [{$labRequest->request_no}] was cancelled.",
+            'loggable_type' => LabRequest::class,
+            'loggable_id'   => $labRequest->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return redirect()->route('lab.requests.index')
                          ->with('success', 'Lab request cancelled.');
@@ -184,6 +239,17 @@ class LabRequestController extends Controller
                 ->where('status', 'Pending')
                 ->update(['status' => 'In Progress']);
         });
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Lab Specimen Received',
+            'module'        => 'Laboratory',
+            'description'   => "Specimen for lab request [{$labRequest->request_no}] was received and marked In Progress.",
+            'loggable_type' => LabRequest::class,
+            'loggable_id'   => $labRequest->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return back()->with('success', "Request {$labRequest->request_no} marked as received.");
     }

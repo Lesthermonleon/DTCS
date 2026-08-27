@@ -150,13 +150,13 @@
                         </a>
                     </div>
                 @else
-                    <div class="p-3 mb-3 rounded border text-center" style="background: rgba(255,193,7,0.08); border-color: rgba(255,193,7,0.2) !important;">
-                        <i class="bi bi-clock-history text-warning fs-3 d-block mb-1"></i>
-                        <div class="fw-semibold text-warning-emphasis">Not Yet Scheduled</div>
+                    <div class="p-3 mb-3 rounded border text-center" style="background: rgba(100,116,139,0.08); border-color: rgba(100,116,139,0.2) !important;">
+                        <i class="bi bi-clock-history text-secondary fs-3 d-block mb-1"></i>
+                        <div class="fw-semibold text-secondary">Not Yet Scheduled</div>
                         <div class="text-muted small">This surgery request is pending OR schedule assignment.</div>
                     </div>
 
-                    @if($surgeryRequest->status === 'Pending' && auth()->user()->hasAnyRole(['admin','or-coordinator']))
+                    @if($surgeryRequest->status === 'Pending' && auth()->user()->hasRole('or-coordinator'))
                         <a href="{{ route('surgery.schedules.create') }}?request={{ $surgeryRequest->id }}" class="btn btn-success w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-calendar-plus"></i> Schedule Surgery Now
                         </a>
@@ -169,13 +169,13 @@
         <div class="card shadow-sm border-0" style="border-radius: 0.75rem; background: var(--card);">
             <div class="card-body p-4 d-flex flex-column gap-2">
                 @if($surgeryRequest->status === 'Pending')
-                    @if(auth()->user()->hasAnyRole(['admin','doctor']))
-                        <a href="{{ route('surgery.requests.edit', $surgeryRequest) }}" class="btn btn-outline-warning w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                    @if(auth()->user()->hasRole('doctor'))
+                        <a href="{{ route('surgery.requests.edit', $surgeryRequest) }}" class="btn btn-outline-success w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-pencil"></i> Edit Surgery Request
                         </a>
                     @endif
 
-                    @if(auth()->user()->hasAnyRole(['admin','doctor','or-coordinator']))
+                    @if(auth()->user()->hasAnyRole(['doctor','or-coordinator']))
                         <form action="{{ route('surgery.requests.cancel', $surgeryRequest) }}" method="POST">
                             @csrf
                             @method('PATCH')

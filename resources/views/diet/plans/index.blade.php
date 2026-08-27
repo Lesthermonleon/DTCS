@@ -22,7 +22,7 @@
                 <a href="{{ route('diet.plans.index') }}" class="btn btn-outline-secondary btn-sm" id="filter-clear">Clear</a>
             @endif
         </form>
-        @if(auth()->user()->hasAnyRole(['admin','dietitian']))
+        @if(auth()->user()->hasRole('dietitian'))
             <a href="{{ route('diet.plans.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>New Plan</a>
         @endif
     </div>
@@ -55,10 +55,12 @@
                     </td>
                     <td><span class="badge bg-{{ $plan->statusBadge }}">{{ $plan->status }}</span></td>
                     <td>
-                        <a href="{{ route('diet.plans.show', $plan) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
-                        @if($plan->status !== 'Completed' && auth()->user()->hasAnyRole(['admin','dietitian']))
-                            <a href="{{ route('diet.plans.edit', $plan) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="bi bi-pencil"></i></a>
-                        @endif
+                        <div class="table-actions">
+                            <a href="{{ route('diet.plans.show', $plan) }}" class="table-action-btn action-view" title="View Diet Plan Details" aria-label="View Diet Plan Details"><i class="bi bi-eye"></i></a>
+                            @if($plan->status !== 'Completed' && auth()->user()->hasRole('dietitian'))
+                                <a href="{{ route('diet.plans.edit', $plan) }}" class="table-action-btn action-edit" title="Edit Diet Plan" aria-label="Edit Diet Plan"><i class="bi bi-pencil"></i></a>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

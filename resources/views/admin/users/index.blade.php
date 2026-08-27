@@ -41,29 +41,31 @@
                         @endif
                     </td>
                     <td>
-                        <a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-outline-warning" title="Edit User"><i class="bi bi-pencil"></i></a>
-                        @if($u->locked_at)
-                            <form method="POST" action="{{ route('admin.users.unlock', $u) }}" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-info" title="Unlock Account"
-                                        data-confirm="Unlock {{ $u->name }}'s account? They will be able to log in again."
-                                        data-confirm-title="Unlock Account"
-                                        data-confirm-btn="btn-info"
-                                        data-confirm-icon="bi-unlock-fill"
-                                        data-confirm-action-text="Unlock Account"><i class="bi bi-unlock"></i></button>
-                            </form>
-                        @endif
-                        @if($u->id !== auth()->id())
-                            <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="d-inline">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete User"
-                                        data-confirm="WARNING: Are you sure you want to archive {{ $u->name }}'s account? They will lose access immediately."
-                                        data-confirm-title="Archive User Account"
-                                        data-confirm-btn="btn-danger"
-                                        data-confirm-icon="bi-archive-fill"
-                                        data-confirm-action-text="Archive Account"><i class="bi bi-trash"></i></button>
-                            </form>
-                        @endif
+                        <div class="table-actions">
+                            <a href="{{ route('admin.users.edit', $u) }}" class="table-action-btn action-edit" title="Edit User" aria-label="Edit User"><i class="bi bi-pencil"></i></a>
+                            @if($u->locked_at)
+                                <form method="POST" action="{{ route('admin.users.unlock', $u) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="table-action-btn action-unlock" title="Unlock Account" aria-label="Unlock Account"
+                                            data-confirm="Unlock {{ $u->name }}'s account? They will be able to log in again."
+                                            data-confirm-title="Unlock Account"
+                                            data-confirm-btn="btn-info"
+                                            data-confirm-icon="bi-unlock-fill"
+                                            data-confirm-action-text="Unlock Account"><i class="bi bi-unlock"></i></button>
+                                </form>
+                            @endif
+                            @if($u->id !== auth()->id())
+                                <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="d-inline">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="table-action-btn action-danger" title="Delete User" aria-label="Delete User"
+                                            data-confirm="WARNING: Are you sure you want to archive {{ $u->name }}'s account? They will lose access immediately."
+                                            data-confirm-title="Archive User Account"
+                                            data-confirm-btn="btn-danger"
+                                            data-confirm-icon="bi-archive-fill"
+                                            data-confirm-action-text="Archive Account"><i class="bi bi-trash"></i></button>
+                                </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -98,15 +100,17 @@
                     <td class="text-muted">{{ $u->department ?? '—' }}</td>
                     <td>@foreach($u->roles as $r)<span class="badge bg-secondary me-1">{{ $r->name }}</span>@endforeach</td>
                     <td>
-                        <form method="POST" action="{{ route('admin.users.restore', $u->id) }}" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-success" title="Restore User"
-                                    data-confirm="Are you sure you want to restore {{ $u->name }}'s account?"
-                                    data-confirm-title="Restore User Account"
-                                    data-confirm-btn="btn-success"
-                                    data-confirm-icon="bi-arrow-counterclockwise"
-                                    data-confirm-action-text="Restore Account"><i class="bi bi-arrow-counterclockwise"></i></button>
-                        </form>
+                        <div class="table-actions">
+                            <form method="POST" action="{{ route('admin.users.restore', $u->id) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="table-action-btn action-success" title="Restore User" aria-label="Restore User"
+                                        data-confirm="Are you sure you want to restore {{ $u->name }}'s account?"
+                                        data-confirm-title="Restore User Account"
+                                        data-confirm-btn="btn-success"
+                                        data-confirm-icon="bi-arrow-counterclockwise"
+                                        data-confirm-action-text="Restore Account"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @empty

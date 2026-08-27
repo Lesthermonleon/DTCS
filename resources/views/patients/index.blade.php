@@ -14,11 +14,11 @@
                 <option value="Inpatient" {{ request('type')==='Inpatient'?'selected':'' }}>Inpatient</option>
                 <option value="Outpatient" {{ request('type')==='Outpatient'?'selected':'' }}>Outpatient</option>
             </select>
-            <button class="btn btn-primary btn-sm d-none">Filter</button>
+            <button class="btn btn-sm d-none" style="background:var(--signal);color:var(--ink);border:none;">Filter</button>
             @if(request()->hasAny(['search','type']))<a href="{{ route('patients.index') }}" class="btn btn-outline-secondary btn-sm" id="filter-clear">Clear</a>@endif
         </form>
         @if(auth()->user()->hasAnyRole(['admin','doctor']))
-            <a href="{{ route('patients.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>New Patient</a>
+            <a href="{{ route('patients.create') }}" class="btn btn-sm" style="background:var(--signal);color:var(--ink);border:none;font-weight:600;"><i class="bi bi-person-plus me-1"></i>New Patient</a>
         @endif
     </div>
     <div class="card-body p-0">
@@ -28,7 +28,7 @@
                 <tbody id="patients-table-body">
                 @forelse($patients as $p)
                 <tr>
-                    <td class="fw-semibold text-primary">{{ $p->patient_no }}</td>
+                    <td class="fw-semibold" style="color:var(--signal-dark);font-family:var(--font-mono);font-size:.82rem;">{{ $p->patient_no }}</td>
                     <td>
                         <a href="{{ route('patients.show', $p) }}" class="fw-semibold text-dark text-decoration-none">
                             {{ $p->last_name }}, {{ $p->first_name }} {{ $p->middle_name }}
@@ -37,13 +37,15 @@
                     <td>{{ \Carbon\Carbon::parse($p->date_of_birth)->format('M d, Y') }}<br><small class="text-muted">{{ \Carbon\Carbon::parse($p->date_of_birth)->age }} yrs</small></td>
                     <td>{{ $p->gender }}</td>
                     <td>{{ $p->blood_type ?? '—' }}</td>
-                    <td><span class="badge bg-{{ $p->patient_type==='Inpatient'?'primary':'success' }}">{{ $p->patient_type }}</span></td>
+                    <td><span class="pill-muted" style="display:inline-block;font-size:.72rem;font-weight:600;padding:.2rem .65rem;border-radius:999px;">{{ $p->patient_type }}</span></td>
                     <td>{{ $p->phone ?? '—' }}</td>
                     <td>
-                        <a href="{{ route('patients.show', $p) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
-                        @if(auth()->user()->hasAnyRole(['admin','doctor']))
-                            <a href="{{ route('patients.edit', $p) }}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
-                        @endif
+                        <div class="table-actions">
+                            <a href="{{ route('patients.show', $p) }}" class="table-action-btn action-view" title="View Patient Details" aria-label="View Patient Details"><i class="bi bi-eye"></i></a>
+                            @if(auth()->user()->hasAnyRole(['admin','doctor']))
+                                <a href="{{ route('patients.edit', $p) }}" class="table-action-btn action-edit" title="Edit Patient Record" aria-label="Edit Patient Record"><i class="bi bi-pencil"></i></a>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

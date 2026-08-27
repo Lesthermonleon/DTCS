@@ -79,7 +79,7 @@
                 @endif
 
                 @if($radiologyReport->status !== 'Released' && auth()->user()->hasAnyRole(['admin', 'radiologist']))
-                    <a href="{{ route('radiology.reports.edit', $radiologyReport) }}" class="btn btn-warning w-100"><i class="bi bi-pencil me-2"></i>Edit Report Findings</a>
+                    <a href="{{ route('radiology.reports.edit', $radiologyReport) }}" class="btn btn-success w-100"><i class="bi bi-pencil me-2"></i>Edit Report Findings</a>
                 @endif
 
                 @if($radiologyReport->status === 'Draft' && auth()->user()->hasAnyRole(['admin', 'radiologist']))

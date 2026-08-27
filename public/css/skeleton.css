@@ -136,6 +136,34 @@
     border-bottom: 1px solid #E6E2D6;
 }
 
+/* ── Dark Mode Skeleton Component Overrides ── */
+html[data-theme="dark"] .sk,
+html[data-bs-theme="dark"] .sk {
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,.05) 25%,
+        rgba(255,255,255,.12) 50%,
+        rgba(255,255,255,.05) 75%
+    );
+    background-size: 600px 100%;
+}
+html[data-theme="dark"] .skeleton-card,
+html[data-bs-theme="dark"] .skeleton-card,
+html[data-theme="dark"] .skeleton-stat-card,
+html[data-bs-theme="dark"] .skeleton-stat-card {
+    background: #12221E;
+    border-color: #1E3630;
+}
+html[data-theme="dark"] .skeleton-table-row,
+html[data-bs-theme="dark"] .skeleton-table-row {
+    border-bottom-color: #1E3630;
+}
+html[data-theme="dark"] .skeleton-table-header,
+html[data-bs-theme="dark"] .skeleton-table-header {
+    background: #172C27;
+    border-bottom-color: #1E3630;
+}
+
 /* ── Form skeleton ── */
 .skeleton-form-group { margin-bottom: 1.25rem; }
 .skeleton-form-group .sk-label { margin-bottom: .45rem; }

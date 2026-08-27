@@ -99,11 +99,24 @@ class AuthenticatedSessionController extends Controller
                 'user_id'      => $user->id,
                 'action'       => 'Session Replaced',
                 'module'       => 'Authentication',
+                'severity'     => ActivityLog::SEVERITY_WARNING,
+                'result'       => ActivityLog::RESULT_SUCCESS,
                 'description'  => "Account {$user->email} logged in on a new device/browser. Previous active session was replaced.",
                 'ip_address'   => $request->ip(),
                 'logged_at'    => now(),
             ]);
         }
+
+        ActivityLog::create([
+            'user_id'     => $user->id,
+            'action'      => 'Login',
+            'module'      => 'Authentication',
+            'severity'    => ActivityLog::SEVERITY_INFO,
+            'result'      => ActivityLog::RESULT_SUCCESS,
+            'description' => "User [{$user->email}] logged in successfully.",
+            'ip_address'  => $request->ip(),
+            'logged_at'   => now(),
+        ]);
 
         // Generate encrypted login token
         $plainToken     = Str::random(64);
@@ -138,6 +151,17 @@ class AuthenticatedSessionController extends Controller
         $currentSessionId = $request->session()->getId();
 
         if ($user) {
+            ActivityLog::create([
+                'user_id'     => $user->id,
+                'action'      => 'Logout',
+                'module'      => 'Authentication',
+                'severity'    => ActivityLog::SEVERITY_INFO,
+                'result'      => ActivityLog::RESULT_SUCCESS,
+                'description' => "User [{$user->email}] logged out.",
+                'ip_address'  => $request->ip(),
+                'logged_at'   => now(),
+            ]);
+
             $user->clearActiveSession($currentSessionId);
             if ($user->active_session_id === null) {
                 $user->update(['login_token' => null]);

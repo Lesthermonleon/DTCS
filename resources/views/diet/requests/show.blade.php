@@ -85,7 +85,7 @@
                 </div>
             </div>
         @else
-            @if(auth()->user()->hasAnyRole(['admin','dietitian']) && $dietRequest->status === 'Pending')
+            @if(auth()->user()->hasRole('dietitian') && $dietRequest->status === 'Pending')
                 <div class="alert alert-info d-flex align-items-center justify-content-between mb-0">
                     <div>
                         <i class="bi bi-info-circle-fill me-2 fs-5"></i>
@@ -133,7 +133,7 @@
             <div class="card-header"><i class="bi bi-gear me-2"></i>Available Actions</div>
             <div class="card-body d-flex flex-column gap-2">
                 @if($dietRequest->status === 'Pending')
-                    @if(auth()->user()->hasAnyRole(['admin','doctor']))
+                    @if(auth()->user()->hasRole('doctor'))
                         <a href="{{ route('diet.requests.edit', $dietRequest) }}" class="btn btn-warning w-100 text-start"><i class="bi bi-pencil me-2"></i>Edit Request details</a>
                         <form method="POST" action="{{ route('diet.requests.destroy', $dietRequest) }}" onsubmit="return confirm('Cancel this diet request?');">
                             @csrf @method('DELETE')

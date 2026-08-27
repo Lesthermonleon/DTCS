@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * MediSenseController — Controls workspace views and API interactions for Virtual MediSense AI.
+ * MediSenseController — Controls workspace views and capability inspection for MediSense AI UI.
  */
 class MediSenseController extends Controller
 {
@@ -22,7 +22,7 @@ class MediSenseController extends Controller
     }
 
     /**
-     * Display the dedicated Virtual MediSense AI workspace.
+     * Display the dedicated MediSense AI workspace UI.
      */
     public function index(Request $request): View
     {
@@ -74,7 +74,7 @@ class MediSenseController extends Controller
     }
 
     /**
-     * Handle AI chat request from dedicated page or floating assistant.
+     * Handle AI chat request from workspace or floating widget — Returns unavailable status.
      */
     public function chat(Request $request): JsonResponse
     {
@@ -100,11 +100,7 @@ class MediSenseController extends Controller
 
         $result = $this->aiService->processRequest($user, $capability, $prompt, $patientId, $additionalContext);
 
-        if (! $result['success']) {
-            return response()->json($result, $result['code'] ?? 400);
-        }
-
-        return response()->json($result);
+        return response()->json($result, 200);
     }
 
     /**

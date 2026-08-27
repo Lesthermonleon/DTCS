@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Surgery;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSurgeryScheduleRequest;
+use App\Models\ActivityLog;
 use App\Models\OperatingRoom;
 use App\Models\SurgeryRequest;
 use App\Models\SurgerySchedule;
@@ -58,7 +59,9 @@ class SurgeryScheduleController extends Controller
 
     public function create(Request $request): View
     {
-        abort_if(! Auth::user()?->hasRole('or-coordinator'), 403, 'Only OR coordinators can schedule surgical procedures.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('or-coordinator'), 403, 'Only OR coordinators can schedule surgical procedures.');
 
         $this->ensureRoomsAndTeamsExist();
 
@@ -72,7 +75,9 @@ class SurgeryScheduleController extends Controller
 
     public function store(StoreSurgeryScheduleRequest $request): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('or-coordinator'), 403, 'Only OR coordinators can schedule surgical procedures.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('or-coordinator'), 403, 'Only OR coordinators can schedule surgical procedures.');
 
         $schedule = SurgerySchedule::create(array_merge($request->validated(), [
             'scheduled_by' => Auth::id(),
@@ -81,6 +86,19 @@ class SurgeryScheduleController extends Controller
 
         // Update the surgery request status
         SurgeryRequest::find($request->surgery_request_id)->update(['status' => 'Scheduled']);
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Surgery Scheduled',
+            'module'        => 'Surgery',
+            'severity'      => ActivityLog::SEVERITY_INFO,
+            'result'        => ActivityLog::RESULT_SUCCESS,
+            'description'   => "Surgery schedule created for request [{$request->surgery_request_id}].",
+            'loggable_type' => SurgerySchedule::class,
+            'loggable_id'   => $schedule->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return redirect()->route('surgery.schedules.index')
                          ->with('success', 'Surgery scheduled successfully.');
@@ -95,7 +113,9 @@ class SurgeryScheduleController extends Controller
 
     public function edit(SurgerySchedule $surgerySchedule): View
     {
-        abort_if(! Auth::user()?->hasRole('or-coordinator'), 403, 'Only OR coordinators can edit surgical schedules.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('or-coordinator'), 403, 'Only OR coordinators can edit surgical schedules.');
         abort_if($surgerySchedule->status === 'Completed', 403, 'Completed schedules cannot be edited.');
 
         $this->ensureRoomsAndTeamsExist();
@@ -109,8 +129,26 @@ class SurgeryScheduleController extends Controller
 
     public function update(StoreSurgeryScheduleRequest $request, SurgerySchedule $surgerySchedule): RedirectResponse
     {
+        // Defense-in-depth: controller reinforces route middleware
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('or-coordinator'), 403, 'Only OR coordinators can edit surgical schedules.');
         abort_if($surgerySchedule->status === 'Completed', 403, 'Completed schedules cannot be edited.');
+
         $surgerySchedule->update($request->validated());
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Surgery Schedule Updated',
+            'module'        => 'Surgery',
+            'severity'      => ActivityLog::SEVERITY_INFO,
+            'result'        => ActivityLog::RESULT_SUCCESS,
+            'description'   => "Surgery schedule #{$surgerySchedule->id} was updated.",
+            'loggable_type' => SurgerySchedule::class,
+            'loggable_id'   => $surgerySchedule->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return redirect()->route('surgery.schedules.show', $surgerySchedule)
                          ->with('success', 'Schedule updated successfully.');
@@ -118,11 +156,27 @@ class SurgeryScheduleController extends Controller
 
     public function destroy(SurgerySchedule $surgerySchedule): RedirectResponse
     {
+        // Defense-in-depth: controller reinforces route middleware
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('or-coordinator'), 403, 'Only OR coordinators can remove surgical schedules.');
         abort_if($surgerySchedule->status === 'Completed', 403, 'Completed schedules cannot be deleted.');
+
         if ($surgerySchedule->surgeryRequest) {
             $surgerySchedule->surgeryRequest->update(['status' => 'Pending']);
         }
         $surgerySchedule->delete();
+
+        ActivityLog::create([
+            'user_id'    => Auth::id(),
+            'action'     => 'Surgery Schedule Removed',
+            'module'     => 'Surgery',
+            'severity'   => ActivityLog::SEVERITY_WARNING,
+            'result'     => ActivityLog::RESULT_SUCCESS,
+            'description'=> "Surgery schedule #{$surgerySchedule->id} was removed and request returned to Pending.",
+            'ip_address' => request()->ip(),
+            'logged_at'  => now(),
+        ]);
 
         return redirect()->route('surgery.schedules.index')
                          ->with('success', 'Schedule removed. Request returned to pending.');
@@ -130,20 +184,56 @@ class SurgeryScheduleController extends Controller
 
     public function start(SurgerySchedule $surgerySchedule): RedirectResponse
     {
+        // Defense-in-depth: controller reinforces route middleware
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('or-coordinator'), 403, 'Only OR coordinators can start surgical procedures.');
+
         $surgerySchedule->update(['status' => 'In Progress']);
         if ($surgerySchedule->surgeryRequest) {
             $surgerySchedule->surgeryRequest->update(['status' => 'In Progress']);
         }
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Surgery Started',
+            'module'        => 'Surgery',
+            'severity'      => ActivityLog::SEVERITY_INFO,
+            'result'        => ActivityLog::RESULT_SUCCESS,
+            'description'   => "Surgery schedule #{$surgerySchedule->id} marked as In Progress.",
+            'loggable_type' => SurgerySchedule::class,
+            'loggable_id'   => $surgerySchedule->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return back()->with('success', 'Surgery marked as In Progress.');
     }
 
     public function complete(SurgerySchedule $surgerySchedule): RedirectResponse
     {
+        // Defense-in-depth: controller reinforces route middleware
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('or-coordinator'), 403, 'Only OR coordinators can complete surgical procedures.');
+
         $surgerySchedule->update(['status' => 'Completed']);
         if ($surgerySchedule->surgeryRequest) {
             $surgerySchedule->surgeryRequest->update(['status' => 'Completed']);
         }
+
+        ActivityLog::create([
+            'user_id'       => Auth::id(),
+            'action'        => 'Surgery Completed',
+            'module'        => 'Surgery',
+            'severity'      => ActivityLog::SEVERITY_INFO,
+            'result'        => ActivityLog::RESULT_SUCCESS,
+            'description'   => "Surgery schedule #{$surgerySchedule->id} was marked as Completed.",
+            'loggable_type' => SurgerySchedule::class,
+            'loggable_id'   => $surgerySchedule->id,
+            'ip_address'    => request()->ip(),
+            'logged_at'     => now(),
+        ]);
 
         return back()->with('success', 'Surgery marked as completed.');
     }

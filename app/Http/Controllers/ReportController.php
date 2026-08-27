@@ -21,6 +21,19 @@ class ReportController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
         $role = $user?->primaryRole;
+
+        // Specialized clinical staff get redirected directly to their focused department report
+        if (in_array($role, ['med-tech', 'rad-tech', 'radiologist', 'pharmacist', 'dietitian', 'or-coordinator'], true)) {
+            return match ($role) {
+                'med-tech'                => redirect()->route('reports.laboratory.activity'),
+                'rad-tech', 'radiologist' => redirect()->route('reports.radiology.activity'),
+                'pharmacist'              => redirect()->route('reports.pharmacy.activity'),
+                'dietitian'               => redirect()->route('reports.diet.activity'),
+                'or-coordinator'          => redirect()->route('reports.surgery.activity'),
+                default                   => redirect()->route('dashboard'),
+            };
+        }
+
         $categories = $this->reportService->accessibleCategories($role);
 
         return view('reports.index', compact('categories', 'role'));
