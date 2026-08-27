@@ -2967,6 +2967,21 @@
             transform: translate(0, -50%);
         }
 
+        /* Dark Mode Mini Sidebar Hover Tooltip Overrides */
+        html[data-theme="dark"] .sb-tooltip,
+        html[data-bs-theme="dark"] .sb-tooltip {
+            background-color: #1F1F1F !important;
+            color: #FFFFFF !important;
+            border: 1px solid #333333 !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.85) !important;
+        }
+        html[data-theme="dark"] .sb-tooltip::before,
+        html[data-bs-theme="dark"] .sb-tooltip::before {
+            background-color: #1F1F1F !important;
+            border-left-color: #333333 !important;
+            border-bottom-color: #333333 !important;
+        }
+
         /* ══════════════════════════════════════
            RESPONSIVE & MINI SIDEBAR COLLAPSE
         ══════════════════════════════════════ */
@@ -3677,7 +3692,7 @@
                     text = clone.textContent.trim();
                 } else {
                     const clone = elem.cloneNode(true);
-                    clone.querySelectorAll('i, svg').forEach(i => i.remove());
+                    clone.querySelectorAll('i, svg, .sb-badge').forEach(i => i.remove());
                     text = clone.textContent.trim();
                 }
             }
