@@ -57,18 +57,18 @@
     <div class="col-lg-5">
         <div class="card mb-3">
             <div class="card-header"><i class="bi bi-list-check me-2"></i>Select Tests <span class="text-danger">*</span></div>
-            <div class="card-body" style="max-height:400px;overflow-y:auto;">
+            <div class="card-body lab-test-scroll-container">
                 @error('tests')<div class="alert alert-danger py-1 mb-2">{{ $message }}</div>@enderror
                 @foreach($labTests->groupBy(fn($t)=>$t->category->name) as $catName => $tests)
-                    <div class="fw-semibold text-primary small mb-1 mt-2">{{ $catName }}</div>
+                    <div class="lab-test-category-title">{{ $catName }}</div>
                     @foreach($tests as $test)
-                    <div class="form-check">
+                    <div class="form-check lab-test-item">
                         <input class="form-check-input" type="checkbox" name="tests[]"
                                value="{{ $test->id }}" id="test_{{ $test->id }}"
                                {{ in_array($test->id, old('tests', [])) ? 'checked':'' }}>
-                        <label class="form-check-label small" for="test_{{ $test->id }}">
+                        <label class="form-check-label lab-test-label" for="test_{{ $test->id }}">
                             {{ $test->name }}
-                            <span class="text-muted">({{ $test->code }})</span>
+                            <span class="lab-test-code">({{ $test->code }})</span>
                         </label>
                     </div>
                     @endforeach

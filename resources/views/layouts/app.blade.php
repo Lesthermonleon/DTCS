@@ -1031,6 +1031,141 @@
         html[data-bs-theme="dark"] .border-end {
             border-color: #262626 !important;
         }
+
+        /* ══════════════════════════════════════
+           LABORATORY REQUEST SELECT TESTS COMPONENT
+        ══════════════════════════════════════ */
+        .lab-test-scroll-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        /* Custom Dark Mode Scrollbar for Select Tests Container */
+        html[data-theme="dark"] .lab-test-scroll-container::-webkit-scrollbar,
+        html[data-bs-theme="dark"] .lab-test-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        html[data-theme="dark"] .lab-test-scroll-container::-webkit-scrollbar-track,
+        html[data-bs-theme="dark"] .lab-test-scroll-container::-webkit-scrollbar-track {
+            background: #0a0a0a;
+            border-radius: 4px;
+        }
+        html[data-theme="dark"] .lab-test-scroll-container::-webkit-scrollbar-thumb,
+        html[data-bs-theme="dark"] .lab-test-scroll-container::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 4px;
+        }
+        html[data-theme="dark"] .lab-test-scroll-container::-webkit-scrollbar-thumb:hover,
+        html[data-bs-theme="dark"] .lab-test-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #16a34a;
+        }
+
+        /* Laboratory Test Category Headings */
+        .lab-test-category-title {
+            color: var(--ms-primary, #15803d) !important;
+            font-weight: 600 !important;
+            font-size: 0.8125rem !important;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+            margin-top: 0.75rem;
+            margin-bottom: 0.375rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px dashed rgba(21, 128, 61, 0.2);
+        }
+        html[data-theme="dark"] .lab-test-category-title,
+        html[data-bs-theme="dark"] .lab-test-category-title {
+            color: #4ade80 !important;
+            border-bottom-color: rgba(74, 222, 128, 0.2) !important;
+        }
+
+        /* Laboratory Test Item Container & Hover Effect */
+        .lab-test-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.375rem 0.5rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.15s ease-in-out;
+            cursor: pointer;
+            margin-bottom: 0.125rem;
+        }
+
+        /* Light Mode Hover & Selected States */
+        html[data-theme="light"] .lab-test-item:hover,
+        :root:not([data-theme="dark"]) .lab-test-item:hover {
+            background-color: #f0fdf4 !important;
+        }
+        html[data-theme="light"] .lab-test-item:has(.form-check-input:checked),
+        :root:not([data-theme="dark"]) .lab-test-item:has(.form-check-input:checked) {
+            background-color: #e8f5ec !important;
+        }
+
+        /* Dark Mode Hover & Selected States */
+        html[data-theme="dark"] .lab-test-item:hover,
+        html[data-bs-theme="dark"] .lab-test-item:hover {
+            background-color: #172621 !important;
+        }
+        html[data-theme="dark"] .lab-test-item:has(.form-check-input:checked),
+        html[data-bs-theme="dark"] .lab-test-item:has(.form-check-input:checked) {
+            background-color: rgba(22, 197, 94, 0.18) !important;
+        }
+
+        /* Test Name Label & Test Code Styling */
+        .lab-test-label {
+            color: var(--ms-dark-fg, #173b2a) !important;
+            font-size: 0.84rem !important;
+            font-weight: 500 !important;
+            cursor: pointer;
+            user-select: none;
+            line-height: 1.35;
+            flex: 1;
+            margin-bottom: 0 !important;
+            word-break: normal !important;
+            overflow-wrap: break-word !important;
+        }
+        html[data-theme="dark"] .lab-test-label,
+        html[data-bs-theme="dark"] .lab-test-label {
+            color: #ffffff !important;
+        }
+
+        .lab-test-code {
+            color: var(--text-soft, #55655d) !important;
+            font-weight: 400 !important;
+            margin-left: 0.25rem;
+            font-size: 0.8rem !important;
+        }
+        html[data-theme="dark"] .lab-test-code,
+        html[data-bs-theme="dark"] .lab-test-code {
+            color: #a3a3a3 !important;
+        }
+
+        /* Custom Checkbox Styling for Select Tests */
+        .lab-test-item .form-check-input {
+            margin-top: 0.15rem !important;
+            cursor: pointer;
+            flex-shrink: 0;
+            border-color: #d5e5da !important;
+        }
+        .lab-test-item .form-check-input:checked {
+            background-color: #15803d !important;
+            border-color: #15803d !important;
+        }
+        .lab-test-item .form-check-input:focus {
+            border-color: #22c55e !important;
+            box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.25) !important;
+        }
+
+        html[data-theme="dark"] .lab-test-item .form-check-input,
+        html[data-bs-theme="dark"] .lab-test-item .form-check-input {
+            background-color: #0a0a0a !important;
+            border-color: #404040 !important;
+        }
+        html[data-theme="dark"] .lab-test-item .form-check-input:checked,
+        html[data-bs-theme="dark"] .lab-test-item .form-check-input:checked {
+            background-color: #16a34a !important;
+            border-color: #16a34a !important;
+        }
         /* ══════════════════════════════════════
            UNIFIED CLINICAL CARD HOVER INTERACTION
         ══════════════════════════════════════ */

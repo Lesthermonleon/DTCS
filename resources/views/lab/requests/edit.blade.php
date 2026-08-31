@@ -43,16 +43,19 @@
     <div class="col-lg-5">
         <div class="card mb-3">
             <div class="card-header">Select Tests <span class="text-danger">*</span></div>
-            <div class="card-body" style="max-height:360px;overflow-y:auto;">
+            <div class="card-body lab-test-scroll-container" style="max-height:360px;">
                 @php $currentTestIds = $labRequest->items->pluck('lab_test_id')->toArray(); @endphp
                 @foreach($labTests->groupBy(fn($t)=>$t->category->name) as $catName => $tests)
-                    <div class="fw-semibold text-primary small mb-1 mt-2">{{ $catName }}</div>
+                    <div class="lab-test-category-title">{{ $catName }}</div>
                     @foreach($tests as $test)
-                    <div class="form-check">
+                    <div class="form-check lab-test-item">
                         <input class="form-check-input" type="checkbox" name="tests[]"
                                value="{{ $test->id }}" id="test_{{ $test->id }}"
                                {{ in_array($test->id, old('tests', $currentTestIds)) ? 'checked':'' }}>
-                        <label class="form-check-label small" for="test_{{ $test->id }}">{{ $test->name }} ({{ $test->code }})</label>
+                        <label class="form-check-label lab-test-label" for="test_{{ $test->id }}">
+                            {{ $test->name }}
+                            <span class="lab-test-code">({{ $test->code }})</span>
+                        </label>
                     </div>
                     @endforeach
                 @endforeach
