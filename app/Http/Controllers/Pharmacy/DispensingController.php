@@ -7,6 +7,7 @@ use App\Http\Requests\StoreDispensingRecordRequest;
 use App\Models\DispensingRecord;
 use App\Models\Prescription;
 use App\Models\PrescriptionItem;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,7 @@ class DispensingController extends Controller
             'pharmacist'
         ]);
 
-        if ($search = $request->get('search')) {
+        if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->whereHas('prescriptionItem.prescription', fn($p) => $p->where('prescription_no', 'like', "%{$search}%"))
                   ->orWhereHas('prescriptionItem.prescription.patient', fn($pt) => $pt->where('first_name', 'like', "%{$search}%")
@@ -55,7 +56,9 @@ class DispensingController extends Controller
 
     public function create(Request $request): View
     {
-        abort_if(! Auth::user()?->hasRole('pharmacist'), 403, 'Only pharmacists can dispense medications.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('pharmacist'), 403, 'Only pharmacists can dispense medications.');
 
         // Verified and Partially Dispensed prescriptions that still have pending items
         $prescriptions = Prescription::whereIn('status', ['Verified', 'Partially Dispensed'])
@@ -65,12 +68,12 @@ class DispensingController extends Controller
             ->get();
 
         $selectedPrescription = null;
-        if ($rxId = $request->get('rx')) {
+        if ($rxId = $request->input('rx')) {
             $selectedPrescription = Prescription::with(['patient', 'doctor', 'items'])->find($rxId);
         }
 
         $selectedItem = null;
-        if ($itemId = $request->get('item')) {
+        if ($itemId = $request->input('item')) {
             $selectedItem = PrescriptionItem::with('prescription.patient')->find($itemId);
             if ($selectedItem && ! $selectedPrescription) {
                 $selectedPrescription = $selectedItem->prescription;
@@ -82,7 +85,9 @@ class DispensingController extends Controller
 
     public function store(StoreDispensingRecordRequest $request): RedirectResponse
     {
-        abort_if(! Auth::user()?->hasRole('pharmacist'), 403, 'Only pharmacists can dispense medications.');
+        /** @var User|null $user */
+        $user = Auth::user();
+        abort_if(! $user?->hasRole('pharmacist'), 403, 'Only pharmacists can dispense medications.');
 
         $item = PrescriptionItem::with('prescription')->findOrFail($request->prescription_item_id);
 
