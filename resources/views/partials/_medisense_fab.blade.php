@@ -1,226 +1,597 @@
-@if (! request()->routeIs('medisense.index'))
-{{-- ─── Virtual MediSense AI Floating Action Button & Quick Widget ─── --}}
+﻿@if (! request()->routeIs('medisense.index'))
+{{-- ─── MediSense AI Floating Action Button & Chat Widget ─── --}}
 <div id="medisenseFabContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1085;">
-    {{-- Floating Trigger Button --}}
-    <button id="medisenseFabBtn" 
-            type="button" 
-            class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center text-white border-0 position-relative"
+
+    {{-- Floating Action Button --}}
+    <button id="medisenseFabBtn"
+            type="button"
+            class="ms-fab-btn"
             title="MediSense AI: Clinical Assistant"
-            aria-label="Toggle MediSense AI Assistant"
-            style="width: 54px; height: 54px; background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 8px 24px rgba(21, 128, 61, 0.25) !important;">
-        <i class="bi bi-cpu fs-4"></i>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.58rem;">
-            AI
-        </span>
+            aria-label="Toggle MediSense AI Assistant">
+        <i class="bi bi-stars ms-fab-icon"></i>
+        <span class="ms-fab-badge" aria-hidden="true">AI</span>
     </button>
 
-    {{-- Slide-up Quick Chat Drawer --}}
-    <div id="medisenseFabWidget" 
-         class="card border shadow-lg d-none overflow-hidden bg-body text-body d-flex flex-column" 
-         style="transition: opacity 0.25s ease, transform 0.25s ease;">
-        
-        {{-- Widget Header --}}
-        <div class="card-header py-2.5 px-3 border-bottom text-white d-flex align-items-center justify-content-between flex-shrink-0" 
-             style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); min-width: 0;">
-            <div class="d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0;">
-                <i class="bi bi-cpu text-success fs-5 flex-shrink-0"></i>
-                <div style="min-width: 0;" class="flex-grow-1">
-                    <h6 class="mb-0 fw-bold text-white text-truncate" style="font-size: 0.85rem; font-family: var(--font-display);">MediSense AI</h6>
-                    <small class="text-white-50 d-block text-truncate" style="font-size: 0.65rem;">{{ auth()->user()?->roleName ?? 'Clinical' }} Decision Support</small>
+    {{-- Chat Popup Widget --}}
+    <div id="medisenseFabWidget" class="ms-widget d-none" role="dialog" aria-label="MediSense AI Assistant" aria-modal="true">
+
+        {{-- Header --}}
+        <div class="ms-widget-header">
+            <div class="ms-widget-header-identity">
+                <div class="ms-widget-avatar">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div class="ms-widget-title-group">
+                    <span class="ms-widget-title">MediSense AI</span>
+                    <span class="ms-widget-subtitle">{{ auth()->user()?->roleName ?? 'Clinical' }} Decision Support</span>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-1 flex-shrink-0 ms-2">
-                <a href="{{ route('medisense.index') }}" class="btn btn-sm btn-link text-white-50 p-1 hover-text-white" title="Open Full MediSense Workspace">
+            <div class="ms-widget-header-actions">
+                <a href="{{ route('medisense.index') }}"
+                   class="ms-header-icon-btn"
+                   title="Open Full MediSense Workspace"
+                   aria-label="Open full workspace">
                     <i class="bi bi-box-arrow-up-right"></i>
                 </a>
-                <button id="medisenseFabClose" type="button" class="btn-close btn-close-white btn-sm" aria-label="Close" onclick="closeFabWidget()"></button>
+                <button id="medisenseFabClose"
+                        type="button"
+                        class="ms-header-icon-btn ms-close-btn"
+                        aria-label="Close MediSense AI"
+                        onclick="closeFabWidget()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
         </div>
 
-        {{-- Widget Messages Container --}}
-        <div id="fabChatMessages" class="card-body p-3 overflow-y-auto bg-body-tertiary flex-grow-1" style="font-size: 0.82rem;">
-            <div class="p-2.5 rounded-3 bg-body border shadow-xs mb-3 text-body">
-                <div class="fw-semibold mb-1 text-success d-flex align-items-center gap-1" style="font-size: 0.8rem;">
-                    <i class="bi bi-cpu"></i> Clinical Assistant Ready
+        {{-- Messages Area --}}
+        <div id="fabChatMessages" class="ms-chat-area">
+            {{-- Welcome / Empty State --}}
+            <div class="ms-empty-state">
+                <div class="ms-empty-avatar">
+                    <i class="bi bi-stars"></i>
                 </div>
-                <p class="mb-0 text-body-secondary" style="font-size: 0.78rem;">
-                    Ask any medical or clinical workflow question naturally. MediSense automatically determines intent and enforces role-based security.
+                <p class="ms-empty-title">MediSense AI</p>
+                <p class="ms-empty-sub">Clinical Decision Support Assistant</p>
+                <p class="ms-empty-hint">
+                    Ask about patient clinical information, laboratory results,
+                    medications, or other supported clinical workflows.
                 </p>
             </div>
         </div>
 
-        {{-- Widget Input Form --}}
-        <div class="card-footer p-2 bg-body border-top flex-shrink-0">
-            <form id="fabChatForm" class="d-flex align-items-center gap-1.5">
-                <input type="text" id="fabInputPrompt" class="form-control form-control-sm border bg-body text-body shadow-none" 
-                       placeholder="Ask MediSense AI..." style="font-size: 0.82rem;" required autocomplete="off">
-                <button type="submit" id="fabBtnSend" class="btn btn-sm btn-success px-2.5 flex-shrink-0" style="border-radius: 0.4rem;">
+        {{-- Input Footer --}}
+        <div class="ms-input-area">
+            <form id="fabChatForm" class="ms-input-form" novalidate>
+                <input type="text"
+                       id="fabInputPrompt"
+                       class="ms-input"
+                       placeholder="Ask MediSense AI…"
+                       autocomplete="off"
+                       required>
+                <button type="submit" id="fabBtnSend" class="ms-send-btn" aria-label="Send message">
                     <i class="bi bi-send-fill"></i>
                 </button>
             </form>
         </div>
+
     </div>
 </div>
 
 <style>
-/* Default Light Mode Widget Style */
-html[data-theme="light"] #medisenseFabWidget,
-html[data-bs-theme="light"] #medisenseFabWidget,
-:root:not([data-theme="dark"]) #medisenseFabWidget {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
+/* ═══════════════════════════════════════════════════════════
+   MEDISENSE AI — DESIGN TOKENS
+   ═══════════════════════════════════════════════════════════ */
+:root {
+    --ms-surface:       #ffffff;
+    --ms-surface-alt:   #f7faf8;
+    --ms-border:        #e2e8f0;
+    --ms-text:          #173b2a;
+    --ms-muted:         #64748b;
+    --ms-accent:        #15803d;
+    --ms-accent-light:  #f0fdf4;
+    --ms-accent-border: #bbf7d0;
+    --ms-user-bg:       #eaf7ee;
+    --ms-user-border:   #c8ebd1;
+    --ms-user-text:     #0f172a;
+    --ms-danger:        #dc2626;
+    --ms-widget-radius: 1.25rem;
+    --ms-header-grad:   linear-gradient(135deg, #15803d 0%, #166534 100%);
+    --ms-shadow:        0 16px 48px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
 }
 
-#medisenseFabWidget {
+html[data-theme="dark"],
+html[data-bs-theme="dark"] {
+    --ms-surface:       #111111;
+    --ms-surface-alt:   #000000;
+    --ms-border:        #262626;
+    --ms-text:          #ffffff;
+    --ms-muted:         #a3a3a3;
+    --ms-accent:        #4ade80;
+    --ms-accent-light:  rgba(22,163,74,0.12);
+    --ms-accent-border: rgba(22,163,74,0.3);
+    --ms-user-bg:       #1a2a1e;
+    --ms-user-border:   #2d4a35;
+    --ms-user-text:     #e2e8f0;
+    --ms-shadow:        0 16px 48px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FLOATING ACTION BUTTON
+   ═══════════════════════════════════════════════════════════ */
+.ms-fab-btn {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: var(--ms-header-grad);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 8px 24px rgba(21,128,61,0.3);
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
+    outline: none;
+}
+.ms-fab-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 30px rgba(21,128,61,0.4);
+}
+.ms-fab-btn:active {
+    transform: scale(0.94);
+}
+.ms-fab-btn.ms-fab-open {
+    transform: scale(0.9) rotate(45deg);
+}
+.ms-fab-icon {
+    font-size: 1.35rem;
+    pointer-events: none;
+}
+.ms-fab-badge {
+    position: absolute;
+    top: 0;
+    right: -2px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.15em 0.38em;
+    border-radius: 999px;
+    border: 1.5px solid #fff;
+    line-height: 1.4;
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WIDGET POPUP CONTAINER
+   ═══════════════════════════════════════════════════════════ */
+.ms-widget {
     position: fixed !important;
-    bottom: 84px !important;
-    right: 20px !important;
-    width: 390px !important;
-    max-width: calc(100vw - 32px) !important;
-    height: 550px !important;
-    max-height: calc(100vh - 110px) !important;
-    z-index: 1090 !important;
-    border-radius: 1.25rem !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-    display: flex !important;
-    flex-direction: column !important;
+    bottom: 80px;
+    right: 20px;
+    width: 400px;
+    max-width: calc(100vw - 32px);
+    height: 560px;
+    max-height: calc(100vh - 110px);
+    z-index: 1090;
+    border-radius: var(--ms-widget-radius);
+    background: var(--ms-surface);
+    border: 1px solid var(--ms-border);
+    box-shadow: var(--ms-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Open animation */
+    transform-origin: bottom right;
+    transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16,1,0.3,1);
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
-
-#medisenseFabWidget.d-none {
+.ms-widget.d-none {
     display: none !important;
 }
-
-#fabChatMessages {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
+/* Entrance state — toggled by JS */
+.ms-widget.ms-entering {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════════ */
+.ms-widget-header {
+    background: var(--ms-header-grad);
+    padding: 0.7rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    min-width: 0;
+}
+.ms-widget-header-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-width: 0;
+    flex: 1;
+}
+.ms-widget-avatar {
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 0.5rem;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+    color: #ffffff;
+}
+.ms-widget-title-group {
+    min-width: 0;
+    flex: 1;
+}
+.ms-widget-title {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #ffffff;
+    font-family: var(--font-display, 'Inter', sans-serif);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ms-widget-subtitle {
+    display: block;
+    font-size: 0.625rem;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ms-widget-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+.ms-header-icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 0.375rem;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.65);
+    display: grid;
+    place-items: center;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    outline: none;
+}
+.ms-header-icon-btn:hover {
+    background: rgba(255,255,255,0.18);
+    color: #ffffff;
+}
+.ms-close-btn:hover {
+    background: rgba(220,38,38,0.5);
+    color: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHAT MESSAGES AREA
+   ═══════════════════════════════════════════════════════════ */
+.ms-chat-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem;
+    background: var(--ms-surface-alt);
+    scroll-behavior: smooth;
+    /* Custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--ms-border) transparent;
+}
+.ms-chat-area::-webkit-scrollbar { width: 5px; }
+.ms-chat-area::-webkit-scrollbar-track { background: transparent; }
+.ms-chat-area::-webkit-scrollbar-thumb { background: var(--ms-border); border-radius: 4px; }
+html[data-theme="dark"] .ms-chat-area::-webkit-scrollbar-thumb,
+html[data-bs-theme="dark"] .ms-chat-area::-webkit-scrollbar-thumb { background: #333; }
+
+/* ─── Empty / Welcome State ─── */
+.ms-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem 1.25rem;
+    gap: 0.25rem;
+}
+.ms-empty-avatar {
+    width: 52px;
+    height: 52px;
+    background: var(--ms-accent-light);
+    border: 1.5px solid var(--ms-accent-border);
+    border-radius: 1rem;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    color: var(--ms-accent);
+    margin-bottom: 0.75rem;
+}
+.ms-empty-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ms-text);
+    margin: 0;
+}
+.ms-empty-sub {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ms-accent);
+    margin: 0.1rem 0 0.5rem;
+    font-weight: 600;
+}
+.ms-empty-hint {
+    font-size: 0.78rem;
+    color: var(--ms-muted);
+    line-height: 1.55;
+    max-width: 280px;
+    margin: 0;
+}
+
+/* ─── AI Message Bubble ─── */
+.ms-ai-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin-bottom: 0.875rem;
+}
+.ms-ai-avatar {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    background: var(--ms-accent-light);
+    border: 1px solid var(--ms-accent-border);
+    border-radius: 0.5rem;
+    display: grid;
+    place-items: center;
+    color: var(--ms-accent);
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+.ms-ai-bubble {
+    background: var(--ms-surface);
+    border: 1px solid var(--ms-border);
+    border-radius: 0 0.875rem 0.875rem 0.875rem;
+    padding: 0.6rem 0.875rem;
+    max-width: 87%;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--ms-text);
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.ms-ai-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--ms-accent);
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* ─── User Message Bubble ─── */
+.ms-user-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.625rem;
+}
 .fab-user-bubble {
-    display: inline-block !important;
-    width: fit-content !important;
-    max-width: 85% !important;
-    white-space: pre-wrap !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
-    border-radius: 1rem !important;
-    background: #eaf7ee !important;
-    padding: 0.5rem 0.85rem !important;
-    font-size: 0.78rem !important;
-    line-height: 1.5 !important;
-    color: #0f172a !important;
-    border: 1px solid #c8ebd1 !important;
-    box-shadow: 0 1px 2px rgba(21, 128, 61, 0.05) !important;
+    display: inline-block;
+    max-width: 82%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    border-radius: 0.875rem 0 0.875rem 0.875rem;
+    background: var(--ms-user-bg);
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: var(--ms-user-text);
+    border: 1px solid var(--ms-user-border);
+    box-shadow: 0 1px 3px rgba(21,128,61,0.07);
 }
 
-.fab-ai-avatar {
-    width: 26px !important;
-    height: 26px !important;
-    flex-shrink: 0 !important;
-    display: grid !important;
-    place-items: center !important;
-    border-radius: 8px !important;
-    background: #f0fdf4 !important;
-    color: #15803d !important;
-    border: 1px solid #bbf7d0 !important;
+/* ─── Thinking / Loading Animation ─── */
+.ms-thinking-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+.ms-thinking-bubble {
+    background: var(--ms-surface);
+    border: 1px solid var(--ms-border);
+    border-radius: 0 0.875rem 0.875rem 0.875rem;
+    padding: 0.55rem 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.76rem;
+    color: var(--ms-muted);
+}
+.ms-dots {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+.ms-dots span {
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ms-accent);
+    animation: ms-pulse 1.4s ease-in-out infinite;
+}
+.ms-dots span:nth-child(2) { animation-delay: 0.18s; }
+.ms-dots span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes ms-pulse {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40%           { opacity: 1;   transform: scale(1);   }
 }
 
-/* Dark Mode Overrides for MediSense AI Widget */
-html[data-theme="dark"] #medisenseFabWidget,
-html[data-bs-theme="dark"] #medisenseFabWidget {
-    background: #111111 !important;
-    border: 1px solid #262626 !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65) !important;
+/* ─── Error Bubble ─── */
+.ms-error-bubble {
+    background: rgba(220,38,38,0.08);
+    border: 1px solid rgba(220,38,38,0.25);
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.78rem;
+    color: #dc2626;
+    margin-bottom: 0.625rem;
+    word-break: break-word;
+}
+html[data-theme="dark"] .ms-error-bubble,
+html[data-bs-theme="dark"] .ms-error-bubble {
+    color: #fca5a5;
+    background: rgba(220,38,38,0.12);
+    border-color: rgba(220,38,38,0.3);
 }
 
-html[data-theme="dark"] #fabChatMessages,
-html[data-bs-theme="dark"] #fabChatMessages {
-    background: #000000 !important;
+/* ─── Source Badges & Citations ─── */
+.ms-sources { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--ms-border); }
+.ms-source-badge { font-size: 0.62rem; padding: 0.2em 0.55em; background: var(--ms-accent-light); color: var(--ms-accent); border: 1px solid var(--ms-accent-border); border-radius: 999px; font-weight: 600; }
+.ms-citations { margin-top: 0.5rem; padding: 0.5rem 0.625rem; background: var(--ms-surface-alt); border: 1px solid var(--ms-border); border-radius: 0.625rem; font-size: 0.7rem; }
+.ms-citations-label { font-weight: 700; color: var(--ms-text); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.3rem; }
+.ms-citations a { color: var(--ms-accent); text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ms-citations a:hover { text-decoration: underline; }
+
+/* ─── Capability Badge ─── */
+.ms-cap-badge { font-size: 0.6rem; padding: 0.18em 0.5em; background: var(--ms-accent-light); color: var(--ms-accent); border: 1px solid var(--ms-accent-border); border-radius: 999px; font-weight: 600; }
+
+/* ─── Confirmation Card ─── */
+.ms-confirm-card {
+    background: rgba(21,128,61,0.08);
+    border: 1px solid rgba(21,128,61,0.25);
+    border-radius: 0.875rem;
+    padding: 0.75rem 0.875rem;
+    font-size: 0.78rem;
+    margin-bottom: 0.75rem;
+    color: var(--ms-text);
 }
-
-html[data-theme="dark"] #fabChatMessages .bg-body,
-html[data-bs-theme="dark"] #fabChatMessages .bg-body,
-html[data-theme="dark"] #fabChatMessages .bg-body-tertiary,
-html[data-bs-theme="dark"] #fabChatMessages .bg-body-tertiary {
-    background-color: #111111 !important;
-    color: #FFFFFF !important;
-    border-color: #262626 !important;
+.ms-confirm-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ms-accent);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.4rem;
 }
+.ms-confirm-detail { font-size: 0.73rem; color: var(--ms-muted); margin-bottom: 0.5rem; }
+.ms-confirm-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
-html[data-theme="dark"] .fab-user-bubble {
-    background: #171717 !important;
-    color: #FFFFFF !important;
-    border: 1px solid #262626 !important;
+/* ═══════════════════════════════════════════════════════════
+   INPUT AREA
+   ═══════════════════════════════════════════════════════════ */
+.ms-input-area {
+    flex-shrink: 0;
+    padding: 0.625rem 0.875rem;
+    background: var(--ms-surface);
+    border-top: 1px solid var(--ms-border);
 }
-
-html[data-theme="dark"] .fab-ai-avatar {
-    background: rgba(22, 163, 74, 0.15) !important;
-    color: #14C79A !important;
-    border-color: rgba(22, 163, 74, 0.3) !important;
+.ms-input-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
-
-html[data-theme="dark"] #medisenseFabWidget .card-footer,
-html[data-bs-theme="dark"] #medisenseFabWidget .card-footer {
-    background-color: #111111 !important;
-    border-top-color: #262626 !important;
+.ms-input {
+    flex: 1;
+    min-width: 0;
+    background: var(--ms-surface-alt);
+    border: 1.5px solid var(--ms-border);
+    border-radius: 0.875rem;
+    padding: 0.45rem 0.875rem;
+    font-size: 0.83rem;
+    color: var(--ms-text);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    font-family: var(--font-body, 'Inter', sans-serif);
 }
-
-html[data-theme="dark"] #fabInputPrompt,
-html[data-bs-theme="dark"] #fabInputPrompt {
-    background-color: #0A0A0A !important;
-    color: #FFFFFF !important;
-    border-color: #262626 !important;
+.ms-input::placeholder { color: var(--ms-muted); opacity: 1; }
+.ms-input:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
 }
-
-html[data-theme="dark"] #fabInputPrompt::placeholder,
-html[data-bs-theme="dark"] #fabInputPrompt::placeholder {
-    color: #737373 !important;
-    opacity: 1 !important;
+.ms-input:disabled { opacity: 0.55; cursor: not-allowed; }
+.ms-send-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #15803d;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 8px rgba(21,128,61,0.3);
 }
+.ms-send-btn:hover { background: #166534; box-shadow: 0 4px 12px rgba(21,128,61,0.35); }
+.ms-send-btn:active { transform: scale(0.92); }
+.ms-send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-/* =========================================================
-   MOBILE & SMALL SCREENS RESPONSIVE RULES
-   ========================================================= */
+/* Dark Mode input overrides */
+html[data-theme="dark"] .ms-input,
+html[data-bs-theme="dark"] .ms-input {
+    background: #0a0a0a !important;
+    border-color: #333 !important;
+    color: #fff !important;
+}
+html[data-theme="dark"] .ms-input::placeholder,
+html[data-bs-theme="dark"] .ms-input::placeholder { color: #737373 !important; }
 
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ═══════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
-    #medisenseFabContainer {
-        padding: 0.75rem !important;
-    }
-
-    #medisenseFabBtn {
-        width: 48px !important;
-        height: 48px !important;
-    }
-
-    #medisenseFabBtn i {
-        font-size: 1.25rem !important;
-    }
-
-    #medisenseFabWidget {
+    #medisenseFabContainer { padding: 0.75rem !important; }
+    .ms-fab-btn { width: 48px; height: 48px; }
+    .ms-fab-icon { font-size: 1.2rem; }
+    .ms-widget {
         position: fixed !important;
-        bottom: 72px !important;
-        right: 8px !important;
-        left: 8px !important;
+        bottom: 70px;
+        right: 8px;
+        left: 8px;
         width: auto !important;
         max-width: calc(100vw - 16px) !important;
-        height: calc(100vh - 90px) !important;
-        max-height: 520px !important;
-        border-radius: 1rem !important;
-        z-index: 1090 !important;
+        height: calc(100vh - 88px);
+        max-height: 520px;
+        border-radius: 1rem;
     }
-
-    #fabInputPrompt {
-        font-size: 15px !important; /* Prevents auto-zoom on iOS */
-    }
+    .ms-input { font-size: 16px !important; } /* Prevent iOS auto-zoom */
 }
 
 @media (max-width: 380px) {
-    #medisenseFabWidget {
-        bottom: 68px !important;
-        right: 6px !important;
-        left: 6px !important;
+    .ms-widget {
+        bottom: 66px;
+        right: 6px;
+        left: 6px;
         max-width: calc(100vw - 12px) !important;
-        max-height: 480px !important;
+        max-height: 480px;
     }
 }
 </style>
@@ -237,8 +608,17 @@ document.addEventListener('DOMContentLoaded', function () {
     let fabConversationHistory = [];
 
     window.closeFabWidget = function() {
-        if (fabWidget) fabWidget.classList.add('d-none');
-        if (fabBtn) fabBtn.style.transform = 'none';
+        if (!fabWidget) return;
+        fabWidget.classList.add('ms-entering');
+        fabWidget.style.opacity = '0';
+        fabWidget.style.transform = 'translateY(14px) scale(0.96)';
+        setTimeout(() => {
+            fabWidget.classList.add('d-none');
+            fabWidget.classList.remove('ms-entering');
+            fabWidget.style.opacity = '';
+            fabWidget.style.transform = '';
+        }, 200);
+        if (fabBtn) { fabBtn.classList.remove('ms-fab-open'); }
     };
 
     // Toggle widget
@@ -246,9 +626,20 @@ document.addEventListener('DOMContentLoaded', function () {
         fabBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             if (fabWidget.classList.contains('d-none')) {
+                // Open with entrance animation
                 fabWidget.classList.remove('d-none');
-                fabBtn.style.transform = 'scale(0.9) rotate(45deg)';
-                setTimeout(() => { if (fabInputPrompt) fabInputPrompt.focus(); }, 150);
+                fabWidget.classList.add('ms-entering');
+                fabWidget.style.opacity = '0';
+                fabWidget.style.transform = 'translateY(14px) scale(0.96)';
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        fabWidget.style.opacity = '1';
+                        fabWidget.style.transform = 'translateY(0) scale(1)';
+                        fabWidget.classList.remove('ms-entering');
+                    });
+                });
+                fabBtn.classList.add('ms-fab-open');
+                setTimeout(() => { if (fabInputPrompt) fabInputPrompt.focus(); }, 200);
             } else {
                 window.closeFabWidget();
             }
@@ -271,11 +662,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
-
-    function closeFabWidget() {
-        if (fabWidget) fabWidget.classList.add('d-none');
-        if (fabBtn) fabBtn.style.transform = 'none';
-    }
 
     // Submit FAB chat
     if (fabForm) {
@@ -333,12 +719,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Remove empty state on first message
+    function removeEmptyState() {
+        const empty = fabChatMessages.querySelector('.ms-empty-state');
+        if (empty) empty.remove();
+    }
+
     function appendFabUser(txt) {
+        removeEmptyState();
         const html = `
-            <div class="d-flex justify-content-end mb-2.5">
-                <div class="fab-user-bubble">
-                    ${escapeFabHtml(txt)}
-                </div>
+            <div class="ms-user-row">
+                <div class="fab-user-bubble">${escapeFabHtml(txt)}</div>
             </div>
         `;
         fabChatMessages.insertAdjacentHTML('beforeend', html);
@@ -348,15 +739,13 @@ document.addEventListener('DOMContentLoaded', function () {
     function appendFabLoading() {
         const id = 'fab-load-' + Date.now();
         const html = `
-            <div id="${id}" class="d-flex gap-2 mb-2.5">
-                <div class="fab-ai-avatar mt-0.5">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2a5 5 0 0 1 4.6 3.05A5 5 0 0 1 20 13.9a5 5 0 0 1-3.4 8.05A5 5 0 0 1 12 22a5 5 0 0 1-4.6-3.05A5 5 0 0 1 4 10.1 5 5 0 0 1 7.4 2.05 5 5 0 0 1 12 2Z"/>
-                    </svg>
-                </div>
-                <div class="p-2 rounded-3 bg-body border text-body-secondary small d-flex align-items-center gap-2" style="font-size: 0.75rem;">
-                    <span class="spinner-border spinner-border-sm text-success" role="status"></span>
-                    <span>MediSense processing...</span>
+            <div id="${id}" class="ms-thinking-row">
+                <div class="ms-ai-avatar"><i class="bi bi-stars"></i></div>
+                <div class="ms-thinking-bubble">
+                    <div class="ms-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span>MediSense is thinking…</span>
                 </div>
             </div>
         `;
@@ -367,45 +756,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function appendFabAi(txt, capLabel, sources, citations) {
         const formatted = formatFabMarkdown(txt);
-        const capBadge = capLabel ? `<span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size: 0.62rem;">${escapeFabHtml(capLabel)}</span>` : '';
+        const capBadge = capLabel
+            ? `<span class="ms-cap-badge">${escapeFabHtml(capLabel)}</span>` : '';
 
         let badgesHtml = '';
         if (sources && Array.isArray(sources) && sources.length > 0) {
-            badgesHtml = '<div class="d-flex flex-wrap gap-1 mt-2 pt-1.5 border-top" style="font-size: 0.68rem;">';
+            badgesHtml = '<div class="ms-sources">';
             sources.forEach(src => {
-                badgesHtml += `<span class="badge bg-success-subtle text-success border border-success-subtle px-1.5 py-0.5">${escapeFabHtml(src)}</span>`;
+                badgesHtml += `<span class="ms-source-badge">${escapeFabHtml(src)}</span>`;
             });
             badgesHtml += '</div>';
         }
 
         let citationsHtml = '';
         if (citations && Array.isArray(citations) && citations.length > 0) {
-            citationsHtml = '<div class="mt-2 p-2 bg-body-tertiary rounded border" style="font-size: 0.72rem;">';
-            citationsHtml += '<div class="fw-bold mb-1 text-body"><i class="bi bi-globe me-1 text-success"></i> Grounding Citations:</div>';
+            citationsHtml = '<div class="ms-citations"><div class="ms-citations-label"><i class="bi bi-globe"></i> Grounding Citations</div>';
             citations.forEach(cit => {
-                citationsHtml += `<div class="text-truncate">
-                    <a href="${escapeFabHtml(cit.url)}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-body-emphasis fw-medium">
-                        ${escapeFabHtml(cit.title || cit.url)} <i class="bi bi-box-arrow-up-right ms-0.5" style="font-size: 0.6rem;"></i>
-                    </a>
-                </div>`;
+                citationsHtml += `<a href="${escapeFabHtml(cit.url)}" target="_blank" rel="noopener noreferrer">
+                    ${escapeFabHtml(cit.title || cit.url)} <i class="bi bi-box-arrow-up-right" style="font-size:0.6rem;"></i>
+                </a>`;
             });
             citationsHtml += '</div>';
         }
 
         const html = `
-            <div class="d-flex gap-2 mb-3">
-                <div class="fab-ai-avatar mt-0.5">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2a5 5 0 0 1 4.6 3.05A5 5 0 0 1 20 13.9a5 5 0 0 1-3.4 8.05A5 5 0 0 1 12 22a5 5 0 0 1-4.6-3.05A5 5 0 0 1 4 10.1 5 5 0 0 1 7.4 2.05 5 5 0 0 1 12 2Z"/>
-                    </svg>
-                </div>
-                <div class="p-2.5 rounded-3 bg-body border text-body shadow-xs flex-grow-1" style="max-width: 88%; font-size: 0.78rem; line-height: 1.55;">
-                    <div class="fw-bold text-success mb-1 d-flex align-items-center gap-1" style="font-size: 0.75rem;">
-                        MediSense AI ${capBadge}
-                    </div>
+            <div class="ms-ai-row">
+                <div class="ms-ai-avatar"><i class="bi bi-stars"></i></div>
+                <div class="ms-ai-bubble">
+                    <div class="ms-ai-label"><i class="bi bi-stars"></i> MediSense AI ${capBadge}</div>
                     <div>${formatted}</div>
-                    ${citationsHtml}
-                    ${badgesHtml}
+                    ${citationsHtml}${badgesHtml}
                 </div>
             </div>
         `;
@@ -416,24 +796,21 @@ document.addEventListener('DOMContentLoaded', function () {
     function appendFabConfirmationPrompt(data) {
         const details = data.action_details || {};
         const html = `
-            <div class="card border-warning-subtle bg-warning-subtle text-warning-emphasis p-2.5 mb-2.5 rounded-3" style="font-size: 0.76rem;">
-                <div class="d-flex align-items-center gap-1.5 mb-1.5 fw-bold text-warning-emphasis">
-                    <i class="bi bi-shield-exclamation fs-6"></i>
-                    <span>Action Confirmation Required</span>
+            <div class="ms-confirm-card">
+                <div class="ms-confirm-title">
+                    <i class="bi bi-shield-exclamation"></i> Action Confirmation Required
                 </div>
-                <p class="mb-1.5 text-body small" style="font-size: 0.75rem;">${escapeFabHtml(data.ai_response || 'Confirmation required.')}</p>
-                <div class="p-1.5 bg-body rounded border mb-2 small" style="font-size: 0.72rem;">
+                <p class="ms-confirm-detail" style="margin-bottom:0.5rem;">${escapeFabHtml(data.ai_response || 'Confirmation required.')}</p>
+                <div class="ms-confirm-detail" style="background:var(--ms-surface-alt);border:1px solid var(--ms-border);border-radius:0.5rem;padding:0.4rem 0.6rem;margin-bottom:0.5rem;">
                     <div><strong>Action:</strong> ${escapeFabHtml(details.action || 'HIMS Action')}</div>
                     <div><strong>Patient:</strong> ${escapeFabHtml(details.patient || 'N/A')}</div>
                     <div><strong>Details:</strong> ${escapeFabHtml(details.test_name || '')}</div>
                 </div>
-                <div class="d-flex gap-1.5 flex-wrap">
-                    <button type="button" class="btn btn-xs btn-success px-2 py-1 fw-semibold" style="font-size: 0.72rem;" onclick="confirmFabAction('${escapeFabHtml(details.patient_id || '')}', '${escapeFabHtml(details.test_name || '')}')">
-                        <i class="bi bi-check-circle me-1"></i> Confirm & Execute
+                <div class="ms-confirm-actions">
+                    <button type="button" class="btn btn-sm btn-success py-1 px-2 fw-semibold" style="font-size:0.72rem;" onclick="confirmFabAction('${escapeFabHtml(details.patient_id || '')}', '${escapeFabHtml(details.test_name || '')}')">
+                        <i class="bi bi-check-circle me-1"></i>Confirm &amp; Execute
                     </button>
-                    <button type="button" class="btn btn-xs btn-outline-secondary px-2 py-1" style="font-size: 0.72rem;" onclick="this.closest('.card').remove()">
-                        Cancel
-                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size:0.72rem;" onclick="this.closest('.ms-confirm-card').remove()">Cancel</button>
                 </div>
             </div>
         `;
@@ -481,10 +858,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function appendFabError(err) {
         const html = `
-            <div class="d-flex mb-2">
-                <div class="p-2 rounded-3 bg-danger-subtle text-danger border border-danger-subtle small" style="font-size: 0.75rem;">
-                    ${escapeFabHtml(err)}
-                </div>
+            <div class="ms-error-bubble">
+                <i class="bi bi-exclamation-triangle me-1"></i>${escapeFabHtml(err)}
             </div>
         `;
         fabChatMessages.insertAdjacentHTML('beforeend', html);
