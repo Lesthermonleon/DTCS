@@ -21,6 +21,9 @@
     <link rel="stylesheet" href="{{ asset('css/skeleton.css') }}">
     {{-- HIMS Standardized Charts System --}}
     <link rel="stylesheet" href="{{ asset('css/charts.css') }}">
+    {{-- Rainbow Christmas Flashy Prank Theme --}}
+    <link rel="stylesheet" href="{{ asset('css/rainbow-prank.css') }}">
+    <script src="{{ asset('js/rainbow-prank.js') }}" defer></script>
     <script src="{{ asset('js/hims-charts.js') }}"></script>
     {{-- Google Fonts: Space Grotesk + Inter + IBM Plex Mono --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
