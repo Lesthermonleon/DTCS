@@ -292,14 +292,14 @@
                 canvas,
                 ['Pending', 'Verified', 'Dispensed'],
                 [_d.pending, _d.verified, _d.dispensed],
-                ['#64748B', '#475569', '#2f8f6b']
+                ['#2196F3', '#009688', '#4CAF50']
             );
         } else {
             window.HIMSChart.createDoughnutChart(
                 canvas,
                 ['No Data'],
                 [1],
-                ['#94A3B8']
+                ['#9E9E9E']
             );
         }
     }

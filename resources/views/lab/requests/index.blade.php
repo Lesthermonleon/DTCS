@@ -53,32 +53,94 @@
                     <td><span class="badge bg-{{ $req->statusBadge }}">{{ $req->status }}</span></td>
                     <td><small>{{ $req->requested_at->format('M d, Y H:i') }}</small></td>
                     <td>
+                        @php
+                            $rowActions = [
+                                [
+                                    'type' => 'link',
+                                    'url' => route('lab.requests.show', $req),
+                                    'title' => 'View Request Details',
+                                    'icon' => 'bi-eye',
+                                    'btn_class' => 'action-view',
+                                    'text_class' => 'text-primary'
+                                ]
+                            ];
+                            if ($req->status === 'Pending' && auth()->user()->hasRole('med-tech')) {
+                                $rowActions[] = [
+                                    'type' => 'form',
+                                    'url' => route('lab.requests.receive', $req),
+                                    'method' => 'PATCH',
+                                    'title' => 'Mark as Received',
+                                    'icon' => 'bi-inbox-fill',
+                                    'btn_class' => 'action-success',
+                                    'text_class' => 'text-success',
+                                    'confirm' => "Are you sure you want to mark {$req->request_no} as received?"
+                                ];
+                            }
+                            $rowActions[] = [
+                                'type' => 'link',
+                                'url' => route('lab.requests.print', ['labRequest' => $req]),
+                                'title' => 'Print Request',
+                                'icon' => 'bi-printer',
+                                'btn_class' => 'action-info',
+                                'text_class' => 'text-info',
+                                'target' => '_blank'
+                            ];
+                            if ($req->status === 'Pending' && auth()->user()->hasRole('doctor')) {
+                                $rowActions[] = [
+                                    'type' => 'link',
+                                    'url' => route('lab.requests.edit', $req),
+                                    'title' => 'Edit Request',
+                                    'icon' => 'bi-pencil',
+                                    'btn_class' => 'action-edit',
+                                    'text_class' => 'text-success'
+                                ];
+                            }
+                            $actionCount = count($rowActions);
+                            $directLimit = ($actionCount <= 3) ? $actionCount : 2;
+                        @endphp
                         <div class="table-actions">
-                            <a href="{{ route('lab.requests.show', $req) }}" class="table-action-btn action-view" title="View Request Details" aria-label="View Request Details"><i class="bi bi-eye"></i></a>
-                            @if($req->status==='Pending' && auth()->user()->hasRole('med-tech'))
-                                <form method="POST" action="{{ route('lab.requests.receive', $req) }}" class="d-inline">
-                                    @csrf @method('PATCH')
-                                    <button type="submit" class="table-action-btn action-success" title="Mark as Received" aria-label="Mark as Received" data-confirm="Are you sure you want to mark {{ $req->request_no }} as received?"><i class="bi bi-inbox-fill"></i></button>
-                                </form>
-                            @else
-                                <a href="{{ route('lab.requests.print', ['labRequest' => $req]) }}" class="table-action-btn action-info" title="Print Request" aria-label="Print Request" target="_blank"><i class="bi bi-printer"></i></a>
-                            @endif
+                            @foreach(array_slice($rowActions, 0, $directLimit) as $act)
+                                @if($act['type'] === 'link')
+                                    <a href="{{ $act['url'] }}" class="table-action-btn {{ $act['btn_class'] }}" title="{{ $act['title'] }}" aria-label="{{ $act['title'] }}" @if(!empty($act['target'])) target="{{ $act['target'] }}" @endif>
+                                        <i class="bi {{ $act['icon'] }}"></i>
+                                    </a>
+                                @elseif($act['type'] === 'form')
+                                    <form action="{{ $act['url'] }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method($act['method'] ?? 'POST')
+                                        <button type="submit" class="table-action-btn {{ $act['btn_class'] }}" title="{{ $act['title'] }}" aria-label="{{ $act['title'] }}" @if(!empty($act['confirm'])) data-confirm="{{ $act['confirm'] }}" @endif>
+                                            <i class="bi {{ $act['icon'] }}"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endforeach
 
-                            <div class="dropdown d-inline">
-                                <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    @if($req->status === 'Pending')
-                                        <li><a class="dropdown-item small" href="{{ route('lab.requests.print', ['labRequest' => $req]) }}" target="_blank"><i class="bi bi-printer me-2 text-secondary"></i>Print Request</a></li>
-                                        @if(auth()->user()->hasRole('doctor'))
-                                            <li><a class="dropdown-item small" href="{{ route('lab.requests.edit', $req) }}"><i class="bi bi-pencil me-2 text-success"></i>Edit Request</a></li>
-                                        @endif
-                                    @else
-                                        <li><a class="dropdown-item small" href="{{ route('lab.requests.show', $req) }}"><i class="bi bi-folder2-open me-2 text-secondary"></i>Open Record</a></li>
-                                    @endif
-                                </ul>
-                            </div>
+                            @if($actionCount > 3)
+                                <div class="dropdown d-inline">
+                                    <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        @foreach(array_slice($rowActions, $directLimit) as $act)
+                                            <li>
+                                                @if($act['type'] === 'link')
+                                                    <a class="dropdown-item small" href="{{ $act['url'] }}" @if(!empty($act['target'])) target="{{ $act['target'] }}" @endif>
+                                                        <i class="bi {{ $act['icon'] }} me-2 {{ $act['text_class'] ?? '' }}"></i>{{ $act['title'] }}
+                                                    </a>
+                                                @elseif($act['type'] === 'form')
+                                                    <form action="{{ $act['url'] }}" method="POST">
+                                                        @csrf
+                                                        @method($act['method'] ?? 'POST')
+                                                        <button type="submit" class="dropdown-item small {{ $act['text_class'] ?? '' }}" @if(!empty($act['confirm'])) data-confirm="{{ $act['confirm'] }}" @endif>
+                                                            <i class="bi {{ $act['icon'] }} me-2"></i>{{ $act['title'] }}
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </td>
                 </tr>

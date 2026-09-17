@@ -280,7 +280,7 @@
             <div class="chart-header">
                 <div>
                     <h3 class="chart-title"><i class="bi bi-pie-chart-fill me-2 text-success"></i>Request Priority</h3>
-                    <p class="chart-subtitle">Routine vs STAT lab requests</p>
+                    <p class="chart-subtitle">Routine, Urgent &amp; STAT lab requests</p>
                 </div>
             </div>
             <div class="chart-container" style="height: 260px;">
@@ -313,14 +313,14 @@
                 canvas,
                 ['Pending', 'In Progress', 'Completed'],
                 [_d.pending, _d.in_progress, _d.completed],
-                ['#64748B', '#475569', '#2f8f6b']
+                ['#2196F3', '#FFB300', '#4CAF50']
             );
         } else {
             window.HIMSChart.createDoughnutChart(
                 canvas,
                 ['No Data'],
                 [1],
-                ['#94A3B8']
+                ['#9E9E9E']
             );
         }
     }
@@ -355,7 +355,12 @@
 
     const priCtx = document.getElementById('labPriorityChart');
     if (priCtx && priority.some(p => p.count > 0)) {
-        window.HIMSChart.createDoughnutChart(priCtx, priority.map(p => p.label), priority.map(p => p.count), ['#475569', '#d9534f']);
+        window.HIMSChart.createDoughnutChart(
+            priCtx,
+            priority.map(p => p.label),
+            priority.map(p => p.count),
+            { 'Routine': '#E0E0E0', 'Urgent': '#F57C00', 'STAT': '#D32F2F' }
+        );
     }
 })();
 </script>

@@ -44,16 +44,47 @@
            DESIGN TOKENS
         ══════════════════════════════════════ */
         :root {
+            /* HIMS Standard Neutral Tokens */
+            --hims-gray-50:         #f9fafb;
+            --hims-gray-100:        #f3f4f6;
+            --hims-gray-200:        #e5e7eb;
+            --hims-gray-300:        #d1d5db;
+
+            --hims-text-primary:    #111827;
+            --hims-text-secondary:  #4b5563;
+            --hims-text-muted:      #6b7280;
+
+            --hims-dark-bg:             #000000;
+            --hims-dark-surface:        #111827;
+            --hims-dark-surface-muted:  #1f2937;
+            --hims-dark-border:         #374151;
+
+            --hims-dark-text-primary:   #f9fafb;
+            --hims-dark-text-secondary: #d1d5db;
+            --hims-dark-text-muted:     #9ca3af;
+
+            /* HIMS Action Button Color Hierarchy Tokens */
+            --hims-action-primary:         #0f766e;
+            --hims-action-primary-hover:   #115e59;
+            --hims-action-success:         #15803d;
+            --hims-action-success-hover:   #166534;
+            --hims-action-secondary:       #374151;
+            --hims-action-secondary-hover: #1f2937;
+            --hims-action-warning:         #b45309;
+            --hims-action-warning-hover:   #92400e;
+            --hims-action-danger:          #b91c1c;
+            --hims-action-danger-hover:    #991b1b;
+
             /* MediSense AI Core Design System Tokens */
             --ms-primary:           #15803d;
             --ms-primary-hover:     #166534;
             --ms-primary-light:     #dcfce7;
             --ms-secondary:         #f0fdf4;
-            --ms-muted:             #f3faf5;
+            --ms-muted:             #6b7280;
             --ms-accent:            #e8f5ec;
             --ms-accent-hover:      #dcfce7;
             --ms-dark-fg:           #173b2a;
-            --ms-muted-fg:          #648071;
+            --ms-muted-fg:          #6b7280;
             --ms-border:            #d9e8de;
             --ms-input-border:      #d5e5da;
             --ms-focus-ring:        #22c55e;
@@ -766,7 +797,8 @@
         html[data-theme="light"] .card-footer,
         html[data-bs-theme="light"] .card-footer,
         :root:not([data-theme="dark"]) .card-footer {
-            background-color: var(--ms-muted) !important;
+            background-color: var(--hims-gray-50, #f9fafb) !important;
+            color: var(--hims-text-secondary, #4b5563) !important;
             border-top: 1px solid var(--ms-border) !important;
             border-bottom-left-radius: 1.25rem !important;
             border-bottom-right-radius: 1.25rem !important;
@@ -887,9 +919,189 @@
         html[data-theme="light"] .badge-secondary,
         :root:not([data-theme="dark"]) .badge.bg-secondary,
         :root:not([data-theme="dark"]) .badge.bg-secondary-subtle {
-            background-color: var(--ms-muted) !important;
-            color: var(--ms-muted-fg) !important;
-            border: 1px solid var(--ms-border) !important;
+            background-color: var(--hims-gray-100, #f3f4f6) !important;
+            color: var(--hims-text-secondary, #4b5563) !important;
+            border: 1px solid var(--hims-gray-200, #e5e7eb) !important;
+        }
+
+        /* ── Theme-Aware HIMS Semantic Badges ── */
+        .hims-badge-gray {
+            background-color: #f3f4f6 !important;
+            color: #374151 !important;
+            border: 1px solid #d1d5db !important;
+        }
+        .hims-badge-blue {
+            background-color: #eff6ff !important;
+            color: #1d4ed8 !important;
+            border: 1px solid #bfdbfe !important;
+        }
+        .hims-badge-green {
+            background-color: #f0fdf4 !important;
+            color: #15803d !important;
+            border: 1px solid #bbf7d0 !important;
+        }
+        .hims-badge-orange {
+            background-color: #fff7ed !important;
+            color: #c2410c !important;
+            border: 1px solid #fed7aa !important;
+        }
+        .hims-badge-red {
+            background-color: #fef2f2 !important;
+            color: #b91c1c !important;
+            border: 1px solid #fecaca !important;
+        }
+
+        html[data-theme="dark"] .hims-badge-gray,
+        html[data-bs-theme="dark"] .hims-badge-gray {
+            background-color: #1f2937 !important;
+            color: #d1d5db !important;
+            border: 1px solid #374151 !important;
+        }
+        html[data-theme="dark"] .hims-badge-blue,
+        html[data-bs-theme="dark"] .hims-badge-blue {
+            background-color: rgba(30, 58, 138, 0.4) !important;
+            color: #93c5fd !important;
+            border: 1px solid rgba(59, 130, 246, 0.4) !important;
+        }
+        html[data-theme="dark"] .hims-badge-green,
+        html[data-bs-theme="dark"] .hims-badge-green {
+            background-color: rgba(20, 83, 45, 0.4) !important;
+            color: #86efac !important;
+            border: 1px solid rgba(34, 197, 94, 0.4) !important;
+        }
+        html[data-theme="dark"] .hims-badge-orange,
+        html[data-bs-theme="dark"] .hims-badge-orange {
+            background-color: rgba(124, 45, 18, 0.4) !important;
+            color: #fdba74 !important;
+            border: 1px solid rgba(249, 115, 22, 0.4) !important;
+        }
+        html[data-theme="dark"] .hims-badge-red,
+        html[data-bs-theme="dark"] .hims-badge-red {
+            background-color: rgba(127, 29, 29, 0.4) !important;
+            color: #fca5a5 !important;
+            border: 1px solid rgba(239, 68, 68, 0.4) !important;
+        }
+
+        /* ── HIMS Standardized Action Button Color Hierarchy ── */
+        .btn-primary, .hims-btn-primary {
+            background-color: var(--hims-action-primary, #0f766e) !important;
+            border-color: var(--hims-action-primary, #0f766e) !important;
+            color: #ffffff !important;
+        }
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active,
+        .hims-btn-primary:hover, .hims-btn-primary:focus, .hims-btn-primary:active {
+            background-color: var(--hims-action-primary-hover, #115e59) !important;
+            border-color: var(--hims-action-primary-hover, #115e59) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-success, .hims-btn-success {
+            background-color: var(--hims-action-success, #15803d) !important;
+            border-color: var(--hims-action-success, #15803d) !important;
+            color: #ffffff !important;
+        }
+        .btn-success:hover, .btn-success:focus, .btn-success:active,
+        .hims-btn-success:hover, .hims-btn-success:focus, .hims-btn-success:active {
+            background-color: var(--hims-action-success-hover, #166534) !important;
+            border-color: var(--hims-action-success-hover, #166534) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-secondary, .hims-btn-secondary {
+            background-color: var(--hims-action-secondary, #374151) !important;
+            border-color: var(--hims-action-secondary, #374151) !important;
+            color: #ffffff !important;
+        }
+        .btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active,
+        .hims-btn-secondary:hover, .hims-btn-secondary:focus, .hims-btn-secondary:active {
+            background-color: var(--hims-action-secondary-hover, #1f2937) !important;
+            border-color: var(--hims-action-secondary-hover, #1f2937) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-warning, .hims-btn-warning {
+            background-color: var(--hims-action-warning, #b45309) !important;
+            border-color: var(--hims-action-warning, #b45309) !important;
+            color: #ffffff !important;
+        }
+        .btn-warning:hover, .btn-warning:focus, .btn-warning:active,
+        .hims-btn-warning:hover, .hims-btn-warning:focus, .hims-btn-warning:active {
+            background-color: var(--hims-action-warning-hover, #92400e) !important;
+            border-color: var(--hims-action-warning-hover, #92400e) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-danger, .hims-btn-danger {
+            background-color: var(--hims-action-danger, #b91c1c) !important;
+            border-color: var(--hims-action-danger, #b91c1c) !important;
+            color: #ffffff !important;
+        }
+        .btn-danger:hover, .btn-danger:focus, .btn-danger:active,
+        .hims-btn-danger:hover, .hims-btn-danger:focus, .hims-btn-danger:active {
+            background-color: var(--hims-action-danger-hover, #991b1b) !important;
+            border-color: var(--hims-action-danger-hover, #991b1b) !important;
+            color: #ffffff !important;
+        }
+
+        /* ── Outline Button Variants ── */
+        .btn-outline-primary, .hims-btn-outline-primary {
+            color: var(--hims-action-primary, #0f766e) !important;
+            border-color: var(--hims-action-primary, #0f766e) !important;
+            background-color: transparent !important;
+        }
+        .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active,
+        .hims-btn-outline-primary:hover, .hims-btn-outline-primary:focus, .hims-btn-outline-primary:active {
+            background-color: var(--hims-action-primary, #0f766e) !important;
+            border-color: var(--hims-action-primary, #0f766e) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-outline-secondary, .hims-btn-outline-secondary {
+            color: var(--hims-action-secondary, #374151) !important;
+            border-color: #d1d5db !important;
+            background-color: transparent !important;
+        }
+        .btn-outline-secondary:hover, .btn-outline-secondary:focus, .btn-outline-secondary:active,
+        .hims-btn-outline-secondary:hover, .btn-outline-secondary:focus, .hims-btn-outline-secondary:active {
+            background-color: var(--hims-action-secondary, #374151) !important;
+            border-color: var(--hims-action-secondary, #374151) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-outline-success, .hims-btn-outline-success {
+            color: var(--hims-action-success, #15803d) !important;
+            border-color: var(--hims-action-success, #15803d) !important;
+            background-color: transparent !important;
+        }
+        .btn-outline-success:hover, .btn-outline-success:focus, .btn-outline-success:active,
+        .hims-btn-outline-success:hover, .hims-btn-outline-success:focus, .hims-btn-outline-success:active {
+            background-color: var(--hims-action-success, #15803d) !important;
+            border-color: var(--hims-action-success, #15803d) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-outline-warning, .hims-btn-outline-warning {
+            color: var(--hims-action-warning, #b45309) !important;
+            border-color: var(--hims-action-warning, #b45309) !important;
+            background-color: transparent !important;
+        }
+        .btn-outline-warning:hover, .btn-outline-warning:focus, .btn-outline-warning:active,
+        .hims-btn-outline-warning:hover, .hims-btn-outline-warning:focus, .hims-btn-outline-warning:active {
+            background-color: var(--hims-action-warning, #b45309) !important;
+            border-color: var(--hims-action-warning, #b45309) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-outline-danger, .hims-btn-outline-danger {
+            color: var(--hims-action-danger, #b91c1c) !important;
+            border-color: var(--hims-action-danger, #b91c1c) !important;
+            background-color: transparent !important;
+        }
+        .btn-outline-danger:hover, .btn-outline-danger:focus, .btn-outline-danger:active,
+        .hims-btn-outline-danger:hover, .hims-btn-outline-danger:focus, .hims-btn-outline-danger:active {
+            background-color: var(--hims-action-danger, #b91c1c) !important;
+            border-color: var(--hims-action-danger, #b91c1c) !important;
+            color: #ffffff !important;
         }
 
         /* Alerts & Notifications — Light Mode */

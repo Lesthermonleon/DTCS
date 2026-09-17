@@ -157,7 +157,7 @@
                     </div>
 
                     @if($surgeryRequest->status === 'Pending' && auth()->user()->hasRole('or-coordinator'))
-                        <a href="{{ route('surgery.schedules.create') }}?request={{ $surgeryRequest->id }}" class="btn btn-success w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                        <a href="{{ route('surgery.schedules.create') }}?request={{ $surgeryRequest->id }}" class="btn btn-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-calendar-plus"></i> Schedule Surgery Now
                         </a>
                     @endif
@@ -170,7 +170,7 @@
             <div class="card-body p-4 d-flex flex-column gap-2">
                 @if($surgeryRequest->status === 'Pending')
                     @if(auth()->user()->hasRole('doctor'))
-                        <a href="{{ route('surgery.requests.edit', $surgeryRequest) }}" class="btn btn-outline-success w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                        <a href="{{ route('surgery.requests.edit', $surgeryRequest) }}" class="btn btn-outline-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-pencil"></i> Edit Surgery Request
                         </a>
                     @endif

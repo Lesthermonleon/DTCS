@@ -580,6 +580,7 @@ class DashboardController extends Controller
         $labTrend12m = $this->getLabRequestTrend(12);
         $labPriority = [
             ['label' => 'Routine', 'count' => LabRequest::where('priority', 'Routine')->count()],
+            ['label' => 'Urgent',  'count' => LabRequest::where('priority', 'Urgent')->count()],
             ['label' => 'STAT',    'count' => LabRequest::where('priority', 'STAT')->count()],
         ];
 

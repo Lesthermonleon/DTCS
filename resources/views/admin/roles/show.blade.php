@@ -27,10 +27,10 @@
                 <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5">
                     <i class="bi bi-check-circle me-1"></i>Status: Active
                 </span>
-                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5">
+                <span class="badge hims-badge-gray px-2.5 py-1.5">
                     <i class="bi bi-people me-1"></i>{{ $role->users_count ?? $role->users->count() }} Users
                 </span>
-                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5">
+                <span class="badge hims-badge-gray px-2.5 py-1.5">
                     <i class="bi bi-key me-1"></i>{{ $role->permissions->count() }} Permissions
                 </span>
             </div>

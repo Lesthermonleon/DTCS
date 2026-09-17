@@ -17,7 +17,7 @@
             </div>
             <div class="col-md-3">
                 <span class="text-uppercase text-muted small fw-semibold d-block mb-1">Assigned Users</span>
-                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
+                <span class="badge hims-badge-gray px-2 py-1">
                     <i class="bi bi-people me-1"></i>{{ $selectedRole->users_count }} Users
                 </span>
             </div>

@@ -577,7 +577,7 @@
                                 <span class="small">{{ $patient->gender }} &bull; {{ $patient->date_of_birth?->format('M d, Y') ?? 'N/A' }}</span>
                             </td>
                             <td>
-                                <span class="badge bg-secondary-subtle text-secondary border">{{ $patient->patient_type ?? 'Outpatient' }}</span>
+                                <span class="badge hims-badge-{{ strtolower($patient->patient_type ?? '') === 'inpatient' ? 'blue' : (strtolower($patient->patient_type ?? '') === 'emergency' ? 'red' : 'green') }}">{{ $patient->patient_type ?? 'Outpatient' }}</span>
                                 @if($patient->ward)
                                     <small class="text-muted d-block">{{ $patient->ward }} (Bed {{ $patient->bed_number ?? '-' }})</small>
                                 @endif
@@ -626,7 +626,8 @@
         window.HIMSChart.createDoughnutChart(
             ordersCtx,
             ['Pending Lab', 'Pending Radiology', 'Pending Prescriptions', 'Pending Surgeries', 'Pending Diets'],
-            [ordersData.lab, ordersData.rad, ordersData.pms, ordersData.sors, ordersData.dnms]
+            [ordersData.lab, ordersData.rad, ordersData.pms, ordersData.sors, ordersData.dnms],
+            ['#4CAF50', '#009688', '#00838F', '#81C784', '#90A4AE']
         );
     }
 
@@ -727,7 +728,7 @@ html[data-theme="dark"] .badge.bg-warning-subtle {
 }
 html[data-theme="dark"] .badge.bg-info-subtle {
     background-color: rgba(13, 202, 240, 0.2) !important;
-    color: #64748B !important;
+    color: #38bdf8 !important;
 }
 html[data-theme="dark"] .badge.bg-secondary-subtle {
     background-color: rgba(108, 117, 125, 0.2) !important;

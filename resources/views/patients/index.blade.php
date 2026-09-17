@@ -18,7 +18,7 @@
             @if(request()->hasAny(['search','type']))<a href="{{ route('patients.index') }}" class="btn btn-outline-secondary btn-sm" id="filter-clear">Clear</a>@endif
         </form>
         @if(auth()->user()->hasAnyRole(['admin','doctor']))
-            <a href="{{ route('patients.create') }}" class="btn btn-sm" style="background:var(--signal);color:var(--ink);border:none;font-weight:600;"><i class="bi bi-person-plus me-1"></i>New Patient</a>
+            <a href="{{ route('patients.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>New Patient</a>
         @endif
     </div>
     <div class="card-body p-0">
@@ -37,7 +37,7 @@
                     <td>{{ \Carbon\Carbon::parse($p->date_of_birth)->format('M d, Y') }}<br><small class="text-muted">{{ \Carbon\Carbon::parse($p->date_of_birth)->age }} yrs</small></td>
                     <td>{{ $p->gender }}</td>
                     <td>{{ $p->blood_type ?? '—' }}</td>
-                    <td><span class="pill-muted" style="display:inline-block;font-size:.72rem;font-weight:600;padding:.2rem .65rem;border-radius:999px;">{{ $p->patient_type }}</span></td>
+                    <td><span class="badge hims-badge-{{ strtolower($p->patient_type ?? '') === 'inpatient' ? 'blue' : (strtolower($p->patient_type ?? '') === 'emergency' ? 'red' : 'green') }}">{{ $p->patient_type }}</span></td>
                     <td>{{ $p->phone ?? '—' }}</td>
                     <td>
                         <div class="table-actions">

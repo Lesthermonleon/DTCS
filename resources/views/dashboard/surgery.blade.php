@@ -345,14 +345,14 @@
                 canvas,
                 ['Pending', 'Scheduled', 'Completed', 'Cancelled'],
                 [_d.pending, _d.scheduled, _d.completed, _d.cancelled],
-                ['#64748B', '#475569', '#2f8f6b', '#d9534f']
+                ['#2196F3', '#00838F', '#4CAF50', '#D32F2F']
             );
         } else {
             window.HIMSChart.createDoughnutChart(
                 canvas,
                 ['No Data'],
                 [1],
-                ['#94A3B8']
+                ['#9E9E9E']
             );
         }
     }

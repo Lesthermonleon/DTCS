@@ -53,46 +53,125 @@
                     <td><span class="badge bg-{{ $req->statusBadge }}">{{ $req->status }}</span></td>
                     <td><small>{{ $req->requested_at->format('M d, Y H:i') }}</small></td>
                     <td>
-                        <div class="table-actions">
-                            <a href="{{ route('radiology.requests.show', $req) }}" class="table-action-btn action-view" title="View Request Details" aria-label="View Request Details"><i class="bi bi-eye"></i></a>
-                            
-                            {{-- Primary State Action --}}
-                            @if($req->status === 'Pending' && auth()->user()->hasRole('rad-tech'))
-                                <form method="POST" action="{{ route('radiology.requests.schedule', $req) }}" class="d-inline">
-                                    @csrf @method('PATCH')
-                                    <button type="submit" class="table-action-btn action-success" title="Schedule Procedure" aria-label="Schedule Procedure"><i class="bi bi-calendar-event"></i></button>
-                                </form>
-                            @elseif($req->status === 'Scheduled' && auth()->user()->hasRole('rad-tech'))
-                                <form method="POST" action="{{ route('radiology.requests.start', $req) }}" class="d-inline">
-                                    @csrf @method('PATCH')
-                                    <button type="submit" class="table-action-btn action-view" title="Start Imaging Procedure" aria-label="Start Imaging Procedure"><i class="bi bi-play-circle"></i></button>
-                                </form>
-                            @elseif(in_array($req->status, ['Scheduled', 'In Progress']) && auth()->user()->hasRole('rad-tech'))
-                                <form method="POST" action="{{ route('radiology.requests.complete', $req) }}" class="d-inline" data-confirm="Complete procedure and send study for radiologist interpretation?">
-                                    @csrf @method('PATCH')
-                                    <button type="submit" class="table-action-btn action-info" title="Complete Procedure" aria-label="Complete Procedure"><i class="bi bi-check-circle"></i></button>
-                                </form>
-                            @elseif(in_array($req->status, ['Completed', 'In Progress']) && auth()->user()->hasRole('radiologist') && !$req->report)
-                                <a href="{{ route('radiology.reports.create') }}?radiology_request_id={{ $req->id }}" class="table-action-btn action-success" title="Create Diagnostic Report" aria-label="Create Diagnostic Report"><i class="bi bi-journal-medical"></i></a>
-                            @elseif($req->report)
-                                <a href="{{ route('radiology.reports.show', $req->report) }}" class="table-action-btn action-info" title="View Diagnostic Report" aria-label="View Diagnostic Report"><i class="bi bi-file-earmark-medical"></i></a>
-                            @endif
+                        @php
+                            $rowActions = [
+                                [
+                                    'type' => 'link',
+                                    'url' => route('radiology.requests.show', $req),
+                                    'title' => 'View Request Details',
+                                    'icon' => 'bi-eye',
+                                    'btn_class' => 'action-view',
+                                    'text_class' => 'text-primary'
+                                ]
+                            ];
+                            if ($req->status === 'Pending' && auth()->user()->hasRole('rad-tech')) {
+                                $rowActions[] = [
+                                    'type' => 'form',
+                                    'url' => route('radiology.requests.schedule', $req),
+                                    'method' => 'PATCH',
+                                    'title' => 'Schedule Procedure',
+                                    'icon' => 'bi-calendar-event',
+                                    'btn_class' => 'action-success',
+                                    'text_class' => 'text-success'
+                                ];
+                            } elseif ($req->status === 'Scheduled' && auth()->user()->hasRole('rad-tech')) {
+                                $rowActions[] = [
+                                    'type' => 'form',
+                                    'url' => route('radiology.requests.start', $req),
+                                    'method' => 'PATCH',
+                                    'title' => 'Start Imaging Procedure',
+                                    'icon' => 'bi-play-circle',
+                                    'btn_class' => 'action-view',
+                                    'text_class' => 'text-primary'
+                                ];
+                            } elseif (in_array($req->status, ['Scheduled', 'In Progress']) && auth()->user()->hasRole('rad-tech')) {
+                                $rowActions[] = [
+                                    'type' => 'form',
+                                    'url' => route('radiology.requests.complete', $req),
+                                    'method' => 'PATCH',
+                                    'title' => 'Complete Procedure',
+                                    'icon' => 'bi-check-circle',
+                                    'btn_class' => 'action-info',
+                                    'text_class' => 'text-info',
+                                    'confirm' => 'Complete procedure and send study for radiologist interpretation?'
+                                ];
+                            } elseif (in_array($req->status, ['Completed', 'In Progress']) && auth()->user()->hasRole('radiologist') && !$req->report) {
+                                $rowActions[] = [
+                                    'type' => 'link',
+                                    'url' => route('radiology.reports.create') . '?radiology_request_id=' . $req->id,
+                                    'title' => 'Create Diagnostic Report',
+                                    'icon' => 'bi-journal-medical',
+                                    'btn_class' => 'action-success',
+                                    'text_class' => 'text-success'
+                                ];
+                            } elseif ($req->report) {
+                                $rowActions[] = [
+                                    'type' => 'link',
+                                    'url' => route('radiology.reports.show', $req->report),
+                                    'title' => 'View Diagnostic Report',
+                                    'icon' => 'bi-file-earmark-medical',
+                                    'btn_class' => 'action-info',
+                                    'text_class' => 'text-info'
+                                ];
+                            }
 
-                            {{-- Meatballs Menu Dropdown --}}
-                            <div class="dropdown d-inline">
-                                <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    @if($req->status === 'Pending' && auth()->user()->hasRole('doctor'))
-                                        <li><a class="dropdown-item small" href="{{ route('radiology.requests.edit', $req) }}"><i class="bi bi-pencil me-2 text-success"></i>Edit Request</a></li>
-                                    @endif
-                                    @if($req->report)
-                                        <li><a class="dropdown-item small" href="{{ route('radiology.reports.show', $req->report) }}"><i class="bi bi-file-earmark-medical me-2 text-success"></i>View Diagnostic Report</a></li>
-                                    @endif
-                                    <li><a class="dropdown-item small" href="{{ route('radiology.requests.show', $req) }}"><i class="bi bi-folder2-open me-2 text-secondary"></i>Open Request Record</a></li>
-                                </ul>
-                            </div>
+                            if ($req->status === 'Pending' && auth()->user()->hasRole('doctor')) {
+                                $rowActions[] = [
+                                    'type' => 'link',
+                                    'url' => route('radiology.requests.edit', $req),
+                                    'title' => 'Edit Request',
+                                    'icon' => 'bi-pencil',
+                                    'btn_class' => 'action-edit',
+                                    'text_class' => 'text-success'
+                                ];
+                            }
+
+                            $actionCount = count($rowActions);
+                            $directLimit = ($actionCount <= 3) ? $actionCount : 2;
+                        @endphp
+                        <div class="table-actions">
+                            @foreach(array_slice($rowActions, 0, $directLimit) as $act)
+                                @if($act['type'] === 'link')
+                                    <a href="{{ $act['url'] }}" class="table-action-btn {{ $act['btn_class'] }}" title="{{ $act['title'] }}" aria-label="{{ $act['title'] }}">
+                                        <i class="bi {{ $act['icon'] }}"></i>
+                                    </a>
+                                @elseif($act['type'] === 'form')
+                                    <form action="{{ $act['url'] }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method($act['method'] ?? 'POST')
+                                        <button type="submit" class="table-action-btn {{ $act['btn_class'] }}" title="{{ $act['title'] }}" aria-label="{{ $act['title'] }}" @if(!empty($act['confirm'])) data-confirm="{{ $act['confirm'] }}" @endif>
+                                            <i class="bi {{ $act['icon'] }}"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endforeach
+
+                            @if($actionCount > 3)
+                                <div class="dropdown d-inline">
+                                    <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small">
+                                        @foreach(array_slice($rowActions, $directLimit) as $act)
+                                            <li>
+                                                @if($act['type'] === 'link')
+                                                    <a class="dropdown-item small" href="{{ $act['url'] }}">
+                                                        <i class="bi {{ $act['icon'] }} me-2 {{ $act['text_class'] ?? '' }}"></i>{{ $act['title'] }}
+                                                    </a>
+                                                @elseif($act['type'] === 'form')
+                                                    <form action="{{ $act['url'] }}" method="POST">
+                                                        @csrf
+                                                        @method($act['method'] ?? 'POST')
+                                                        <button type="submit" class="dropdown-item small {{ $act['text_class'] ?? '' }}" @if(!empty($act['confirm'])) data-confirm="{{ $act['confirm'] }}" @endif>
+                                                            <i class="bi {{ $act['icon'] }} me-2"></i>{{ $act['title'] }}
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </td>
                 </tr>

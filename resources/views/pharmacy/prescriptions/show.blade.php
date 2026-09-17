@@ -29,7 +29,7 @@
             @if(in_array($prescription->status, ['Verified', 'Partially Dispensed']) && auth()->user()?->hasRole('pharmacist'))
                 <a href="{{ route('pharmacy.dispensing.create') }}?rx={{ $prescription->id }}" class="btn btn-primary shadow-sm"><i class="bi bi-capsule-pill me-1"></i>Dispense Medications</a>
             @endif
-            <a href="{{ route('pharmacy.prescriptions.print', $prescription) }}" target="_blank" class="btn btn-outline-info shadow-sm"><i class="bi bi-printer me-1"></i>Print Official Prescription (Rx)</a>
+            <a href="{{ route('pharmacy.prescriptions.print', $prescription) }}" target="_blank" class="btn btn-outline-secondary shadow-sm"><i class="bi bi-printer me-1"></i>Print Official Prescription (Rx)</a>
             <a href="{{ route('pharmacy.prescriptions.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back to Prescriptions</a>
         </div>
     </div>
@@ -64,7 +64,7 @@
                             <td><span class="badge bg-{{ $item->status==='Dispensed'?'success':'warning-subtle text-warning border border-warning' }}">{{ $item->status ?? 'Pending' }}</span></td>
                             <td class="text-end pe-3">
                                 @if($item->status === 'Pending' && in_array($prescription->status, ['Verified', 'Partially Dispensed']) && auth()->user()?->hasRole('pharmacist'))
-                                    <a href="{{ route('pharmacy.dispensing.create') }}?rx={{ $prescription->id }}&item={{ $item->id }}" class="btn btn-sm btn-success">
+                                    <a href="{{ route('pharmacy.dispensing.create') }}?rx={{ $prescription->id }}&item={{ $item->id }}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-capsule me-1"></i> Dispense
                                     </a>
                                 @elseif($item->status === 'Dispensed' && $dispensingRecord)

@@ -123,7 +123,52 @@ window.HIMSChart = (function () {
         createDoughnutChart: function (ctx, labels, data, customColors) {
             if (typeof Chart === 'undefined' || !ctx) return null;
             const dark = isDarkMode();
-            const colors = customColors || GREEN_PALETTE;
+            
+            // Centralized Semantic Status Color System
+            const SEMANTIC_COLORS = {
+                // Workload / Statuses
+                'Completed': '#4CAF50',
+                'In Progress': '#FFB300',
+                'Active': '#FFB300',
+                'Scheduled/In Progress': '#FFB300',
+                'Pending': '#2196F3',
+                'Cancelled': '#D32F2F',
+
+                // Request Priority
+                'STAT': '#D32F2F',
+                'Urgent': '#F57C00',
+                'Routine': '#E0E0E0',
+
+                // Report Statuses
+                'Draft': '#9E9E9E',
+                'Approved': '#1976D2',
+                'Released': '#4CAF50',
+
+                // Prescription Pipeline
+                'Verified': '#009688',
+                'Dispensed': '#4CAF50',
+
+                // Surgery Statuses
+                'Scheduled': '#00838F',
+
+                // Fallbacks
+                'No Data': '#9E9E9E'
+            };
+
+            const CATEGORICAL_FALLBACKS = ['#4CAF50', '#009688', '#00838F', '#81C784', '#90A4AE'];
+
+            let sliceColors = labels.map((label, idx) => {
+                if (customColors && !Array.isArray(customColors) && typeof customColors === 'object' && customColors[label]) {
+                    return customColors[label];
+                }
+                if (Array.isArray(customColors) && customColors[idx]) {
+                    return customColors[idx];
+                }
+                if (SEMANTIC_COLORS[label]) {
+                    return SEMANTIC_COLORS[label];
+                }
+                return CATEGORICAL_FALLBACKS[idx % CATEGORICAL_FALLBACKS.length];
+            });
 
             const options = {
                 responsive: true,
@@ -158,7 +203,7 @@ window.HIMSChart = (function () {
                     labels: labels,
                     datasets: [{
                         data: data,
-                        backgroundColor: colors.slice(0, data.length),
+                        backgroundColor: sliceColors,
                         borderWidth: 2,
                         borderColor: dark ? '#172B26' : '#FFFFFF'
                     }]

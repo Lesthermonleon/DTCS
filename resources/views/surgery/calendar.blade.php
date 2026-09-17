@@ -99,7 +99,7 @@
                                 if ($sched->status === 'In Progress') {
                                     $statusBg = 'bg-warning-subtle text-warning border-warning-subtle';
                                 } elseif ($sched->status === 'Postponed') {
-                                    $statusBg = 'bg-secondary-subtle text-secondary border-secondary-subtle';
+                                    $statusBg = 'hims-badge-orange';
                                 }
                             @endphp
                             <div class="list-group-item p-2 border-bottom agenda-item-card position-relative cursor-pointer" data-schedule-id="{{ $sched->id }}" data-procedure="{{ $sched->surgeryRequest->procedure_name ?? '' }}" data-patient="{{ $sched->surgeryRequest->patient->full_name ?? '' }}" data-request-no="{{ $sched->surgeryRequest->request_no ?? '' }}">
@@ -151,7 +151,7 @@
                                 if ($sched->status === 'In Progress') {
                                     $statusBg = 'bg-warning-subtle text-warning border-warning-subtle';
                                 } elseif ($sched->status === 'Postponed') {
-                                    $statusBg = 'bg-secondary-subtle text-secondary border-secondary-subtle';
+                                    $statusBg = 'hims-badge-orange';
                                 }
                             @endphp
                             <div class="list-group-item p-2 border-bottom agenda-item-card position-relative cursor-pointer" data-schedule-id="{{ $sched->id }}" data-procedure="{{ $sched->surgeryRequest->procedure_name ?? '' }}" data-patient="{{ $sched->surgeryRequest->patient->full_name ?? '' }}" data-request-no="{{ $sched->surgeryRequest->request_no ?? '' }}">
@@ -203,7 +203,7 @@
                                 if ($sched->status === 'In Progress') {
                                     $statusBg = 'bg-warning-subtle text-warning border-warning-subtle';
                                 } elseif ($sched->status === 'Postponed') {
-                                    $statusBg = 'bg-secondary-subtle text-secondary border-secondary-subtle';
+                                    $statusBg = 'hims-badge-orange';
                                 }
                             @endphp
                             <div class="list-group-item p-2 border-bottom agenda-item-card position-relative cursor-pointer" data-schedule-id="{{ $sched->id }}" data-procedure="{{ $sched->surgeryRequest->procedure_name ?? '' }}" data-patient="{{ $sched->surgeryRequest->patient->full_name ?? '' }}" data-request-no="{{ $sched->surgeryRequest->request_no ?? '' }}">
@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let borderClass = 'border-start border-3 border-primary';
             if (status === 'Completed') borderClass = 'border-start border-3 border-success';
             else if (status === 'In Progress') borderClass = 'border-start border-3 border-warning';
-            else if (status === 'Postponed') borderClass = 'border-start border-3 border-secondary';
+            else if (status === 'Postponed') borderClass = 'border-start border-3 border-warning';
 
             const container = document.createElement('div');
             container.className = `fc-compact-event ${borderClass} w-100 h-100 text-truncate`;

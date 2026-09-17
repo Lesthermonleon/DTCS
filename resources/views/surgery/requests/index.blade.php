@@ -36,36 +36,95 @@
                     <td>{{ $sr->doctor->name }}</td>
                     <td><small>{{ $sr->requested_at?->format('M d, Y') }}</small></td>
                     <td>
+                        @php
+                            $rowActions = [
+                                [
+                                    'type' => 'link',
+                                    'url' => route('surgery.requests.show', $sr),
+                                    'title' => 'View Request Details',
+                                    'icon' => 'bi-eye',
+                                    'btn_class' => 'action-view',
+                                    'text_class' => 'text-primary'
+                                ]
+                            ];
+                            if ($sr->status === 'Pending' && auth()->user()->hasRole('or-coordinator')) {
+                                $rowActions[] = [
+                                    'type' => 'link',
+                                    'url' => route('surgery.schedules.create') . '?request=' . $sr->id,
+                                    'title' => 'Schedule Surgery',
+                                    'icon' => 'bi-calendar-plus',
+                                    'btn_class' => 'action-success',
+                                    'text_class' => 'text-success'
+                                ];
+                            }
+                            if ($sr->status === 'Pending' && auth()->user()->hasRole('doctor')) {
+                                $rowActions[] = [
+                                    'type' => 'link',
+                                    'url' => route('surgery.requests.edit', $sr),
+                                    'title' => 'Edit Request',
+                                    'icon' => 'bi-pencil',
+                                    'btn_class' => 'action-edit',
+                                    'text_class' => 'text-success'
+                                ];
+                            }
+                            if ($sr->status === 'Pending' && auth()->user()->hasAnyRole(['doctor','or-coordinator'])) {
+                                $rowActions[] = [
+                                    'type' => 'form',
+                                    'url' => route('surgery.requests.cancel', $sr),
+                                    'method' => 'PATCH',
+                                    'title' => 'Cancel Request',
+                                    'icon' => 'bi-x-circle',
+                                    'btn_class' => 'action-danger',
+                                    'text_class' => 'text-danger',
+                                    'confirm' => "Are you sure you want to cancel surgery request {$sr->request_no}?"
+                                ];
+                            }
+                            $actionCount = count($rowActions);
+                            $directLimit = ($actionCount <= 3) ? $actionCount : 2;
+                        @endphp
                         <div class="table-actions">
-                            <a href="{{ route('surgery.requests.show', $sr) }}" class="table-action-btn action-view" title="View Request Details" aria-label="View Request Details"><i class="bi bi-eye"></i></a>
-                            @if($sr->status==='Pending' && auth()->user()->hasRole('or-coordinator'))
-                                <a href="{{ route('surgery.schedules.create') }}?request={{ $sr->id }}" class="table-action-btn action-success" title="Schedule Surgery" aria-label="Schedule Surgery"><i class="bi bi-calendar-plus"></i></a>
-                            @endif
+                            @foreach(array_slice($rowActions, 0, $directLimit) as $act)
+                                @if($act['type'] === 'link')
+                                    <a href="{{ $act['url'] }}" class="table-action-btn {{ $act['btn_class'] }}" title="{{ $act['title'] }}" aria-label="{{ $act['title'] }}">
+                                        <i class="bi {{ $act['icon'] }}"></i>
+                                    </a>
+                                @elseif($act['type'] === 'form')
+                                    <form action="{{ $act['url'] }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method($act['method'] ?? 'POST')
+                                        <button type="submit" class="table-action-btn {{ $act['btn_class'] }}" title="{{ $act['title'] }}" aria-label="{{ $act['title'] }}" @if(!empty($act['confirm'])) data-confirm="{{ $act['confirm'] }}" @endif>
+                                            <i class="bi {{ $act['icon'] }}"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endforeach
 
-                            <div class="dropdown d-inline">
-                                <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    @if($sr->status === 'Pending')
-                                        @if(auth()->user()->hasRole('doctor'))
-                                            <li><a class="dropdown-item small" href="{{ route('surgery.requests.edit', $sr) }}"><i class="bi bi-pencil me-2 text-success"></i>Edit Request</a></li>
-                                        @endif
-                                        @if(auth()->user()->hasAnyRole(['doctor','or-coordinator']))
+                            @if($actionCount > 3)
+                                <div class="dropdown d-inline">
+                                    <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        @foreach(array_slice($rowActions, $directLimit) as $act)
                                             <li>
-                                                <form action="{{ route('surgery.requests.cancel', $sr) }}" method="POST">
-                                                    @csrf @method('PATCH')
-                                                    <button type="submit" class="dropdown-item small text-danger" data-confirm="Are you sure you want to cancel surgery request {{ $sr->request_no }}?">
-                                                        <i class="bi bi-x-circle me-2"></i>Cancel Request
-                                                    </button>
-                                                </form>
+                                                @if($act['type'] === 'link')
+                                                    <a class="dropdown-item small" href="{{ $act['url'] }}">
+                                                        <i class="bi {{ $act['icon'] }} me-2 {{ $act['text_class'] ?? '' }}"></i>{{ $act['title'] }}
+                                                    </a>
+                                                @elseif($act['type'] === 'form')
+                                                    <form action="{{ $act['url'] }}" method="POST">
+                                                        @csrf
+                                                        @method($act['method'] ?? 'POST')
+                                                        <button type="submit" class="dropdown-item small {{ $act['text_class'] ?? '' }}" @if(!empty($act['confirm'])) data-confirm="{{ $act['confirm'] }}" @endif>
+                                                            <i class="bi {{ $act['icon'] }} me-2"></i>{{ $act['title'] }}
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             </li>
-                                        @endif
-                                    @else
-                                        <li><a class="dropdown-item small" href="{{ route('surgery.requests.show', $sr) }}"><i class="bi bi-folder2-open me-2 text-primary"></i>View Details</a></li>
-                                    @endif
-                                </ul>
-                            </div>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </td>
                 </tr>

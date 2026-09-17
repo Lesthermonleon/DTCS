@@ -1,4 +1,4 @@
-﻿@if (! request()->routeIs('medisense.index'))
+@if (! request()->routeIs('medisense.index'))
 {{-- ─── MediSense AI Floating Action Button & Chat Widget ─── --}}
 <div id="medisenseFabContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1085;">
 
@@ -86,7 +86,7 @@
     --ms-surface-alt:   #f7faf8;
     --ms-border:        #e2e8f0;
     --ms-text:          #173b2a;
-    --ms-muted:         #64748b;
+    --ms-muted:         #6b7280;
     --ms-accent:        #15803d;
     --ms-accent-light:  #f0fdf4;
     --ms-accent-border: #bbf7d0;
@@ -105,7 +105,7 @@ html[data-bs-theme="dark"] {
     --ms-surface-alt:   #000000;
     --ms-border:        #262626;
     --ms-text:          #ffffff;
-    --ms-muted:         #a3a3a3;
+    --ms-muted:         #9ca3af;
     --ms-accent:        #4ade80;
     --ms-accent-light:  rgba(22,163,74,0.12);
     --ms-accent-border: rgba(22,163,74,0.3);

@@ -96,15 +96,46 @@
         letter-spacing: 0.04em;
         padding: 0.25rem 0.75rem;
         border-radius: 999px;
-        background: rgba(100, 116, 139, 0.1);
-        color: #475569;
-        border: 1px solid rgba(100, 116, 139, 0.2);
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .patient-type-pill.type-inpatient {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+    .patient-type-pill.type-outpatient {
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+    }
+    .patient-type-pill.type-emergency {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
     }
 
     html[data-theme="dark"] .patient-type-pill {
-        background: rgba(255, 255, 255, 0.08);
-        color: #CBD5E1;
-        border-color: rgba(255, 255, 255, 0.12);
+        background: #1f2937;
+        color: #d1d5db;
+        border-color: #374151;
+    }
+    html[data-theme="dark"] .patient-type-pill.type-inpatient {
+        background: rgba(30, 58, 138, 0.4);
+        color: #93c5fd;
+        border-color: rgba(59, 130, 246, 0.4);
+    }
+    html[data-theme="dark"] .patient-type-pill.type-outpatient {
+        background: rgba(20, 83, 45, 0.4);
+        color: #86efac;
+        border-color: rgba(34, 197, 94, 0.4);
+    }
+    html[data-theme="dark"] .patient-type-pill.type-emergency {
+        background: rgba(127, 29, 29, 0.4);
+        color: #fca5a5;
+        border-color: rgba(239, 68, 68, 0.4);
     }
 
     /* ── Clinical Records Tabs ── */
@@ -286,7 +317,7 @@
                     @if($patient->middle_name) {{ $patient->middle_name }}@endif
                 </div>
                 <div class="patient-id mb-2">{{ $patient->patient_no }}</div>
-                <span class="patient-type-pill">
+                <span class="patient-type-pill type-{{ strtolower($patient->patient_type ?? 'outpatient') }}">
                     <i class="bi bi-person-badge" style="font-size:.7rem;opacity:.7;"></i>
                     {{ $patient->patient_type }}
                 </span>

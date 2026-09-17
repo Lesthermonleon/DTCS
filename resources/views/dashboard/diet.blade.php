@@ -343,14 +343,14 @@
                 canvas,
                 ['Pending', 'In Progress', 'Completed'],
                 [_d.pending, _d.in_progress, _d.completed],
-                ['#64748B', '#475569', '#2f8f6b']
+                ['#2196F3', '#FFB300', '#4CAF50']
             );
         } else {
             window.HIMSChart.createDoughnutChart(
                 canvas,
                 ['No Data'],
                 [1],
-                ['#94A3B8']
+                ['#9E9E9E']
             );
         }
     }

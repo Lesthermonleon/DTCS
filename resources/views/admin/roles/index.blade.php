@@ -101,7 +101,7 @@
                             @endforeach
                         </td>
                         <td class="pe-3">
-                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" style="font-size: 0.75rem;">
+                            <span class="badge hims-badge-gray px-2 py-1" style="font-size: 0.75rem;">
                                 <i class="bi bi-people me-1"></i>{{ $role->users_count }}
                             </span>
                         </td>

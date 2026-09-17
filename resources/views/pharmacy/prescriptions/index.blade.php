@@ -32,28 +32,84 @@
                     <td><span class="badge bg-{{ $rx->statusBadge }}">{{ $rx->status }}</span></td>
                     <td><small>{{ $rx->prescribed_at?->format('M d, Y') }}</small></td>
                     <td>
+                        @php
+                            $rowActions = [
+                                [
+                                    'type' => 'link',
+                                    'url' => route('pharmacy.prescriptions.show', $rx),
+                                    'title' => 'View Prescription',
+                                    'icon' => 'bi-eye',
+                                    'btn_class' => 'action-view',
+                                    'text_class' => 'text-primary'
+                                ]
+                            ];
+                            if ($rx->status === 'Pending' && auth()->user()->hasRole('pharmacist')) {
+                                $rowActions[] = [
+                                    'type' => 'form',
+                                    'url' => route('pharmacy.prescriptions.verify', $rx),
+                                    'method' => 'PATCH',
+                                    'title' => 'Verify Prescription',
+                                    'icon' => 'bi-check-lg',
+                                    'btn_class' => 'action-success',
+                                    'text_class' => 'text-success'
+                                ];
+                            }
+                            if ($rx->status === 'Pending' && auth()->user()->hasRole('doctor')) {
+                                $rowActions[] = [
+                                    'type' => 'link',
+                                    'url' => route('pharmacy.prescriptions.edit', $rx),
+                                    'title' => 'Edit Prescription',
+                                    'icon' => 'bi-pencil',
+                                    'btn_class' => 'action-edit',
+                                    'text_class' => 'text-success'
+                                ];
+                            }
+                            $actionCount = count($rowActions);
+                            $directLimit = ($actionCount <= 3) ? $actionCount : 2;
+                        @endphp
                         <div class="table-actions">
-                            <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="table-action-btn action-view" title="View Prescription" aria-label="View Prescription"><i class="bi bi-eye"></i></a>
-                            @if($rx->status==='Pending' && auth()->user()->hasRole('pharmacist'))
-                                <form method="POST" action="{{ route('pharmacy.prescriptions.verify', $rx) }}" class="d-inline">
-                                    @csrf @method('PATCH')
-                                    <button type="submit" class="table-action-btn action-success" title="Verify Prescription" aria-label="Verify Prescription"><i class="bi bi-check-lg"></i></button>
-                                </form>
-                            @else
-                                <a href="{{ route('pharmacy.prescriptions.show', $rx) }}" class="table-action-btn action-info" title="Prescription Details" aria-label="Prescription Details"><i class="bi bi-file-earmark-medical"></i></a>
-                            @endif
+                            @foreach(array_slice($rowActions, 0, $directLimit) as $act)
+                                @if($act['type'] === 'link')
+                                    <a href="{{ $act['url'] }}" class="table-action-btn {{ $act['btn_class'] }}" title="{{ $act['title'] }}" aria-label="{{ $act['title'] }}">
+                                        <i class="bi {{ $act['icon'] }}"></i>
+                                    </a>
+                                @elseif($act['type'] === 'form')
+                                    <form action="{{ $act['url'] }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method($act['method'] ?? 'POST')
+                                        <button type="submit" class="table-action-btn {{ $act['btn_class'] }}" title="{{ $act['title'] }}" aria-label="{{ $act['title'] }}" @if(!empty($act['confirm'])) data-confirm="{{ $act['confirm'] }}" @endif>
+                                            <i class="bi {{ $act['icon'] }}"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endforeach
 
-                            <div class="dropdown d-inline">
-                                <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    <li><a class="dropdown-item small" href="{{ route('pharmacy.prescriptions.show', $rx) }}"><i class="bi bi-folder2-open me-2 text-secondary"></i>View Details</a></li>
-                                    @if($rx->status==='Pending' && auth()->user()->hasRole('doctor'))
-                                        <li><a class="dropdown-item small" href="{{ route('pharmacy.prescriptions.edit', $rx) }}"><i class="bi bi-pencil me-2 text-success"></i>Edit Prescription</a></li>
-                                    @endif
-                                </ul>
-                            </div>
+                            @if($actionCount > 3)
+                                <div class="dropdown d-inline">
+                                    <button class="table-action-btn dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions" aria-label="More Actions">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        @foreach(array_slice($rowActions, $directLimit) as $act)
+                                            <li>
+                                                @if($act['type'] === 'link')
+                                                    <a class="dropdown-item small" href="{{ $act['url'] }}">
+                                                        <i class="bi {{ $act['icon'] }} me-2 {{ $act['text_class'] ?? '' }}"></i>{{ $act['title'] }}
+                                                    </a>
+                                                @elseif($act['type'] === 'form')
+                                                    <form action="{{ $act['url'] }}" method="POST">
+                                                        @csrf
+                                                        @method($act['method'] ?? 'POST')
+                                                        <button type="submit" class="dropdown-item small {{ $act['text_class'] ?? '' }}" @if(!empty($act['confirm'])) data-confirm="{{ $act['confirm'] }}" @endif>
+                                                            <i class="bi {{ $act['icon'] }} me-2"></i>{{ $act['title'] }}
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                     </td>
                 </tr>

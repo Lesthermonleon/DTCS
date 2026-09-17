@@ -442,14 +442,14 @@
                 canvas,
                 ['Pending', 'Scheduled/In Progress', 'Completed'],
                 [_d.pending, _d.scheduled, _d.completed],
-                ['#64748B', '#475569', '#2f8f6b']
+                ['#2196F3', '#FFB300', '#4CAF50']
             );
         } else {
             window.HIMSChart.createDoughnutChart(
                 canvas,
                 ['No Data'],
                 [1],
-                ['#94A3B8']
+                ['#9E9E9E']
             );
         }
     }
@@ -482,7 +482,12 @@
 
     const rptCtx = document.getElementById('radReportStatusChart');
     if (rptCtx && rpt.some(r => r.count > 0)) {
-        window.HIMSChart.createDoughnutChart(rptCtx, rpt.map(r => r.label), rpt.map(r => r.count), ['#64748B', '#2f8f6b', '#475569']);
+        window.HIMSChart.createDoughnutChart(
+            rptCtx,
+            rpt.map(r => r.label),
+            rpt.map(r => r.count),
+            { 'Draft': '#9E9E9E', 'Approved': '#1976D2', 'Released': '#4CAF50' }
+        );
     }
 })();
 </script>

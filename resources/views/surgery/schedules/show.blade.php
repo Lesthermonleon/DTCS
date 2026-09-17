@@ -169,7 +169,7 @@
                         <form action="{{ route('surgery.schedules.start', ['surgerySchedule' => $surgerySchedule->id]) }}" method="POST">
                             @csrf
                             @method('PATCH')
-                            <button type="submit" class="btn btn-success w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
+                            <button type="submit" class="btn btn-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
                                 <i class="bi bi-play-circle"></i> Start Procedure (In Progress)
                             </button>
                         </form>
@@ -185,7 +185,7 @@
                         </form>
 
                         @if(auth()->user()->hasRole('or-coordinator'))
-                            <a href="{{ route('surgery.schedules.edit', ['surgerySchedule' => $surgerySchedule->id]) }}" class="btn btn-outline-success w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
+                            <a href="{{ route('surgery.schedules.edit', ['surgerySchedule' => $surgerySchedule->id]) }}" class="btn btn-outline-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 0.5rem;">
                                 <i class="bi bi-pencil"></i> Edit Schedule
                             </a>
                         @endif
