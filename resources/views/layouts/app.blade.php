@@ -21,9 +21,6 @@
     <link rel="stylesheet" href="{{ asset('css/skeleton.css') }}">
     {{-- HIMS Standardized Charts System --}}
     <link rel="stylesheet" href="{{ asset('css/charts.css') }}">
-    {{-- Rainbow Christmas Flashy Prank Theme --}}
-    <link rel="stylesheet" href="{{ asset('css/rainbow-prank.css') }}">
-    <script src="{{ asset('js/rainbow-prank.js') }}" defer></script>
     <script src="{{ asset('js/hims-charts.js') }}"></script>
     {{-- Google Fonts: Space Grotesk + Inter + IBM Plex Mono --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5299,6 +5296,338 @@ document.addEventListener('DOMContentLoaded', function () {
             background: #e2e8f0;
             border-color: #e2e8f0;
         }
+
+        /* ══════════════════════════════════════
+           PINK PRIDE RAINBOW CHRISTMAS PRANK THEME
+        ══════════════════════════════════════ */
+        :root {
+            --pride-red:      #EF4444;
+            --pride-orange:   #F97316;
+            --pride-yellow:   #FACC15;
+            --pride-green:    #22C55E;
+            --pride-cyan:     #06B6D4;
+            --pride-blue:     #3B82F6;
+            --pride-indigo:   #6366F1;
+            --pride-violet:   #8B5CF6;
+            --pride-purple:   #A855F7;
+            --pride-magenta:  #D946EF;
+            --prank-pink:     #EC4899;
+            --prank-hotpink:  #FF1493;
+
+            /* Pink Base Dominant HIMS Variables */
+            --signal:               #FF1493;
+            --signal-dark:          #DB2777;
+            --hims-action-primary:  #EC4899;
+            --hims-action-primary-hover: #DB2777;
+            --hims-action-success:  #F472B6;
+            --hims-action-success-hover: #EC4899;
+            --ms-primary:           #EC4899;
+            --ms-primary-hover:     #DB2777;
+            --ms-primary-light:     #FCE7F3;
+            --ms-secondary:         #FFF0F7;
+            --ms-focus-ring:        #FF1493;
+            --ms-border:            #FBCFE8;
+
+            /* Light mode sidebar */
+            --sidebar-bg:           linear-gradient(180deg, #FCE7F3 0%, #FBCFE8 50%, #F472B6 100%);
+            --sidebar-border:       #F472B6;
+            --sidebar-text:         #831843;
+            --sidebar-text-soft:    #9D174D;
+            --sidebar-hover-bg:     rgba(236, 72, 153, 0.15);
+            --sidebar-hover-text:   #DB2777;
+            --sidebar-active-bg:    #F472B6;
+            --sidebar-active-text:  #FFFFFF;
+        }
+
+        /* ── Keyframe Animations ── */
+        @keyframes prideRainbowShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes rainbowAuraPulse {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(255, 20, 147, 0.5), 0 0 30px rgba(6, 182, 212, 0.3), 0 0 45px rgba(168, 85, 247, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(255, 20, 147, 0.8), 0 0 45px rgba(250, 204, 21, 0.5), 0 0 60px rgba(217, 70, 239, 0.4);
+            }
+        }
+
+        @keyframes prideBulbShimmer {
+            0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 8px currentColor); }
+            50%      { opacity: 0.55; transform: scale(0.85); filter: drop-shadow(0 0 3px currentColor); }
+        }
+
+        /* ── 1. BACKGROUND (PINK DOMINANT BASE + PRIDE RAINBOW AURA) ── */
+        html[data-theme="light"] body,
+        html[data-bs-theme="light"] body,
+        :root:not([data-theme="dark"]) body {
+            background: linear-gradient(135deg, #FFF0F7 0%, #FCE7F3 15%, #FBCFE8 35%, #F472B6 55%, #E879F9 75%, #FFF0F7 100%) !important;
+            background-size: 300% 300% !important;
+            animation: prideRainbowShift 22s ease infinite !important;
+            color: #831843 !important;
+        }
+
+        html[data-theme="dark"] body,
+        html[data-bs-theme="dark"] body {
+            background: linear-gradient(135deg, #050505 0%, #1A0512 25%, #2B081E 50%, #18031A 75%, #0F030B 100%) !important;
+            background-size: 300% 300% !important;
+            animation: prideRainbowShift 22s ease infinite !important;
+            color: #FCE7F3 !important;
+        }
+
+        /* ── 2. TOPBAR (PRIDE RAINBOW BORDER + PINK GLOW) ── */
+        #topbar {
+            background: linear-gradient(90deg, #EC4899 0%, #DB2777 25%, #D946EF 50%, #A855F7 75%, #FF1493 100%) !important;
+            border-bottom: 3px solid transparent !important;
+            border-image: linear-gradient(90deg, #EF4444, #F97316, #FACC15, #22C55E, #06B6D4, #3B82F6, #8B5CF6, #D946EF, #EC4899) 1 !important;
+            box-shadow: 0 4px 25px rgba(236, 72, 153, 0.45) !important;
+        }
+        html[data-theme="dark"] #topbar {
+            background: linear-gradient(90deg, #1F0515 0%, #310823 35%, #26051C 65%, #180311 100%) !important;
+            border-bottom: 3px solid transparent !important;
+            border-image: linear-gradient(90deg, #EF4444, #F97316, #FACC15, #22C55E, #06B6D4, #3B82F6, #8B5CF6, #D946EF, #FF1493) 1 !important;
+            box-shadow: 0 4px 30px rgba(255, 20, 147, 0.5) !important;
+        }
+        #topbar .topbar-title,
+        #topbar .topbar-clock-date,
+        #topbar .topbar-user-name {
+            color: #FFFFFF !important;
+            font-weight: 600;
+        }
+        #topbar .topbar-clock-time {
+            color: #FCE7F3 !important;
+            text-shadow: 0 0 10px rgba(255, 20, 147, 0.9) !important;
+        }
+        .topbar-search input {
+            background: rgba(255, 255, 255, 0.92) !important;
+            border-color: #F472B6 !important;
+            color: #831843 !important;
+        }
+        html[data-theme="dark"] .topbar-search input {
+            background: rgba(15, 3, 11, 0.88) !important;
+            border-color: #FF1493 !important;
+            color: #FCE7F3 !important;
+        }
+        .topbar-search input:focus {
+            box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.45) !important;
+            border-color: #FF1493 !important;
+        }
+        .topbar-user, .topbar-notif, .topbar-toggle {
+            border-color: rgba(244, 114, 182, 0.7) !important;
+            background: rgba(255, 255, 255, 0.18) !important;
+            color: #FFFFFF !important;
+        }
+        .topbar-user:hover, .topbar-notif:hover {
+            border-color: #FF1493 !important;
+            background: rgba(255, 20, 147, 0.35) !important;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.7) !important;
+        }
+
+        /* ── 3. SIDEBAR (PINK BASE + PRIDE RAINBOW ACCENTS) ── */
+        #sidebar {
+            background: linear-gradient(180deg, #FCE7F3 0%, #FBCFE8 35%, #F472B6 70%, #EC4899 100%) !important;
+            border-right: 3px solid transparent !important;
+            border-image: linear-gradient(180deg, #EC4899, #D946EF, #8B5CF6, #3B82F6, #06B6D4, #22C55E, #FACC15, #F97316, #EF4444) 1 !important;
+            box-shadow: 4px 0 25px rgba(236, 72, 153, 0.3) !important;
+        }
+        html[data-theme="dark"] #sidebar {
+            background: linear-gradient(180deg, #170410 0%, #2A071D 50%, #1B0313 100%) !important;
+            border-right: 3px solid transparent !important;
+            border-image: linear-gradient(180deg, #FF1493, #D946EF, #8B5CF6, #3B82F6, #06B6D4, #22C55E, #FACC15, #EF4444) 1 !important;
+            box-shadow: 4px 0 30px rgba(255, 20, 147, 0.4) !important;
+        }
+        .sb-brand-text h5 {
+            color: #831843 !important;
+            font-weight: 700;
+        }
+        html[data-theme="dark"] .sb-brand-text h5 {
+            color: #FF1493 !important;
+            text-shadow: 0 0 12px rgba(255, 20, 147, 0.8);
+        }
+        #sidebar .nav-link {
+            color: #9D174D !important;
+            font-weight: 500;
+            transition: all 0.2s ease !important;
+        }
+        html[data-theme="dark"] #sidebar .nav-link {
+            color: #FBCFE8 !important;
+        }
+        #sidebar .nav-link i {
+            color: #DB2777 !important;
+        }
+        html[data-theme="dark"] #sidebar .nav-link i {
+            color: #F472B6 !important;
+        }
+        #sidebar .nav-link:hover {
+            background: linear-gradient(90deg, rgba(236, 72, 153, 0.25) 0%, rgba(6, 182, 212, 0.25) 100%) !important;
+            color: #FF1493 !important;
+            border-left-color: #FF1493 !important;
+            box-shadow: inset 4px 0 12px rgba(255, 20, 147, 0.35) !important;
+        }
+        #sidebar .nav-link:hover i {
+            color: #FF1493 !important;
+        }
+        #sidebar .nav-link.active {
+            background: linear-gradient(90deg, #EC4899 0%, #D946EF 50%, #8B5CF6 100%) !important;
+            color: #FFFFFF !important;
+            border-left-color: #FF1493 !important;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.7) !important;
+            font-weight: 700 !important;
+        }
+        #sidebar .nav-link.active i {
+            color: #FFFFFF !important;
+        }
+
+        /* ── 4. CARDS (PRIDE RAINBOW BORDERS & NEON GLOW AURA) ── */
+        .card,
+        html[data-theme="light"] .card,
+        html[data-bs-theme="light"] .card {
+            background: rgba(255, 245, 249, 0.95) !important;
+            border: 2px solid transparent !important;
+            border-image: linear-gradient(135deg, #EC4899, #D946EF, #8B5CF6, #06B6D4, #22C55E, #FACC15, #F97316, #EF4444) 1 !important;
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.18) !important;
+            animation: rainbowAuraPulse 8s ease-in-out infinite alternate !important;
+        }
+        html[data-theme="dark"] .card,
+        html[data-bs-theme="dark"] .card {
+            background: rgba(22, 5, 17, 0.92) !important;
+            border: 2px solid transparent !important;
+            border-image: linear-gradient(135deg, #FF1493, #D946EF, #8B5CF6, #3B82F6, #06B6D4, #22C55E, #FACC15, #EF4444) 1 !important;
+            box-shadow: 0 4px 25px rgba(255, 20, 147, 0.25) !important;
+            animation: rainbowAuraPulse 8s ease-in-out infinite alternate !important;
+        }
+        .card-header {
+            border-bottom: 2px solid transparent !important;
+            border-image: linear-gradient(90deg, #EC4899, #D946EF, #3B82F6) 1 !important;
+            background: rgba(252, 231, 243, 0.65) !important;
+            color: #831843 !important;
+        }
+        html[data-theme="dark"] .card-header {
+            border-bottom: 2px solid transparent !important;
+            border-image: linear-gradient(90deg, #FF1493, #D946EF, #06B6D4) 1 !important;
+            background: rgba(43, 8, 30, 0.75) !important;
+            color: #FCE7F3 !important;
+        }
+        .card:hover {
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.45) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        /* ── 5. BUTTONS (PINK BASE + PRIDE RAINBOW HOVER GRADIENTS) ── */
+        .btn-primary, .btn-success, .btn-secondary,
+        .hims-btn-primary, .hims-btn-success, .hims-btn-secondary {
+            background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%) !important;
+            border: 1px solid #F472B6 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4) !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active,
+        .btn-success:hover, .btn-success:focus, .btn-success:active,
+        .btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active,
+        .hims-btn-primary:hover, .hims-btn-primary:focus, .hims-btn-primary:active,
+        .hims-btn-success:hover, .hims-btn-success:focus, .hims-btn-success:active,
+        .hims-btn-secondary:hover, .hims-btn-secondary:focus, .hims-btn-secondary:active {
+            background: linear-gradient(135deg, #EF4444 0%, #F97316 20%, #FACC15 40%, #22C55E 60%, #06B6D4 80%, #D946EF 100%) !important;
+            background-size: 200% 200% !important;
+            animation: prideRainbowShift 3s linear infinite !important;
+            border-color: #FF1493 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 0 25px rgba(255, 20, 147, 0.85) !important;
+            transform: translateY(-2px) scale(1.03) !important;
+        }
+        .btn-outline-primary, .btn-outline-secondary, .btn-outline-success {
+            border-color: #EC4899 !important;
+            color: #EC4899 !important;
+        }
+        .btn-outline-primary:hover, .btn-outline-secondary:hover, .btn-outline-success:hover {
+            background: linear-gradient(135deg, #EC4899 0%, #D946EF 50%, #8B5CF6 100%) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 0 18px rgba(236, 72, 153, 0.65) !important;
+        }
+
+        /* ── 6. TABLES (PINK TINT + PRIDE RAINBOW ROW HOVER) ── */
+        .table tbody tr:hover td {
+            background: linear-gradient(90deg, rgba(236, 72, 153, 0.15) 0%, rgba(6, 182, 212, 0.15) 50%, rgba(168, 85, 247, 0.15) 100%) !important;
+            transition: background 0.2s ease !important;
+        }
+
+        /* ── 7. MULTI-EDGE CHRISTMAS LIGHTS STRANDS ── */
+        #pride-christmas-lights-top {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 12px; z-index: 9999;
+            pointer-events: none;
+            display: flex; justify-content: space-around; align-items: flex-start;
+            padding: 0 8px; overflow: hidden;
+        }
+        #pride-christmas-lights-left {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 12px; z-index: 9999;
+            pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-around; align-items: flex-start;
+            padding: 8px 0; overflow: hidden;
+        }
+        #pride-christmas-lights-right {
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: 12px; z-index: 9999;
+            pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-around; align-items: flex-end;
+            padding: 8px 0; overflow: hidden;
+        }
+        .christmas-bulb {
+            width: 8px; height: 12px;
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            animation: prideBulbShimmer 1.6s ease-in-out infinite alternate;
+        }
+        .christmas-bulb::before {
+            content: ''; position: absolute;
+            top: -3px; left: 2px;
+            width: 4px; height: 3px;
+            background: #444; border-radius: 1px;
+        }
+        .bulb-red      { background: #EF4444; color: #EF4444; }
+        .bulb-orange   { background: #F97316; color: #F97316; }
+        .bulb-yellow   { background: #FACC15; color: #FACC15; }
+        .bulb-green    { background: #22C55E; color: #22C55E; }
+        .bulb-cyan     { background: #06B6D4; color: #06B6D4; }
+        .bulb-blue     { background: #3B82F6; color: #3B82F6; }
+        .bulb-indigo   { background: #6366F1; color: #6366F1; }
+        .bulb-violet   { background: #8B5CF6; color: #8B5CF6; }
+        .bulb-magenta  { background: #D946EF; color: #D946EF; }
+        .bulb-pink     { background: #EC4899; color: #EC4899; }
+        .bulb-hotpink  { background: #FF1493; color: #FF1493; }
+
+        /* ── 8. DECORATIVE FIREWORKS & PARTICLE CANVAS ── */
+        #pride-fireworks-canvas,
+        #pride-particles-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 9998;
+            pointer-events: none;
+        }
+
+        /* ── 9. REDUCED MOTION SUPPORT ── */
+        @media (prefers-reduced-motion: reduce) {
+            body, .card, #topbar, #sidebar, .btn-primary, .btn-success {
+                animation: none !important;
+                transition: none !important;
+            }
+            .christmas-bulb {
+                animation: none !important;
+                opacity: 0.85 !important;
+            }
+            #pride-particles-canvas {
+                display: none !important;
+            }
+        }
     </style>
 
     {{-- Real-time Single Active Session Replacement Listener --}}
@@ -5356,6 +5685,166 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     </script>
 @endauth
+
+    <!-- Pride Christmas Lights Strands -->
+    <div id="pride-christmas-lights-top"></div>
+    <div id="pride-christmas-lights-left"></div>
+    <div id="pride-christmas-lights-right"></div>
+
+    <!-- Pride Fireworks & Ambient Floating Particles Canvases -->
+    <canvas id="pride-particles-canvas"></canvas>
+    <canvas id="pride-fireworks-canvas"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            /* Full 12-Color Pride Rainbow Palette */
+            const pridePalette = [
+                '#EF4444', '#F97316', '#FACC15', '#22C55E', '#06B6D4',
+                '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF',
+                '#EC4899', '#FF1493'
+            ];
+
+            /* 1. Generate Multi-Edge Christmas Lights Strands */
+            function createBulbStrand(containerId, count) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const bulbClasses = [
+                    'bulb-pink', 'bulb-red', 'bulb-orange', 'bulb-hotpink',
+                    'bulb-yellow', 'bulb-green', 'bulb-cyan', 'bulb-magenta',
+                    'bulb-blue', 'bulb-indigo', 'bulb-violet', 'bulb-pink'
+                ];
+                for (let i = 0; i < count; i++) {
+                    const bulb = document.createElement('div');
+                    const colorClass = bulbClasses[i % bulbClasses.length];
+                    bulb.className = 'christmas-bulb ' + colorClass;
+                    bulb.style.animationDelay = (Math.random() * 1.5).toFixed(2) + 's';
+                    container.appendChild(bulb);
+                }
+            }
+
+            createBulbStrand('pride-christmas-lights-top', Math.floor(window.innerWidth / 22));
+            createBulbStrand('pride-christmas-lights-left', Math.floor(window.innerHeight / 35));
+            createBulbStrand('pride-christmas-lights-right', Math.floor(window.innerHeight / 35));
+
+            /* 2. Ambient Floating Rainbow Particles Canvas */
+            const pCanvas = document.getElementById('pride-particles-canvas');
+            if (pCanvas && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                const pCtx = pCanvas.getContext('2d');
+                let pWidth = pCanvas.width = window.innerWidth;
+                let pHeight = pCanvas.height = window.innerHeight;
+
+                window.addEventListener('resize', function() {
+                    pWidth = pCanvas.width = window.innerWidth;
+                    pHeight = pCanvas.height = window.innerHeight;
+                });
+
+                const ambientParticles = [];
+                const particleCount = Math.min(35, Math.floor(pWidth / 40));
+                for (let i = 0; i < particleCount; i++) {
+                    ambientParticles.push({
+                        x: Math.random() * pWidth,
+                        y: Math.random() * pHeight,
+                        vx: (Math.random() - 0.5) * 0.6,
+                        vy: -Math.random() * 0.8 - 0.2,
+                        size: Math.random() * 3 + 1.5,
+                        color: pridePalette[Math.floor(Math.random() * pridePalette.length)],
+                        alpha: Math.random() * 0.6 + 0.2
+                    });
+                }
+
+                function animateAmbientParticles() {
+                    pCtx.clearRect(0, 0, pWidth, pHeight);
+                    for (let i = 0; i < ambientParticles.length; i++) {
+                        const ap = ambientParticles[i];
+                        ap.x += ap.vx;
+                        ap.y += ap.vy;
+                        if (ap.y < -10) {
+                            ap.y = pHeight + 10;
+                            ap.x = Math.random() * pWidth;
+                        }
+                        pCtx.save();
+                        pCtx.globalAlpha = ap.alpha;
+                        pCtx.fillStyle = ap.color;
+                        pCtx.shadowBlur = 8;
+                        pCtx.shadowColor = ap.color;
+                        pCtx.beginPath();
+                        pCtx.arc(ap.x, ap.y, ap.size, 0, Math.PI * 2);
+                        pCtx.fill();
+                        pCtx.restore();
+                    }
+                    requestAnimationFrame(animateAmbientParticles);
+                }
+                animateAmbientParticles();
+            }
+
+            /* 3. Pride Rainbow Fireworks Engine on Click */
+            const fwCanvas = document.getElementById('pride-fireworks-canvas');
+            if (fwCanvas) {
+                const fwCtx = fwCanvas.getContext('2d');
+                let fwWidth = fwCanvas.width = window.innerWidth;
+                let fwHeight = fwCanvas.height = window.innerHeight;
+
+                window.addEventListener('resize', function() {
+                    fwWidth = fwCanvas.width = window.innerWidth;
+                    fwHeight = fwCanvas.height = window.innerHeight;
+                });
+
+                const fwParticles = [];
+
+                function createPrideFirework(x, y) {
+                    const count = 32 + Math.floor(Math.random() * 16);
+                    for (let i = 0; i < count; i++) {
+                        const angle = (Math.PI * 2 / count) * i + (Math.random() * 0.2 - 0.1);
+                        const speed = Math.random() * 5 + 1.8;
+                        const color = pridePalette[i % pridePalette.length];
+
+                        fwParticles.push({
+                            x: x, y: y,
+                            vx: Math.cos(angle) * speed,
+                            vy: Math.sin(angle) * speed,
+                            size: Math.random() * 3.5 + 2,
+                            color: color,
+                            alpha: 1,
+                            decay: Math.random() * 0.022 + 0.014,
+                            gravity: 0.07
+                        });
+                    }
+                }
+
+                document.addEventListener('click', function(e) {
+                    createPrideFirework(e.clientX, e.clientY);
+                });
+
+                function animateFireworks() {
+                    fwCtx.clearRect(0, 0, fwWidth, fwHeight);
+                    for (let i = fwParticles.length - 1; i >= 0; i--) {
+                        const p = fwParticles[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += p.gravity;
+                        p.alpha -= p.decay;
+
+                        if (p.alpha <= 0) {
+                            fwParticles.splice(i, 1);
+                            continue;
+                        }
+
+                        fwCtx.save();
+                        fwCtx.globalAlpha = p.alpha;
+                        fwCtx.fillStyle = p.color;
+                        fwCtx.shadowBlur = 12;
+                        fwCtx.shadowColor = p.color;
+                        fwCtx.beginPath();
+                        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        fwCtx.fill();
+                        fwCtx.restore();
+                    }
+                    requestAnimationFrame(animateFireworks);
+                }
+                animateFireworks();
+            }
+        });
+    </script>
 
 @stack('scripts')
 </body>
