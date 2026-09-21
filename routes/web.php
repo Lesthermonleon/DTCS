@@ -10,7 +10,6 @@ use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\Lab\LabRequestController;
 use App\Http\Controllers\Lab\LabResultController;
 use App\Http\Controllers\MessageController;
-use App\Http\Controllers\MediSenseController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Pharmacy\DispensingController;
@@ -383,16 +382,9 @@ Route::middleware(['auth'])->group(function () {
          });
 
     // ═══════════════════════════════════════════════════════════════════
-    // VIRTUAL MEDISENSE AI
+    // MEDISENSE UI (Static Visual Component)
     // ═══════════════════════════════════════════════════════════════════
-    Route::prefix('medisense')
-         ->name('medisense.')
+    Route::get('/medisense', fn() => view('medisense.index'))
          ->middleware('role:admin,doctor,med-tech,rad-tech,radiologist,pharmacist,dietitian,or-coordinator')
-         ->group(function () {
-             Route::get('/',              [MediSenseController::class, 'index'])->name('index');
-             Route::get('/capabilities',  [MediSenseController::class, 'capabilities'])->name('capabilities');
-             Route::post('/chat',         [MediSenseController::class, 'chat'])->name('chat');
-             Route::get('/history',       [MediSenseController::class, 'history'])->name('history');
-             Route::post('/clear',        [MediSenseController::class, 'clear'])->name('clear');
-         });
+         ->name('medisense.index');
 });

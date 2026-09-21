@@ -1533,7 +1533,7 @@ document.addEventListener('DOMContentLoaded', function () {
             content: prompt
         });
 
-        typing = true;
+        typing = false;
         showChat();
         renderMessages();
 
@@ -1541,43 +1541,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (chatInput) { chatInput.value = ""; autoResize(chatInput); }
         if (emptySend) emptySend.disabled = true;
         if (chatSend) chatSend.disabled = true;
-
-        fetch("{{ route('medisense.chat') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                prompt: prompt
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            typing = false;
-            if (data.requires_confirm) {
-                appendConfirmationPrompt(data);
-            } else if (data.success) {
-                messages.push({
-                    id: 'ai-' + Date.now(),
-                    role: 'assistant',
-                    content: data.ai_response,
-                    capLabel: data.capability_label,
-                    sources: data.sources,
-                    citations: data.citations
-                });
-                renderMessages();
-            } else {
-                appendErrorMessage(data.error || 'An error occurred while processing your request.');
-                renderMessages();
-            }
-        })
-        .catch(err => {
-            typing = false;
-            appendErrorMessage('Network connection error. Please try again.');
-            renderMessages();
-        });
     }
 
     function renderMessages() {

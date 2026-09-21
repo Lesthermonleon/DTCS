@@ -35,13 +35,16 @@ class AdminDashboardTest extends TestCase
 
     public function test_non_admin_role_cannot_access_admin_dashboard()
     {
-        $doctor = User::whereHas('roles', fn($q) => $q->where('slug', 'doctor'))->first();
+        $role = Role::where('slug', 'doctor')->first() ?? Role::create(['name' => 'Doctor', 'slug' => 'doctor']);
+        $doctor = User::create([
+            'name'        => 'Pure Doctor Test',
+            'email'       => 'pure_doctor_' . uniqid() . '@hospital.test',
+            'password'    => 'password',
+            'employee_id' => 'DOC-' . rand(1000, 9999),
+        ]);
+        $doctor->roles()->attach($role->id);
 
-        if ($doctor) {
-            $response = $this->actingAs($doctor)->get(route('admin.dashboard'));
-            $response->assertStatus(403);
-        } else {
-            $this->assertTrue(true);
-        }
+        $response = $this->actingAs($doctor)->get(route('admin.dashboard'));
+        $response->assertStatus(403);
     }
 }

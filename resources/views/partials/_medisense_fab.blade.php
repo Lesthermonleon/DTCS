@@ -674,48 +674,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const prompt = fabInputPrompt.value.trim();
             if (!prompt) return;
 
-            // Render User Bubble
+            // Render User Bubble (static UI display)
             appendFabUser(prompt);
             fabInputPrompt.value = '';
-
-            // Record conversation history
-            fabConversationHistory.push({ role: 'user', content: prompt });
-
-            // Render Loading
-            const loadId = appendFabLoading();
-            fabBtnSend.disabled = true;
-
-            fetch("{{ route('medisense.chat') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    prompt: prompt,
-                    conversation_history: fabConversationHistory.slice(-6)
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                removeFabMsg(loadId);
-                fabBtnSend.disabled = false;
-
-                if (data.requires_confirm) {
-                    appendFabConfirmationPrompt(data);
-                } else if (data.success) {
-                    fabConversationHistory.push({ role: 'assistant', content: data.ai_response });
-                    appendFabAi(data.ai_response, data.capability_label, data.sources, data.citations);
-                } else {
-                    appendFabError(data.error || 'Error generating AI response.');
-                }
-            })
-            .catch(() => {
-                removeFabMsg(loadId);
-                fabBtnSend.disabled = false;
-                appendFabError('Network error.');
-            });
         });
     }
 
@@ -819,31 +780,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     window.confirmFabAction = function (patientId, testName) {
-        appendFabUser(`[CONFIRMED] Execute laboratory request for ${testName}`);
-        const loadId = appendFabLoading();
-
-        fetch("{{ route('medisense.chat') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                prompt: `Create a laboratory request for ${testName} with confirmed=true`,
-                patient_id: patientId ? parseInt(patientId) : null,
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            removeFabMsg(loadId);
-            if (data.success) {
-                fabConversationHistory.push({ role: 'assistant', content: data.ai_response });
-                appendFabAi(data.ai_response, 'Laboratory Request', data.sources, data.citations);
-            } else {
-                appendFabError(data.error || 'Action failed to execute.');
-            }
-        });
+        appendFabUser(`Execute laboratory request for ${testName}`);
     };
 
     function formatFabMarkdown(str) {
