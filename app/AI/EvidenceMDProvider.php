@@ -160,7 +160,8 @@ class EvidenceMDProvider implements AIProviderInterface
                     $findings,
                     $himsContext,
                     $disclaimer,
-                    $statusText
+                    $statusText,
+                    $category
                 );
             }
 
@@ -184,7 +185,8 @@ class EvidenceMDProvider implements AIProviderInterface
                     $findings,
                     $himsContext,
                     $disclaimer,
-                    'Unexpected Response'
+                    'Unexpected Response',
+                    'malformed_response'
                 );
             }
 
@@ -192,6 +194,7 @@ class EvidenceMDProvider implements AIProviderInterface
                 'task'             => $task,
                 'provider'         => self::PROVIDER_NAME,
                 'status'           => self::STATUS_ACTIVE,
+                'category'         => 'active',
                 'summary'          => $parsed['summary'] ?? "EvidenceMD analysis completed for {$taskLabel}.",
                 'context_received' => $contextReceived, // Internal HIMS patient details for authorized UI display
                 'findings_received'=> $findings,
@@ -228,7 +231,8 @@ class EvidenceMDProvider implements AIProviderInterface
                 $findings,
                 $himsContext,
                 $disclaimer,
-                'Connection Error'
+                'Connection Error',
+                'connection_error'
             );
         }
     }
@@ -579,12 +583,14 @@ SYS;
         string $findings,
         array $himsContext,
         string $disclaimer,
-        string $statusText = self::STATUS_ERROR
+        string $statusText = self::STATUS_ERROR,
+        string $category = 'error'
     ): array {
         return [
             'task'             => $task,
             'provider'         => self::PROVIDER_NAME,
             'status'           => $statusText,
+            'category'         => $category,
             'summary'          => $errorMsg,
             'context_received' => $contextReceived,
             'findings_received'=> $findings,

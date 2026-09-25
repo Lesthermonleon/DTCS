@@ -373,7 +373,15 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(resData => {
                 loadingContainer.classList.add('d-none');
                 outputContainer.classList.remove('d-none');
-                resData.success ? renderMediSenseResult(resData.data) : renderError(resData.message || 'An error occurred.');
+                if (resData.success && resData.data) {
+                    if (resData.data.category === 'insufficient_credits') {
+                        renderInsufficientCreditsError();
+                    } else {
+                        renderMediSenseResult(resData.data);
+                    }
+                } else {
+                    renderError(resData.message || 'An error occurred.');
+                }
             })
             .catch(err => {
                 loadingContainer.classList.add('d-none');
@@ -382,6 +390,26 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
+
+    // ── Insufficient EvidenceMD Credits Error Renderer ────────────────────────
+    function renderInsufficientCreditsError() {
+        outputContainer.innerHTML = `
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 text-center">
+                    <div class="text-warning mb-3">
+                        <i class="bi bi-exclamation-triangle fs-1"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">Analysis Unavailable</h5>
+                    <h6 class="fw-semibold text-secondary mb-3">Insufficient EvidenceMD Credits</h6>
+                    <p class="text-muted small mb-3 mx-auto" style="max-width: 520px; line-height: 1.5;">
+                        The MediSense clinical analysis could not be completed because the EvidenceMD service currently has insufficient API credits to process this request.
+                    </p>
+                    <p class="text-muted small mb-0 mx-auto" style="max-width: 520px; line-height: 1.5;">
+                        Please contact the system administrator to replenish or verify the EvidenceMD API credits before trying again.
+                    </p>
+                </div>
+            </div>`;
+    }
 
     // ── Doctor-Facing Error renderer ─────────────────────────────────────────
     function renderError(msg) {
@@ -402,6 +430,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Doctor-Facing MediSense Result renderer ──────────────────────────────
     function renderMediSenseResult(data) {
+        if (data && data.category === 'insufficient_credits') {
+            renderInsufficientCreditsError();
+            return;
+        }
         const taskMeta = {
             'SYMPTOM_ASSESSMENT':          { label: 'Symptom Assessment',         icon: 'bi-clipboard2-pulse' },
             'DIAGNOSTIC_ASSISTANCE':       { label: 'Diagnostic Assistance',       icon: 'bi-search-heart'     },
