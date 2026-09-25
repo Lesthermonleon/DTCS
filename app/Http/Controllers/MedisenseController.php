@@ -104,14 +104,30 @@ class MedisenseController extends Controller
         try {
             $result = $this->medisenseService->executeTask($validated['task'], $patient);
 
+            $category = $result['category'] ?? null;
+            $isError  = !empty($category) && $category !== 'active';
+
+            if ($isError) {
+                $httpStatus = ($category === 'insufficient_credits') ? 402 : 400;
+
+                return response()->json([
+                    'success'  => false,
+                    'category' => $category,
+                    'message'  => $result['summary'] ?? 'MediSense analysis error.',
+                    'data'     => $result,
+                ], $httpStatus);
+            }
+
             return response()->json([
-                'success' => true,
-                'data'    => $result,
+                'success'  => true,
+                'category' => 'active',
+                'data'     => $result,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'MediSense analysis error: ' . $e->getMessage(),
+                'success'  => false,
+                'category' => 'exception',
+                'message'  => 'MediSense analysis error: ' . $e->getMessage(),
             ], 500);
         }
     }

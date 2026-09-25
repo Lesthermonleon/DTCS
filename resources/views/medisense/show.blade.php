@@ -369,16 +369,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify({ task })
             })
-            .then(r => r.json())
-            .then(resData => {
+            .then(r => r.json().then(data => ({ status: r.status, data: data })))
+            .then(res => {
                 loadingContainer.classList.add('d-none');
                 outputContainer.classList.remove('d-none');
-                if (resData.success && resData.data) {
-                    if (resData.data.category === 'insufficient_credits') {
-                        renderInsufficientCreditsError();
-                    } else {
-                        renderMediSenseResult(resData.data);
-                    }
+
+                const resData = res.data || {};
+                const cat = resData.category || (resData.data && resData.data.category);
+
+                if (res.status === 402 || cat === 'insufficient_credits') {
+                    renderInsufficientCreditsError();
+                } else if (resData.success && resData.data) {
+                    renderMediSenseResult(resData.data);
                 } else {
                     renderError(resData.message || 'An error occurred.');
                 }
