@@ -9,6 +9,7 @@ use App\Http\Controllers\Diet\DietRequestController;
 use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\Lab\LabRequestController;
 use App\Http\Controllers\Lab\LabResultController;
+use App\Http\Controllers\MedisenseController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientController;
@@ -127,6 +128,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/doctor/dashboard', [DashboardController::class, 'doctor'])
          ->middleware('role:admin,doctor')
          ->name('doctor.dashboard');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // VIRTUAL MEDISENSE AI — Clinical Decision Support (Doctor-Only)
+    // ═══════════════════════════════════════════════════════════════════
+    Route::prefix('medisense')
+         ->name('medisense.')
+         ->middleware('role:doctor')
+         ->group(function () {
+             Route::get('/', [MedisenseController::class, 'index'])->name('index');
+             Route::get('/{patient}', [MedisenseController::class, 'show'])->name('show');
+             Route::post('/{patient}/analyze', [MedisenseController::class, 'analyze'])->name('analyze');
+             Route::patch('/{patient}/findings', [MedisenseController::class, 'updateFindings'])->name('update-findings');
+         });
 
     // ═══════════════════════════════════════════════════════════════════
     // LIS — Laboratory Information System
@@ -381,10 +395,5 @@ Route::middleware(['auth'])->group(function () {
              });
          });
 
-    // ═══════════════════════════════════════════════════════════════════
-    // MEDISENSE UI (Static Visual Component)
-    // ═══════════════════════════════════════════════════════════════════
-    Route::get('/medisense', fn() => view('medisense.index'))
-         ->middleware('role:admin,doctor,med-tech,rad-tech,radiologist,pharmacist,dietitian,or-coordinator')
-         ->name('medisense.index');
+
 });

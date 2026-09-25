@@ -466,7 +466,20 @@
         </small>
     </div>
     <div class="card-body">
-        <div class="balanced-grid balanced-grid-5">
+        <div class="balanced-grid balanced-grid-6">
+            {{-- MediSense AI Card --}}
+            <a href="{{ route('medisense.index') }}"
+               class="card border border-success border-opacity-25 shadow-xs h-100 p-3 bg-success bg-opacity-10 text-decoration-none admin-tool-tile">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="icon-shape bg-success text-white rounded-3 p-2 me-2 d-flex align-items-center justify-content-center transition-all" style="width: 36px; height: 36px;">
+                        <i class="bi bi-cpu-fill fs-5"></i>
+                    </div>
+                    <div class="fw-bold text-success small">MediSense AI</div>
+                </div>
+                <p class="text-muted mb-0" style="font-size: 11px; line-height: 1.3;">
+                    Clinical Decision Support Assistant
+                </p>
+            </a>
             {{-- LIS Card --}}
             <a href="{{ route('lab.dashboard') }}"
                class="card border border-light-subtle shadow-xs h-100 p-3 bg-white text-decoration-none admin-tool-tile">

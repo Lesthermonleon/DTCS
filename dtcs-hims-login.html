@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Sign In — DTCS HIMS</title>
+    <meta name="description" content="Secure staff sign-in for DTCS HIMS — the hospital information system for Diagnostic, Treatment & Clinical Services.">
+
+    <!-- Favicon (inline SVG pulse icon) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 38 38'%3E%3Crect width='38' height='38' rx='9' fill='%232e5748'/%3E%3Cpolyline points='3,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19' fill='none' stroke='%2358c9a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Design tokens ── */
+        :root {
+            --ink:         oklch(0.31 0.05 165);
+            --ink-deep:    oklch(0.25 0.04 165);
+            --ink-bright:  oklch(0.98 0.005 155);
+            --paper:       oklch(0.98 0.012 155);
+            --line:        oklch(0.93 0.02 160);
+            --soft:        oklch(0.55 0.035 160);
+            --teal:        oklch(0.74 0.14 170);
+            --signal:      oklch(0.51 0.13 152);
+            --signal-dark: oklch(0.44 0.11 152);
+            --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+            --font-body:    "Inter", ui-sans-serif, system-ui, sans-serif;
+            --font-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; border-color: var(--line); }
+
+        body {
+            background: var(--ink);
+            color: var(--ink);
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .shell {
+            display: grid;
+            min-height: 100vh;
+            background: var(--ink);
+        }
+        @media (min-width: 1024px) {
+            .shell { grid-template-columns: 1.05fr 1fr; }
+        }
+
+        /* ────────────────────────────────────────────
+           Brand panel — desktop split only
+           ──────────────────────────────────────────── */
+        .brand-panel {
+            display: none;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(to bottom, var(--ink), var(--ink-deep));
+            border-right: 1px solid rgba(20, 199, 154, 0.15);
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3rem;
+        }
+        @media (min-width: 1280px) { .brand-panel { padding: 4rem; } }
+        @media (min-width: 1024px) { .brand-panel { display: flex; } }
+
+        .glow-teal {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(
+                ellipse 80% 60% at 50% 110%,
+                rgba(20, 199, 154, 0.07) 0%,
+                transparent 70%
+            );
+        }
+
+        .ecg-wrap {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.08;
+            pointer-events: none;
+        }
+        .ecg-wrap svg {
+            width: 100%;
+            height: 6rem;
+        }
+        .ecg-line {
+            fill: none;
+            stroke: var(--teal);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 800;
+            stroke-dashoffset: 800;
+            animation: ecg-draw 3s ease forwards;
+        }
+        @keyframes ecg-draw { to { stroke-dashoffset: 0; } }
+
+        .particle {
+            position: absolute;
+            border-radius: 9999px;
+            background: rgba(20, 199, 154, 0.12);
+            animation: float-particle linear infinite;
+        }
+        @keyframes float-particle {
+            0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(-20vh) scale(1); opacity: 0; }
+        }
+
+        .brand-row {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .brand-row svg.pulse { width: 2.5rem; height: 2.5rem; flex-shrink: 0; }
+
+        .icon-glow { filter: drop-shadow(0 0 8px rgba(20, 199, 154, 0.4)); }
+
+        .brand-name {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: var(--ink-bright);
+            white-space: nowrap;
+        }
+        .brand-sub {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: rgba(20, 210, 170, 0.5);
+            color: oklch(0.98 0.005 155 / 0.4);
+        }
+
+        .pitch { position: relative; z-index: 10; max-width: 32rem; }
+        .pitch h2 {
+            font-family: var(--font-display);
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.025em;
+            color: var(--ink-bright);
+        }
+        @media (min-width: 1280px) { .pitch h2 { font-size: 3rem; } }
+        .pitch h2 .accent { color: var(--teal); }
+        .pitch p {
+            margin-top: 1.25rem;
+            max-width: 28rem;
+            font-size: 0.875rem;
+            line-height: 1.7;
+            color: oklch(0.98 0.005 155 / 0.6);
+        }
+
+        .features { margin-top: 2rem; list-style: none; display: grid; gap: 0.875rem; }
+        .features li { display: flex; align-items: center; gap: 0.75rem; }
+        .feature-icon {
+            display: flex;
+            height: 2.25rem;
+            width: 2.25rem;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(20, 199, 154, 0.2);
+            background: rgba(20, 199, 154, 0.1);
+            color: var(--teal);
+        }
+        .feature-icon svg { width: 1rem; height: 1rem; }
+        .features span.label { font-size: 0.875rem; color: oklch(0.98 0.005 155 / 0.8); }
+
+        .security-footer {
+            position: relative;
+            z-index: 10;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: oklch(0.98 0.005 155 / 0.35);
+        }
+
+        /* ────────────────────────────────────────────
+           Form panel
+           ──────────────────────────────────────────── */
+        .form-panel {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: var(--paper);
+            padding: 2.5rem 1rem;
+        }
+        @media (min-width: 640px) { .form-panel { padding: 2.5rem 2rem; } }
+        @media (min-width: 1024px) { .form-panel { min-height: 0; } }
+
+        .form-inner {
+            width: 100%;
+            max-width: 28rem;
+            animation: rise-in 0.5s ease both;
+        }
+        @keyframes rise-in {
+            from { opacity: 0; transform: translateY(1.5rem); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Compact brand — small screens only */
+        .mobile-brand {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: center;
+        }
+        .mobile-brand svg.pulse { width: 3rem; height: 3rem; }
+        .mobile-brand h1 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: var(--ink);
+        }
+        .mobile-brand p {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--soft);
+        }
+        @media (min-width: 1024px) { .mobile-brand { display: none; } }
+
+        .card {
+            border-radius: 1rem;
+            border: 1px solid var(--line);
+            background: #fff;
+            padding: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        @media (min-width: 640px) { .card { padding: 2rem; } }
+
+        .card-head {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .card-head h2 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+        .card-head .hint { margin-top: 0.25rem; font-size: 0.875rem; color: var(--soft); }
+
+        .badge {
+            display: none;
+            flex-shrink: 0;
+            border-radius: 9999px;
+            border: 1px solid rgba(20, 199, 154, 0.3);
+            background: rgba(20, 199, 154, 0.1);
+            padding: 0.25rem 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            color: var(--signal-dark);
+            white-space: nowrap;
+        }
+        @media (min-width: 640px) { .badge { display: block; } }
+
+        .notice {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--line);
+            background: rgba(20, 199, 154, 0.1);
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+        }
+        .notice svg { margin-top: 0.125rem; width: 1rem; height: 1rem; flex-shrink: 0; color: var(--signal); }
+        .notice[hidden] { display: none; }
+
+        form { display: grid; gap: 1rem; }
+
+        label.field-label {
+            display: block;
+            margin-bottom: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .input-wrap { position: relative; }
+        .input-wrap > svg.leading {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1rem;
+            height: 1rem;
+            color: var(--soft);
+            pointer-events: none;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"].pw {
+            width: 100%;
+            border-radius: 0.5rem;
+            border: 1px solid var(--line);
+            background: #fff;
+            padding: 0.625rem 0.75rem 0.625rem 2.5rem;
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .input-wrap.has-toggle input { padding-right: 2.5rem; }
+        input::placeholder { color: oklch(0.55 0.035 160 / 0.7); }
+        input:focus {
+            border-color: var(--signal);
+            box-shadow: 0 0 0 3px rgba(20, 199, 154, 0.2);
+        }
+
+        .toggle-pw {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            padding: 0;
+            color: var(--soft);
+            cursor: pointer;
+            transition: color 0.15s ease;
+        }
+        .toggle-pw:hover { color: var(--signal); }
+        .toggle-pw svg { width: 1rem; height: 1rem; display: block; }
+
+        .row-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--soft);
+            cursor: pointer;
+            user-select: none;
+        }
+        .remember input { width: 1rem; height: 1rem; accent-color: var(--signal); }
+
+        .forgot {
+            flex-shrink: 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--signal-dark);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .forgot:hover { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; }
+
+        .submit-btn {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: linear-gradient(to bottom right, var(--signal), var(--signal-dark));
+            padding: 0.75rem;
+            font-family: var(--font-display);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--ink-bright);
+            box-shadow: 0 10px 15px -3px rgba(20, 160, 120, 0.25);
+            cursor: pointer;
+            transition: opacity 0.15s ease, transform 0.1s ease;
+        }
+        .submit-btn:hover { opacity: 0.9; }
+        .submit-btn:active { transform: scale(0.99); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .spinner-small {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            border: 2px solid oklch(0.98 0.005 155 / 0.3);
+            border-top-color: var(--ink-bright);
+            animation: spin 0.7s linear infinite;
+        }
+
+        .legal {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            line-height: 1.7;
+            color: var(--soft);
+        }
+
+        /* ── Full-screen loader overlay ── */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: oklch(0.31 0.05 165 / 0.45);
+            backdrop-filter: blur(4px);
+        }
+        .overlay.show { display: flex; }
+        .spinner-big {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 9999px;
+            border: 4px solid rgba(20, 199, 154, 0.2);
+            border-top-color: var(--teal);
+            animation: spin 0.8s linear infinite;
+        }
+        .overlay p {
+            margin-top: 1rem;
+            font-family: var(--font-display);
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            color: var(--ink-bright);
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ecg-line { animation: none; stroke-dashoffset: 0; }
+            .particle { animation: none; opacity: 0; }
+            .form-inner { animation: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+
+    <!-- ═══════════ Brand panel (desktop split only) ═══════════ -->
+    <aside class="brand-panel">
+        <div class="glow-teal"></div>
+
+        <!-- Animated ECG trace -->
+        <div class="ecg-wrap" aria-hidden="true">
+            <svg viewBox="0 0 208 38" preserveAspectRatio="none">
+                <polyline class="ecg-line" vector-effect="non-scaling-stroke"
+                    points="0,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19 44,19 47,12 49,26 52,8 54,30 56,14 58,22 61,19 70,19 73,12 75,26 78,8 80,30 82,14 84,22 87,19 96,19 99,12 101,26 104,8 106,30 108,14 110,22 113,19 122,19 125,12 127,26 130,8 132,30 134,14 136,22 139,19 148,19 151,12 153,26 156,8 158,30 160,14 162,22 165,19 174,19 177,12 179,26 182,8 184,30 186,14 188,22 191,19 200,19 203,12 205,26 208,8" />
+            </svg>
+        </div>
+
+        <!-- Floating particles (populated by JS) -->
+        <div id="particles" style="position:absolute; inset:0; overflow:hidden; pointer-events:none;" aria-hidden="true"></div>
+
+        <!-- Brand -->
+        <div class="brand-row">
+            <svg class="pulse icon-glow" viewBox="0 0 38 38" aria-hidden="true">
+                <rect width="38" height="38" rx="9" fill="var(--ink)"/>
+                <polyline points="3,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19"
+                    fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div>
+                <h1 class="brand-name">DTCS HIMS</h1>
+                <p class="brand-sub">Diagnostic, Treatment &amp; Clinical Services</p>
+            </div>
+        </div>
+
+        <!-- Value pitch -->
+        <div class="pitch">
+            <h2>One record.<br>Every department.<br><span class="accent">Real time.</span></h2>
+            <p>The hospital information system for Diagnostic, Treatment &amp; Clinical Services — admissions, wards, labs and imaging in a single clinical timeline.</p>
+            <ul class="features">
+                <li>
+                    <span class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-2.5 6-4-12L9 12H2"/></svg>
+                    </span>
+                    <span class="label">Live vitals &amp; ward monitoring</span>
+                </li>
+                <li>
+                    <span class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6"/></svg>
+                    </span>
+                    <span class="label">Records, labs &amp; imaging in one chart</span>
+                </li>
+                <li>
+                    <span class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4.5 5v6c0 5 3.2 8.6 7.5 10 4.3-1.4 7.5-5 7.5-10V5L12 2Z"/><path d="m9 11.5 2 2 4-4.5"/></svg>
+                    </span>
+                    <span class="label">Role-based, fully audited access</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Security footer -->
+        <p class="security-footer">Session-based authentication · Rate-limited access</p>
+    </aside>
+
+    <!-- ═══════════ Form panel ═══════════ -->
+    <main class="form-panel">
+        <div class="form-inner">
+
+            <!-- Compact brand — small screens only -->
+            <div class="mobile-brand">
+                <svg class="pulse icon-glow" viewBox="0 0 38 38" aria-hidden="true">
+                    <rect width="38" height="38" rx="9" fill="var(--ink)"/>
+                    <polyline points="3,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19"
+                        fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>DTCS HIMS</h1>
+                <p>Diagnostic, Treatment &amp; Clinical Services</p>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <h2>Staff Sign In</h2>
+                        <p class="hint">Use your hospital email to continue.</p>
+                    </div>
+                    <span class="badge">SECURED ACCESS</span>
+                </div>
+
+                <div class="notice" id="notice" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4.5 5v6c0 5 3.2 8.6 7.5 10 4.3-1.4 7.5-5 7.5-10V5L12 2Z"/><path d="m9 11.5 2 2 4-4.5"/></svg>
+                    <span id="notice-text"></span>
+                </div>
+
+                <form id="loginForm" novalidate>
+                    <div>
+                        <label class="field-label" for="email">Email Address</label>
+                        <div class="input-wrap">
+                            <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 8.2 5.9a1.4 1.4 0 0 0 1.6 0L21 7"/></svg>
+                            <input type="email" id="email" name="email" required autofocus autocomplete="username" placeholder="you@hospital.com">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="field-label" for="password">Password</label>
+                        <div class="input-wrap has-toggle">
+                            <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="10.5" width="17" height="10" rx="2"/><path d="M7 10.5V7a5 5 0 0 1 10 0v3.5"/></svg>
+                            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••" class="pw">
+                            <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
+                                <!-- eye -->
+                                <svg id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <!-- eye off -->
+                                <svg id="eyeClosed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="m3 3 18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17.5 17.5 0 0 1-3.1 4"/><path d="M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a10 10 0 0 0 5.3-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row-between">
+                        <label class="remember">
+                            <input type="checkbox" id="remember">
+                            Remember me
+                        </label>
+                        <a href="#" class="forgot">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span id="btnLabel">Sign In</span>
+                    </button>
+                </form>
+
+                <p class="legal">
+                    Protected by session-based authentication &amp; rate limiting.<br>
+                    Unauthorized access is strictly prohibited.
+                </p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Full-screen loader overlay -->
+<div class="overlay" id="overlay" aria-hidden="true">
+    <div class="spinner-big"></div>
+    <p>Signing in…</p>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var form      = document.getElementById('loginForm');
+    var emailEl   = document.getElementById('email');
+    var pwEl      = document.getElementById('password');
+    var remember  = document.getElementById('remember');
+    var submitBtn = document.getElementById('submitBtn');
+    var btnLabel  = document.getElementById('btnLabel');
+    var overlay   = document.getElementById('overlay');
+    var notice    = document.getElementById('notice');
+    var noticeText= document.getElementById('notice-text');
+    var togglePw  = document.getElementById('togglePw');
+    var eyeOpen   = document.getElementById('eyeOpen');
+    var eyeClosed = document.getElementById('eyeClosed');
+
+    /* ── 1. Restore remembered email ── */
+    try {
+        var saved = localStorage.getItem('hims_remembered_email');
+        if (saved) {
+            emailEl.value = saved;
+            remember.checked = true;
+        }
+    } catch (e) { /* storage unavailable */ }
+
+    /* ── 2. Password show / hide ── */
+    togglePw.addEventListener('click', function () {
+        var showing = pwEl.type === 'text';
+        pwEl.type = showing ? 'password' : 'text';
+        eyeOpen.style.display   = showing ? '' : 'none';
+        eyeClosed.style.display = showing ? 'none' : '';
+        togglePw.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+    });
+
+    /* ── 3. Floating ambient particles (brand panel) ── */
+    var particlesEl = document.getElementById('particles');
+    var sizes     = [6, 8, 10, 14, 18];
+    var delays    = [0, 2, 4, 6, 8, 10, 12];
+    var durations = [12, 15, 18, 22, 26];
+    for (var i = 0; i < 12; i++) {
+        var p = document.createElement('div');
+        p.className = 'particle';
+        var s = sizes[i % sizes.length];
+        p.style.cssText = [
+            'width:' + s + 'px',
+            'height:' + s + 'px',
+            'left:' + (Math.random() * 100) + '%',
+            'animation-duration:' + durations[i % durations.length] + 's',
+            'animation-delay:' + delays[i % delays.length] + 's'
+        ].join(';');
+        particlesEl.appendChild(p);
+    }
+
+    /* ── 4. Submit → signing-in overlay → demo notice ── */
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        try {
+            if (remember.checked && emailEl.value) {
+                localStorage.setItem('hims_remembered_email', emailEl.value);
+            } else {
+                localStorage.removeItem('hims_remembered_email');
+            }
+        } catch (err) { /* storage unavailable */ }
+
+        submitBtn.disabled = true;
+        btnLabel.innerHTML = '<span class="spinner-small" style="display:inline-block;vertical-align:-2px;"></span> Signing in…';
+        overlay.classList.add('show');
+        notice.hidden = true;
+
+        window.setTimeout(function () {
+            overlay.classList.remove('show');
+            submitBtn.disabled = false;
+            btnLabel.textContent = 'Sign In';
+            noticeText.textContent = "Demo mode — authentication isn't connected yet.";
+            notice.hidden = false;
+        }, 1500);
+    });
+})();
+</script>
+</body>
+</html>

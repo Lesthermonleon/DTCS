@@ -366,7 +366,7 @@
 
 <style>
 /* =========================================================
-   MediSense HIMS Color System (From messenger.html)
+   Messenger Color System
    ========================================================= */
 :root {
     --bg-primary: #ffffff;

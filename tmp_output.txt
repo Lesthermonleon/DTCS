@@ -1,0 +1,9 @@
+PATIENT 1 | P-2026-0001 | Juan Santos Dela Cruz
+CF: 'Patient presents with persistent cough, fever (38.5C), and mild dyspnea.'
+-------------------
+PATIENT 2 | P-2026-0002 | Jayson P. Santos
+CF: NULL
+-------------------
+PATIENT 409 | P-2026-0003 | Darwin A. Timbas
+CF: NULL
+-------------------

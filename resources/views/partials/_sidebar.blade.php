@@ -211,6 +211,7 @@
 @if($role === 'doctor')
 <div class="sb-nav-label" style="margin-top:.5rem;">MAIN</div>
 <a href="{{ route('doctor.dashboard') }}" class="nav-link {{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+<a href="{{ route('medisense.index') }}" class="nav-link {{ request()->routeIs('medisense.*') ? 'active' : '' }}"><i class="bi bi-cpu-fill text-success"></i> MediSense AI <span class="sb-badge">AI</span></a>
 
 <div class="sb-nav-label" style="margin-top:.5rem;">CLINICAL</div>
 
@@ -432,13 +433,7 @@
 @endif
 
 
-{{-- ── Settings Nav Link (For Non-Admin) ── --}}
 
-
-<div class="sb-nav-label" style="margin-top:.5rem;">Clinical AI Assistant</div>
-<a href="{{ route('medisense.index') }}" class="nav-link {{ request()->routeIs('medisense.*') ? 'active' : '' }}"><i class="bi bi-cpu" style="color: var(--signal);"></i><span class="flex-grow-1">MediSense AI</span><span class="sb-badge" style="background: rgba(20,199,154,.15); color: var(--signal);">AI</span></a>
-
-<div style="height: 2rem;"></div>
 
 {{-- ── Dropdown styles (scoped to sidebar, admin only) ── --}}
 @once

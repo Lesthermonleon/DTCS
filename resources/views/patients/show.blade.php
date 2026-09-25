@@ -85,6 +85,89 @@
         flex: 1;
     }
 
+    /* ── Single Patient Profile Data Table ── */
+    .patient-info-table {
+        margin-bottom: 0;
+        width: 100%;
+    }
+    .patient-info-table tr.table-section-header th {
+        font-family: var(--font-display);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        background: rgba(20, 199, 154, 0.05);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 0.55rem 0.85rem;
+    }
+    html[data-theme="dark"] .patient-info-table tr.table-section-header th {
+        background: rgba(20, 199, 154, 0.1);
+        color: var(--text-soft);
+    }
+    .patient-info-table tr:first-child.table-section-header th {
+        border-top: none;
+    }
+    .patient-info-table td.info-label-cell {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-soft);
+        width: 38%;
+        padding: 0.55rem 0.85rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+    }
+    .patient-info-table td.info-value-cell {
+        font-size: 0.82rem;
+        color: var(--text);
+        padding: 0.55rem 0.85rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+        word-break: break-word;
+    }
+
+    /* ── Simple Hospital Patient Data Table ── */
+    .simple-patient-table {
+        width: 100%;
+        margin-bottom: 0;
+        border-collapse: collapse;
+    }
+    .simple-patient-table tr.table-section-row th {
+        font-family: var(--font-display);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        background: transparent !important;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 0.55rem 0.85rem;
+    }
+    .simple-patient-table tr:first-child.table-section-row th {
+        border-top: none;
+    }
+    .simple-patient-table td.label-cell {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-soft);
+        width: 38%;
+        padding: 0.55rem 0.85rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+        background: transparent !important;
+    }
+    .simple-patient-table td.value-cell {
+        font-size: 0.82rem;
+        color: var(--text);
+        padding: 0.55rem 0.85rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+        word-break: break-word;
+        background: transparent !important;
+    }
+
     /* ── Patient Type Pill ── */
     .patient-type-pill {
         display: inline-flex;
@@ -332,99 +415,102 @@
             @endif
         </div>
 
-        {{-- Personal Information --}}
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="info-section-title">
-                    <i class="bi bi-person-lines-fill me-1" style="font-size:.75rem;"></i> Personal Information
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Date of Birth</span>
-                    <span class="info-value">
-                        {{ \Carbon\Carbon::parse($patient->date_of_birth)->format('M d, Y') }}
-                        <span style="color:var(--text-soft);font-size:.75rem;">({{ \Carbon\Carbon::parse($patient->date_of_birth)->age }} yrs)</span>
-                    </span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Gender</span>
-                    <span class="info-value">{{ $patient->gender }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Blood Type</span>
-                    <span class="info-value">
-                        @if($patient->blood_type)
-                            <span style="font-family:var(--font-mono);font-weight:700;color:var(--coral);">{{ $patient->blood_type }}</span>
-                        @else
-                            <span style="color:var(--text-soft);">—</span>
-                        @endif
-                    </span>
-                </div>
-                @if($patient->phone)
-                <div class="info-row">
-                    <span class="info-label">Phone</span>
-                    <span class="info-value">{{ $patient->phone }}</span>
-                </div>
-                @endif
-                @if($patient->email)
-                <div class="info-row">
-                    <span class="info-label">Email</span>
-                    <span class="info-value" style="font-size:.79rem;">{{ $patient->email }}</span>
-                </div>
-                @endif
+        {{-- Simple Hospital Patient Data Table --}}
+        <div class="card mb-3 overflow-hidden" style="background: transparent;">
+            <div class="card-header bg-transparent py-2.5 px-3 border-bottom">
+                <h6 class="fw-bold mb-0 text-uppercase" style="font-size: 0.78rem; letter-spacing: 0.06em; color: var(--text);">
+                    <i class="bi bi-table me-1.5 opacity-75"></i> Patient Information Table
+                </h6>
             </div>
-        </div>
+            <div class="table-responsive mb-0">
+                <table class="table simple-patient-table mb-0">
+                    <tbody>
+                        {{-- 1. Personal Information --}}
+                        <tr class="table-section-row">
+                            <th colspan="2">
+                                <i class="bi bi-person-lines-fill me-1" style="font-size:.75rem;"></i> Personal Information
+                            </th>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Date of Birth</td>
+                            <td class="value-cell">
+                                {{ \Carbon\Carbon::parse($patient->date_of_birth)->format('M d, Y') }}
+                                <span style="color:var(--text-soft);font-size:.75rem;">({{ \Carbon\Carbon::parse($patient->date_of_birth)->age }} yrs)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Gender</td>
+                            <td class="value-cell">{{ $patient->gender }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Blood Type</td>
+                            <td class="value-cell">
+                                @if($patient->blood_type)
+                                    <span style="font-family:var(--font-mono);font-weight:700;color:var(--coral);">{{ $patient->blood_type }}</span>
+                                @else
+                                    <span style="color:var(--text-soft);">—</span>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Phone</td>
+                            <td class="value-cell">{{ $patient->phone ?: '—' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Email</td>
+                            <td class="value-cell" style="font-size:.79rem;">{{ $patient->email ?: '—' }}</td>
+                        </tr>
 
-        {{-- Admission Information (only if ward exists) --}}
-        @if($patient->ward)
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="info-section-title">
-                    <i class="bi bi-hospital me-1" style="font-size:.75rem;"></i> Admission
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Ward / Bed</span>
-                    <span class="info-value fw-semibold">{{ $patient->ward }} / {{ $patient->bed_number }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Patient Type</span>
-                    <span class="info-value">{{ $patient->patient_type }}</span>
-                </div>
-            </div>
-        </div>
-        @endif
+                        {{-- 2. Admission --}}
+                        <tr class="table-section-row">
+                            <th colspan="2">
+                                <i class="bi bi-hospital me-1" style="font-size:.75rem;"></i> Admission
+                            </th>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Ward / Bed</td>
+                            <td class="value-cell fw-semibold">
+                                @if($patient->ward)
+                                    {{ $patient->ward }} / {{ $patient->bed_number ?: 'N/A' }}
+                                @else
+                                    <span style="color:var(--text-soft);">—</span>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Patient Type</td>
+                            <td class="value-cell">{{ $patient->patient_type }}</td>
+                        </tr>
 
-        {{-- Address (only if exists) --}}
-        @if($patient->address)
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="info-section-title">
-                    <i class="bi bi-geo-alt me-1" style="font-size:.75rem;"></i> Address
-                </div>
-                <div style="font-size:.82rem;color:var(--text);word-break:break-word;line-height:1.45;">{{ $patient->address }}</div>
-            </div>
-        </div>
-        @endif
+                        {{-- 3. Address --}}
+                        <tr class="table-section-row">
+                            <th colspan="2">
+                                <i class="bi bi-geo-alt me-1" style="font-size:.75rem;"></i> Address
+                            </th>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Address</td>
+                            <td class="value-cell">{{ $patient->address ?: 'No address recorded' }}</td>
+                        </tr>
 
-        {{-- Emergency Contact --}}
-        @if($patient->emergency_contact_name)
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="info-section-title">
-                    <i class="bi bi-telephone-fill me-1" style="font-size:.75rem;"></i> Emergency Contact
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Name</span>
-                    <span class="info-value fw-semibold">{{ $patient->emergency_contact_name }}</span>
-                </div>
-                @if($patient->emergency_contact_phone)
-                <div class="info-row">
-                    <span class="info-label">Phone</span>
-                    <span class="info-value">{{ $patient->emergency_contact_phone }}</span>
-                </div>
-                @endif
+                        {{-- 4. Emergency Contact --}}
+                        <tr class="table-section-row">
+                            <th colspan="2">
+                                <i class="bi bi-telephone-fill me-1" style="font-size:.75rem;"></i> Emergency Contact
+                            </th>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Name</td>
+                            <td class="value-cell fw-semibold">{{ $patient->emergency_contact_name ?: '—' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">Phone</td>
+                            <td class="value-cell">{{ $patient->emergency_contact_phone ?: '—' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        @endif
 
     </div>
 

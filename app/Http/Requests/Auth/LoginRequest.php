@@ -69,7 +69,7 @@ class LoginRequest extends FormRequest
         // ── Attempt authentication ───────────────────────────────────────
         if (! Auth::attempt(
             array_merge($this->only('email', 'password'), ['is_active' => true]),
-            $this->boolean('remember')
+            false
         )) {
             // Auth failed — escalate lockout for known users
             if ($user) {

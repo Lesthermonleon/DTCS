@@ -45,10 +45,10 @@ $hasProgressBar = str_contains($content, 'duplicateLoginProgress');
 $hasCountdownNumber = str_contains($content, '5');
 
 echo "\n--- BLADE VIEW CONTENT CHECKS ---\n";
-echo "Title 'Account Already Logged In': " . ($hasTitle ? "✅ FOUND" : "❌ MISSING") . "\n";
-echo "Element 'duplicateLoginCountdown': " . ($hasCountdown ? "✅ FOUND" : "❌ MISSING") . "\n";
-echo "Element 'duplicateLoginProgress': " . ($hasProgressBar ? "✅ FOUND" : "❌ MISSING") . "\n";
-echo "Countdown Number '5': " . ($hasCountdownNumber ? "✅ FOUND" : "❌ MISSING") . "\n";
+echo "Title 'Account Already Logged In': " . ($hasTitle ? "[FOUND]" : "[MISSING]") . "\n";
+echo "Element 'duplicateLoginCountdown': " . ($hasCountdown ? "[FOUND]" : "[MISSING]") . "\n";
+echo "Element 'duplicateLoginProgress': " . ($hasProgressBar ? "[FOUND]" : "[MISSING]") . "\n";
+echo "Countdown Number '5': " . ($hasCountdownNumber ? "[FOUND]" : "[MISSING]") . "\n";
 
 // Clean up
 $user->clearActiveSession();

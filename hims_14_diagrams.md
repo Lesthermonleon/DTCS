@@ -1,6 +1,6 @@
 # HIMS Capstone Documentation — 14 Figures
 **Project:** Hospital Information Management System — Diagnostic, Treatment & Clinical Services Subsystem  
-**Stack:** Laravel 13 · PHP 8.3 · MySQL · Laravel Breeze · Bootstrap · Tailwind CSS · Vite · Gemini API
+**Stack:** Laravel 13 · PHP 8.3 · MySQL · Laravel Breeze · Bootstrap · Tailwind CSS · Vite
 
 ---
 
@@ -11,7 +11,7 @@
 ```mermaid
 graph LR
     subgraph PO["Product Owner"]
-        PB["Product Backlog\n──────────────\n• User Management\n• Patient Records\n• LIS Module\n• RIS Module\n• PMS Module\n• SORS Module\n• DNMS Module\n• MediSense AI\n• Reports Module\n• UI/UX Design"]
+        PB["Product Backlog\n──────────────\n• User Management\n• Patient Records\n• LIS Module\n• RIS Module\n• PMS Module\n• SORS Module\n• DNMS Module\n• Reports Module\n• UI/UX Design"]
     end
 
     subgraph SPRINT_CYCLE["Scrum Sprint Cycle (2–3 Weeks per Sprint)"]
@@ -34,7 +34,7 @@ graph LR
     INC -->|Updated backlog| PB
 ```
 
-**Diagram Description:** This diagram illustrates the Agile Scrum framework applied during the HIMS capstone development. The Product Backlog contained all system features (LIS, RIS, PMS, SORS, DNMS, MediSense AI, Reports). Each sprint produced a working software increment, with Daily Scrums keeping the team aligned, and Sprint Reviews/Retrospectives ensuring continuous improvement.
+**Diagram Description:** This diagram illustrates the Agile Scrum framework applied during the HIMS capstone development. The Product Backlog contained all system features (LIS, RIS, PMS, SORS, DNMS, Reports). Each sprint produced a working software increment, with Daily Scrums keeping the team aligned, and Sprint Reviews/Retrospectives ensuring continuous improvement.
 
 ---
 
@@ -59,9 +59,9 @@ xychart-beta
 | Sprint 4 | 60 | 42 | PMS (Prescriptions & Dispensing) |
 | Sprint 5 | 40 | 20 | SORS (Surgery Requests & Scheduling) |
 | Sprint 6 | 20 | 8 | DNMS (Diet Requests & Plans) |
-| Sprint 7 | 0 | 0 | MediSense AI, Reports Module, Final QA |
+| Sprint 7 | 0 | 0 | Reports Module, Final QA |
 
-**Diagram Description:** The burndown chart tracks the remaining story points per sprint across the HIMS project lifecycle. The ideal line represents the planned velocity; the actual line reflects real progress. The project encompassed 7 sprints covering all five clinical modules, the MediSense AI integration, and the comprehensive reports module.
+**Diagram Description:** The burndown chart tracks the remaining story points per sprint across the HIMS project lifecycle. The ideal line represents the planned velocity; the actual line reflects real progress. The project encompassed 7 sprints covering all five clinical modules and the comprehensive reports module.
 
 ---
 
@@ -101,15 +101,6 @@ graph TB
             MSG["Messaging\nModule"]
         end
 
-        subgraph AI["AI Layer"]
-            MEDISENSE["MediSense AI\n(Clinical Decision Support)"]
-        end
-    end
-
-    subgraph EXTERNAL["External Services"]
-        GEMINI["Google Gemini API\n(gemini-pro-latest)"]
-    end
-
     subgraph DATA["Data Layer"]
         MYSQL["MySQL Database"]
         STORAGE["File Storage\n(Radiology Images)"]
@@ -119,15 +110,12 @@ graph TB
     AUTH_MW --> ROLE_MW
     ROLE_MW --> MODULES
     ROLE_MW --> SHARED
-    ROLE_MW --> AI
     MODULES --> MYSQL
     SHARED --> MYSQL
-    AI -->|REST API / HTTPS| GEMINI
-    AI --> MYSQL
     RIS --> STORAGE
 ```
 
-**Diagram Description:** The HIMS is implemented as a modular Laravel 13 monolith. All five clinical modules (LIS, RIS, PMS, SORS, DNMS) share a single MySQL database and application runtime. Role-based access control is enforced through Breeze authentication and custom role middleware. MediSense AI communicates externally with the Google Gemini API for clinical decision support.
+**Diagram Description:** The HIMS is implemented as a modular Laravel 13 monolith. All five clinical modules (LIS, RIS, PMS, SORS, DNMS) share a single MySQL database and application runtime. Role-based access control is enforced through Breeze authentication and custom role middleware.
 
 ---
 
@@ -144,7 +132,7 @@ sequenceDiagram
     participant SV as Services (NotificationService)
     participant EL as Eloquent ORM
     participant DB as MySQL Database
-    participant EXT as Google Gemini API
+    participant EXT as External Notifications
 
     BR->>+FE: HTTP GET/POST Request
     FE->>+MW: Route dispatch
@@ -160,13 +148,10 @@ sequenceDiagram
     CT-->>-FE: Return View / Redirect
     FE-->>-BR: HTML Response
 
-    Note over CT,EXT: MediSense AI requests only
-    CT->>+EXT: POST /v1beta (Gemini API)
-    EXT-->>-CT: AI response (JSON)
-    CT-->>FE: Render AI response
+    Note over CT,DB: All requests are internal HIMS flows
 ```
 
-**Diagram Description:** This diagram illustrates the actual request-response communication pattern of the HIMS. Browser requests pass through Breeze authentication and role-based middleware before reaching controllers. Eloquent ORM manages all database interactions. The NotificationService broadcasts in-system alerts. MediSense AI routes communicate externally with the Google Gemini API via HTTPS REST.
+**Diagram Description:** This diagram illustrates the actual request-response communication pattern of the HIMS. Browser requests pass through Breeze authentication and role-based middleware before reaching controllers. Eloquent ORM manages all database interactions. The NotificationService broadcasts in-system alerts.
 
 ---
 
@@ -199,7 +184,6 @@ graph TB
         P6["Process 6\nSurgery & OR\nManagement (SORS)"]
         P7["Process 7\nDiet & Nutrition\nManagement (DNMS)"]
         P8["Process 8\nReports &\nAnalytics"]
-        P9["Process 9\nMediSense AI\nClinical Assistant"]
 
         DS1[("D1: Users / Roles")]
         DS2[("D2: Patients")]
@@ -209,7 +193,6 @@ graph TB
         DS6[("D6: Surgery\n& OR Schedules")]
         DS7[("D7: Diet Requests\n& Plans")]
         DS8[("D8: Notifications\n& Messages")]
-        DS9[("D9: MediSense\nInteractions")]
     end
 
     ADMIN -->|User credentials / role assignments| P1
@@ -248,17 +231,11 @@ graph TB
     P7 <--> DS7
     DS2 --> P7
 
-    P3 & P4 & P5 & P6 & P7 -->|Clinical data| P8
-    ADMIN & DOC -->|Report requests| P8
-
-    DOC & MEDTECH & RADTECH & RAD & PHARM & DIET & ORC & ADMIN -->|Clinical queries| P9
-    P9 <-->|API call / response| GEMINI
-    P9 <--> DS9
-
+    DOC & MEDTECH & RADTECH & RAD & PHARM & DIET & ORC & ADMIN -->|Events| DS8
     P3 & P4 & P5 & P6 & P7 -->|Events| DS8
 ```
 
-**Diagram Description:** The Level-0 DFD represents the entire HIMS clinical subsystem. Nine core processes manage authentication, patient information, and all five clinical modules. All processes share a unified MySQL data store and feed into the Reports & Analytics process. MediSense AI interfaces externally with Google Gemini API and logs interactions in its own data store.
+**Diagram Description:** The Level-0 DFD represents the entire HIMS clinical subsystem. Eight core processes manage authentication, patient information, and all five clinical modules. All processes share a unified MySQL data store and feed into the Reports & Analytics process.
 
 ---
 
@@ -433,14 +410,6 @@ graph TB
         subgraph ANALYTICS["Reports & Analytics"]
             REPORTS["Reports Module\n(Lab / Radiology / Pharmacy /\nSurgery / Diet / Clinical)"]
         end
-
-        subgraph AI_MOD["AI Module"]
-            MEDISENSE["MediSense AI\nClinical Decision Support"]
-        end
-    end
-
-    subgraph EXTERNAL["External Integration"]
-        GEMINI_EXT["Google Gemini API\n(generativelanguage.googleapis.com)"]
     end
 
     subgraph DB_LAYER["Shared Data Layer"]
@@ -449,20 +418,18 @@ graph TB
     end
 
     AUTH --> RBAC
-    RBAC -->|Access control| CLINICAL & ANALYTICS & AI_MOD & CORE
+    RBAC -->|Access control| CLINICAL & ANALYTICS & CORE
     PATIENT_MOD -->|Patient context| LIS & RIS & PMS & SORS & DNMS
     LIS & RIS & PMS & SORS & DNMS -->|Clinical events| NOTIF_SVC
     NOTIF_SVC --> MSG_SVC
     LIS & RIS & PMS & SORS & DNMS -->|Transactional data| REPORTS
-    MEDISENSE -->|REST/HTTPS| GEMINI_EXT
-    MEDISENSE --> MYSQL_DB
 
     CLINICAL --> MYSQL_DB
     CORE --> MYSQL_DB
     RIS --> FILE_STORE
 ```
 
-**Diagram Description:** The system integration diagram maps the actual relationships between all implemented HIMS components. The five clinical modules share patient data from a central Patient Information Module, and all generate events consumed by the Notification Service. The Reports Module aggregates transactional data from all clinical modules. MediSense AI is the only component with an external integration (Google Gemini API).
+**Diagram Description:** The system integration diagram maps the actual relationships between all implemented HIMS components. The five clinical modules share patient data from a central Patient Information Module, and all generate events consumed by the Notification Service. The Reports Module aggregates transactional data from all clinical modules.
 
 ---
 
@@ -494,20 +461,17 @@ graph TB
         SORS_API["SORS API\n/api/surgery/*"]
         DNMS_API["DNMS API\n/api/diet/*"]
         PATIENT_API["Patient API\n/api/patients/*"]
-        AI_API["MediSense API\n/api/medisense/*"]
+        AI_API["Reports API\n/api/reports/*"]
     end
 
     subgraph DATA_LAYER["Data Layer"]
         DB["MySQL Database"]
-        GEMINI_GW["Google Gemini API"]
     end
 
     WEB_CLIENT & MOBILE & THIRD_PARTY -->|HTTPS Request| AG
     AG --> AG_AUTH --> AG_RBAC --> RATE --> ROUTE
     ROUTE --> LIS_API & RIS_API & PMS_API & SORS_API & DNMS_API & PATIENT_API & AI_API
-    LIS_API & RIS_API & PMS_API & SORS_API & DNMS_API & PATIENT_API --> DB
-    AI_API --> DB
-    AI_API --> GEMINI_GW
+    LIS_API & RIS_API & PMS_API & SORS_API & DNMS_API & PATIENT_API & AI_API --> DB
 
     style GATEWAY fill:#fff3cd,stroke:#ffc107
     style SERVICES fill:#d4edda,stroke:#28a745
@@ -631,9 +595,8 @@ graph LR
         UC18["Create Diet Request"]
         UC19["Create & Complete Diet Plan"]
         UC20["Generate Clinical Reports"]
-        UC21["Use MediSense AI Assistant"]
-        UC22["Send Internal Messages"]
-        UC23["Receive Notifications"]
+        UC21["Send Internal Messages"]
+        UC22["Receive Notifications"]
     end
 
     ADMIN["System\nAdministrator"]
@@ -645,17 +608,17 @@ graph LR
     DIET["Dietitian /\nNutritionist"]
     ORC["OR Coordinator"]
 
-    ADMIN --- UC1 & UC2 & UC3 & UC4 & UC20 & UC21 & UC22 & UC23
-    DOCTOR --- UC1 & UC4 & UC5 & UC9 & UC12 & UC15 & UC18 & UC20 & UC21 & UC22 & UC23
-    MEDTECH --- UC1 & UC6 & UC7 & UC8 & UC21 & UC22 & UC23
-    RADTECH --- UC1 & UC10 & UC21 & UC22 & UC23
-    RAD --- UC1 & UC11 & UC21 & UC22 & UC23
-    PHARM --- UC1 & UC13 & UC14 & UC21 & UC22 & UC23
-    DIET --- UC1 & UC19 & UC21 & UC22 & UC23
-    ORC --- UC1 & UC16 & UC17 & UC21 & UC22 & UC23
+    ADMIN --- UC1 & UC2 & UC3 & UC4 & UC20 & UC22 & UC23
+    DOCTOR --- UC1 & UC4 & UC5 & UC9 & UC12 & UC15 & UC18 & UC20 & UC22 & UC23
+    MEDTECH --- UC1 & UC6 & UC7 & UC8 & UC22 & UC23
+    RADTECH --- UC1 & UC10 & UC22 & UC23
+    RAD --- UC1 & UC11 & UC22 & UC23
+    PHARM --- UC1 & UC13 & UC14 & UC22 & UC23
+    DIET --- UC1 & UC19 & UC22 & UC23
+    ORC --- UC1 & UC16 & UC17 & UC22 & UC23
 ```
 
-**Diagram Description:** The Use Case Diagram represents all 23 implemented system use cases mapped to the 8 actual user roles. Every role can log in, use MediSense AI, send messages, and receive notifications. Doctors have the broadest access — initiating clinical requests across all five modules. Specialist roles (Medical Technologist, Pharmacist, etc.) have module-specific use cases. The System Administrator manages user accounts and role assignments.
+**Diagram Description:** The Use Case Diagram represents all 22 implemented system use cases mapped to the 8 actual user roles. Every role can log in, send messages, and receive notifications. Doctors have the broadest access — initiating clinical requests across all five modules. Specialist roles (Medical Technologist, Pharmacist, etc.) have module-specific use cases. The System Administrator manages user accounts and role assignments.
 
 ---
 
@@ -779,7 +742,6 @@ flowchart TD
     NOTIFY_RESULT["Notify Requesting Doctor\n(if applicable)"]
 
     REPORTS["Generate Report\n(Reports Module)"]
-    AI_QUERY["Use MediSense AI\n(Clinical Decision Support)"]
 
     CONTINUE{"Continue\nWorking?"}
     LOGOUT["Logout\n(Laravel Breeze)"]
@@ -818,13 +780,12 @@ flowchart TD
     PROCESS_ACTION --> UPDATE_STATUS --> NOTIFY_RESULT --> CONTINUE
 
     ACTION_SELECT -->|Reports| REPORTS --> CONTINUE
-    ACTION_SELECT -->|MediSense AI| AI_QUERY --> CONTINUE
 
     CONTINUE -->|Yes| SELECT_MODULE
     CONTINUE -->|No| LOGOUT --> END_NODE
 ```
 
-**Diagram Description:** The system flowchart illustrates the complete end-to-end user journey through the HIMS — from browser access through authentication, role-based dashboard routing, module selection, RBAC authorization, and clinical action execution, to logout. The flowchart reflects the actual Laravel Breeze authentication mechanism, the role-slug-based dashboard routing, and the five possible clinical actions (create request, view, process/update, generate report, use MediSense AI) available within each module.
+**Diagram Description:** The system flowchart illustrates the complete end-to-end user journey through the HIMS — from browser access through authentication, role-based dashboard routing, module selection, RBAC authorization, and clinical action execution, to logout. The flowchart reflects the actual Laravel Breeze authentication mechanism, the role-slug-based dashboard routing, and the four possible clinical actions (create request, view, process/update, generate report) available within each module.
 
 ---
 

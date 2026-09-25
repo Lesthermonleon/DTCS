@@ -11,7 +11,7 @@ echo "=== SINGLE ACTIVE SESSION SECURITY VERIFICATION ===\n\n";
 
 $user = User::where('email', 'doctor@example.com')->first() ?: User::first();
 if (!$user) {
-    echo "❌ No user found for testing.\n";
+    echo "[FAIL] No user found for testing.\n";
     exit(1);
 }
 
@@ -32,18 +32,18 @@ $hasActive = $user->hasActiveSession($session2);
 echo "[3] Browser B Login Attempt -> Has active session on another browser? " . ($hasActive ? "YES (REJECTED)" : "NO (ALLOWED)") . "\n";
 
 if ($hasActive) {
-    echo "    ✅ Browser B login successfully REJECTED as expected!\n";
+    echo "    [OK] Browser B login successfully REJECTED as expected!\n";
 } else {
-    echo "    ❌ FAILED: Browser B login was allowed when it should have been rejected!\n";
+    echo "    [FAIL] FAILED: Browser B login was allowed when it should have been rejected!\n";
 }
 
 // 4. Verify Browser A (Original Session) Is STILL Allowed
 $isBrowserAActive = $user->hasActiveSession($session1);
 echo "[4] Browser A Session Check -> Has active session on another browser? " . ($isBrowserAActive ? "YES" : "NO (STILL ACTIVE)") . "\n";
 if (!$isBrowserAActive) {
-    echo "    ✅ Browser A (original session) is STILL ACTIVE & PROTECTED!\n";
+    echo "    [OK] Browser A (original session) is STILL ACTIVE & PROTECTED!\n";
 } else {
-    echo "    ❌ FAILED: Browser A was accidentally marked as duplicate!\n";
+    echo "    [FAIL] FAILED: Browser A was accidentally marked as duplicate!\n";
 }
 
 // 5. Simulate Browser A Logout
@@ -54,9 +54,9 @@ echo "[5] Browser A Logout -> active_session_id = " . ($user->active_session_id 
 $hasActiveAfterLogout = $user->hasActiveSession($session2);
 echo "[6] Browser B Retry Login after Logout -> Has active session? " . ($hasActiveAfterLogout ? "YES (REJECTED)" : "NO (ALLOWED)") . "\n";
 if (!$hasActiveAfterLogout) {
-    echo "    ✅ Browser B login is now ALLOWED after Browser A logged out!\n";
+    echo "    [OK] Browser B login is now ALLOWED after Browser A logged out!\n";
 } else {
-    echo "    ❌ FAILED: Browser B still rejected after logout!\n";
+    echo "    [FAIL] FAILED: Browser B still rejected after logout!\n";
 }
 
 // Clean up test user state

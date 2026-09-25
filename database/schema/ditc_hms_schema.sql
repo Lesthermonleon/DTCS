@@ -177,6 +177,7 @@ CREATE TABLE IF NOT EXISTS `patients` (
     `patient_type`            ENUM('Inpatient','Outpatient') NOT NULL DEFAULT 'Outpatient',
     `ward`                    VARCHAR(255)    NULL DEFAULT NULL,
     `bed_number`              VARCHAR(255)    NULL DEFAULT NULL,
+    `clinical_findings`        TEXT            NULL DEFAULT NULL,
     `created_at`              TIMESTAMP       NULL DEFAULT NULL,
     `updated_at`              TIMESTAMP       NULL DEFAULT NULL,
     `deleted_at`              TIMESTAMP       NULL DEFAULT NULL,
@@ -643,33 +644,6 @@ CREATE TABLE IF NOT EXISTS `messages` (
     CONSTRAINT `messages_sender_id_foreign`       FOREIGN KEY (`sender_id`)       REFERENCES `users` (`id`)         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ════════════════════════════════════════════════════════════════════════════
--- MEDISENSE AI
--- ════════════════════════════════════════════════════════════════════════════
-
-CREATE TABLE IF NOT EXISTS `medisense_interactions` (
-    `id`               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `user_id`          BIGINT UNSIGNED NOT NULL,
-    `user_role`        VARCHAR(50)     NOT NULL,
-    `capability`       VARCHAR(100)    NOT NULL,
-    `module`           VARCHAR(50)     NULL DEFAULT NULL,
-    `patient_id`       BIGINT UNSIGNED NULL DEFAULT NULL,
-    `user_prompt`      TEXT            NOT NULL,
-    `ai_response`      MEDIUMTEXT      NULL DEFAULT NULL,
-    `tokens_used`      INT             NULL DEFAULT NULL,
-    `response_time_ms` INT             NULL DEFAULT NULL,
-    `status`           ENUM('success','error','timeout','unauthorized') NOT NULL DEFAULT 'success',
-    `error_message`    TEXT            NULL DEFAULT NULL,
-    `created_at`       TIMESTAMP       NULL DEFAULT NULL,
-    `updated_at`       TIMESTAMP       NULL DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    KEY `medisense_interactions_user_id_created_at_index` (`user_id`, `created_at`),
-    KEY `medisense_interactions_capability_index` (`capability`),
-    KEY `medisense_interactions_module_index` (`module`),
-    KEY `medisense_interactions_patient_id_foreign` (`patient_id`),
-    CONSTRAINT `medisense_interactions_user_id_foreign`    FOREIGN KEY (`user_id`)    REFERENCES `users` (`id`)    ON DELETE CASCADE  ON UPDATE CASCADE,
-    CONSTRAINT `medisense_interactions_patient_id_foreign` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- AUDIT TRAIL
@@ -697,5 +671,29 @@ CREATE TABLE IF NOT EXISTS `activity_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ════════════════════════════════════════════════════════════════════════════
+-- MEDISENSE AI CLINICAL DECISION SUPPORT AUDIT
+-- ════════════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS `medisense_interactions` (
+    `id`             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `user_id`        BIGINT UNSIGNED NULL,
+    `patient_id`     BIGINT UNSIGNED NULL,
+    `task`           VARCHAR(100) NOT NULL,
+    `provider`       VARCHAR(100) NOT NULL,
+    `status`         VARCHAR(50) NOT NULL,
+    `result_summary` TEXT NULL,
+    `ip_address`     VARCHAR(45) NULL,
+    `logged_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `created_at`     TIMESTAMP NULL,
+    `updated_at`     TIMESTAMP NULL,
+    CONSTRAINT `medisense_interactions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+    CONSTRAINT `medisense_interactions_patient_id_foreign` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL,
+    INDEX `idx_medisense_user` (`user_id`),
+    INDEX `idx_medisense_patient` (`patient_id`),
+    INDEX `idx_medisense_task` (`task`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ════════════════════════════════════════════════════════════════════════════
 
 SET FOREIGN_KEY_CHECKS = 1;
+

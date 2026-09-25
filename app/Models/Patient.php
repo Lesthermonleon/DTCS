@@ -29,6 +29,7 @@ class Patient extends Model
         'patient_type',
         'ward',
         'bed_number',
+        'clinical_findings',
     ];
 
     protected $casts = [

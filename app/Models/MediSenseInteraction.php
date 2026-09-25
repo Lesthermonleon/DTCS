@@ -6,37 +6,32 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Audit log model for Virtual MediSense AI interactions.
+ * MedisenseInteraction model — records all MediSense AI clinical decision-support actions.
+ *
+ * This is an APPEND-ONLY table for audit and traceability.
  */
-class MediSenseInteraction extends Model
+class MedisenseInteraction extends Model
 {
-    protected $table = 'medisense_interactions';
-
     protected $fillable = [
         'user_id',
-        'user_role',
-        'capability',
-        'module',
         'patient_id',
-        'user_prompt',
-        'ai_response',
-        'tokens_used',
-        'response_time_ms',
+        'task',
+        'provider',
         'status',
-        'error_message',
+        'result_summary',
+        'ip_address',
+        'logged_at',
     ];
 
-    /**
-     * The user who initiated the AI interaction.
-     */
+    protected $casts = [
+        'logged_at' => 'datetime',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * The patient context associated with the interaction, if any.
-     */
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);

@@ -75,7 +75,7 @@
             --hims-action-danger:          #b91c1c;
             --hims-action-danger-hover:    #991b1b;
 
-            /* MediSense AI Core Design System Tokens */
+            /* HIMS Design System Tokens */
             --ms-primary:           #15803d;
             --ms-primary-hover:     #166534;
             --ms-primary-light:     #dcfce7;
@@ -667,11 +667,7 @@
         }
 
         /* ══════════════════════════════════════
-           MEDISENSE AI GLOBAL COMPONENT OVERRIDES
-        ══════════════════════════════════════ */
-        
-        /* ══════════════════════════════════════
-           MEDISENSE AI GLOBAL COMPONENT OVERRIDES
+           HIMS GLOBAL COMPONENT STYLES
         ══════════════════════════════════════ */
         
         /* Typography & Responsive Text Wrapping */
@@ -698,7 +694,7 @@
             min-width: 0;
         }
 
-        /* Buttons — MediSense AI Standard */
+        /* Buttons — HIMS Standard */
         .btn-primary,
         .btn-success {
             background-color: var(--ms-primary) !important;
@@ -2542,7 +2538,6 @@
         ══════════════════════════════════════ */
         .card,
         .stat-card,
-        .medisense-workspace-card,
         .card-like,
         .messenger-layout {
             width: 100% !important;
@@ -5145,9 +5140,6 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 @auth
-    @unless(request()->routeIs('medisense.index') || request()->routeIs('messages.index'))
-        @include('partials._medisense_fab')
-    @endunless
 
     {{-- Monochromatic Session Ended Warning Modal --}}
     <div id="sessionEndedModal" class="session-ended-overlay d-none">
