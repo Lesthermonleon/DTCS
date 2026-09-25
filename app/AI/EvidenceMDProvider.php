@@ -30,9 +30,9 @@ class EvidenceMDProvider implements AIProviderInterface
     {
         $config = config('ai.evidencemd', []);
 
-        $this->apiKey  = $config['api_key']  ?? config('ai.api_key', '');
-        $this->baseUrl = $config['base_url'] ?? config('ai.base_url', 'https://evidencemd.ai/api/v1');
-        $this->model   = $config['model']    ?? config('ai.model', 'evidencemd-pro');
+        $this->apiKey  = !empty($config['api_key'])  ? $config['api_key']  : (!empty(config('ai.api_key'))  ? config('ai.api_key')  : '');
+        $this->baseUrl = !empty($config['base_url']) ? $config['base_url'] : (!empty(config('ai.base_url')) ? config('ai.base_url') : 'https://evidencemd.ai/api/v1');
+        $this->model   = !empty($config['model'])    ? $config['model']    : (!empty(config('ai.model'))    ? config('ai.model')    : 'evidencemd-pro');
         $this->timeout = (int) ($config['timeout'] ?? 60);
     }
 
