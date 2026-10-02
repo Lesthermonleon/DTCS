@@ -17,10 +17,6 @@
             </select>
             <button type="submit" class="btn btn-primary btn-sm d-none">Filter</button>
         </form>
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.users.print') }}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i>Print Directory</a>
-            <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Add User</a>
-        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -55,15 +51,19 @@
                                 </form>
                             @endif
                             @if($u->id !== auth()->id())
-                                <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="d-inline">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="table-action-btn action-danger" title="Delete User" aria-label="Delete User"
-                                            data-confirm="WARNING: Are you sure you want to archive {{ $u->name }}'s account? They will lose access immediately."
-                                            data-confirm-title="Archive User Account"
-                                            data-confirm-btn="btn-danger"
-                                            data-confirm-icon="bi-archive-fill"
-                                            data-confirm-action-text="Archive Account"><i class="bi bi-trash"></i></button>
-                                </form>
+                                {{-- Archive: opens dedicated comment modal instead of generic confirm --}}
+                                <button type="button"
+                                        class="table-action-btn action-danger"
+                                        title="Archive User Account"
+                                        aria-label="Archive User Account"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteUserModal"
+                                        data-user-id="{{ $u->id }}"
+                                        data-user-name="{{ $u->name }}"
+                                        data-user-role="{{ $u->roles->first()?->name ?? 'No Role' }}"
+                                        data-action-url="{{ route('admin.users.destroy', $u) }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             @endif
                         </div>
                     </td>
@@ -101,15 +101,26 @@
                     <td>@foreach($u->roles as $r)<span class="badge bg-secondary me-1">{{ $r->name }}</span>@endforeach</td>
                     <td>
                         <div class="table-actions">
-                            <form method="POST" action="{{ route('admin.users.restore', $u->id) }}" class="d-inline">
-                                @csrf
-                                <button type="submit" class="table-action-btn action-success" title="Restore User" aria-label="Restore User"
-                                        data-confirm="Are you sure you want to restore {{ $u->name }}'s account?"
-                                        data-confirm-title="Restore User Account"
-                                        data-confirm-btn="btn-success"
-                                        data-confirm-icon="bi-arrow-counterclockwise"
-                                        data-confirm-action-text="Restore Account"><i class="bi bi-arrow-counterclockwise"></i></button>
-                            </form>
+                                {{-- View archived profile --}}
+                                <a href="{{ route('admin.users.archived', $u->id) }}"
+                                   class="table-action-btn action-view"
+                                   title="View Archived Account Details"
+                                   aria-label="View Archived Account Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {{-- Restore: opens dedicated comment modal --}}
+                                <button type="button"
+                                        class="table-action-btn action-success"
+                                        title="Restore User Account"
+                                        aria-label="Restore User Account"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#restoreUserModal"
+                                        data-user-id="{{ $u->id }}"
+                                        data-user-name="{{ $u->name }}"
+                                        data-user-role="{{ $u->roles->first()?->name ?? 'No Role' }}"
+                                        data-action-url="{{ route('admin.users.restore', $u->id) }}">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
                         </div>
                     </td>
                 </tr>
@@ -123,83 +134,199 @@
 </div>
 
 @push('scripts')
+{{-- ── Archive User Modal ─────────────────────────────────────────────── --}}
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-semibold" id="deleteUserModalLabel">
+                    <i class="bi bi-archive-fill text-danger me-2"></i>Archive User Account
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteUserForm" method="POST">
+                @csrf @method('DELETE')
+                <div class="modal-body">
+                    <div class="alert alert-danger py-2 mb-3" role="alert" style="font-size:.875rem;">
+                        You are about to archive this user account. They will immediately lose all system access.
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex gap-3 mb-1">
+                            <span class="text-muted" style="min-width:48px;font-size:.8rem;">User</span>
+                            <span class="fw-semibold" id="deleteUserName"></span>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <span class="text-muted" style="min-width:48px;font-size:.8rem;">Role</span>
+                            <span id="deleteUserRole"></span>
+                        </div>
+                    </div>
+                    <div class="mb-1">
+                        <label for="deleteUserComment" class="form-label fw-semibold mb-1" style="font-size:.875rem;">
+                            Reason / Comment <span class="text-danger">*</span>
+                        </label>
+                        <textarea id="deleteUserComment"
+                                  name="comment"
+                                  class="form-control"
+                                  rows="4"
+                                  maxlength="1000"
+                                  placeholder="Enter the reason for archiving this account..."
+                                  required></textarea>
+                        <div class="form-text text-muted" style="font-size:.75rem;">This comment is required for audit purposes.</div>
+                        <div id="deleteCommentError" class="text-danger mt-1" style="font-size:.8rem;display:none;">A reason is required before archiving.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="deleteUserSubmitBtn" class="btn btn-danger btn-sm">
+                        <i class="bi bi-archive-fill me-1"></i>Archive Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ── Restore User Modal ─────────────────────────────────────────────── --}}
+<div class="modal fade" id="restoreUserModal" tabindex="-1" aria-labelledby="restoreUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-semibold" id="restoreUserModalLabel">
+                    <i class="bi bi-arrow-counterclockwise text-success me-2"></i>Restore User Account
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="restoreUserForm" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-success py-2 mb-3" role="alert" style="font-size:.875rem;">
+                        You are about to restore this user account. They will regain their previous system access.
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex gap-3 mb-1">
+                            <span class="text-muted" style="min-width:48px;font-size:.8rem;">User</span>
+                            <span class="fw-semibold" id="restoreUserName"></span>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <span class="text-muted" style="min-width:48px;font-size:.8rem;">Role</span>
+                            <span id="restoreUserRole"></span>
+                        </div>
+                    </div>
+                    <div class="mb-1">
+                        <label for="restoreUserComment" class="form-label fw-semibold mb-1" style="font-size:.875rem;">
+                            Reason / Comment <span class="text-danger">*</span>
+                        </label>
+                        <textarea id="restoreUserComment"
+                                  name="comment"
+                                  class="form-control"
+                                  rows="4"
+                                  maxlength="1000"
+                                  placeholder="Enter the reason for restoring this account..."
+                                  required></textarea>
+                        <div class="form-text text-muted" style="font-size:.75rem;">This comment is required for audit purposes.</div>
+                        <div id="restoreCommentError" class="text-danger mt-1" style="font-size:.8rem;display:none;">A reason is required before restoring.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="restoreUserSubmitBtn" class="btn btn-success btn-sm">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Restore Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const filterForm  = document.getElementById('filter-form');
         const searchInput = document.getElementById('filter-search');
-        const roleSelect = document.getElementById('filter-role');
-        const statusSelect = document.getElementById('filter-status');
-        const filterForm = document.getElementById('filter-form');
-        
+        const roleSelect  = document.getElementById('filter-role');
+        const statusSelect= document.getElementById('filter-status');
         let searchTimeout;
 
-        function performFilter(resetPage = true) {
-            if (resetPage) {
-                let pageInput = filterForm.querySelector('input[name="page"]');
-                if (pageInput) {
-                    pageInput.value = '1';
-                }
-            }
-            const formData = new FormData(filterForm);
-            const params = new URLSearchParams(formData);
-            const newUrl = `${window.location.pathname}?${params.toString()}`;
-            
-            window.history.replaceState(null, '', newUrl);
-
-            fetch(newUrl, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                
-                document.getElementById('users-table-body').innerHTML = doc.getElementById('users-table-body').innerHTML;
-                document.getElementById('users-pagination-container').innerHTML = doc.getElementById('users-pagination-container').innerHTML;
-                document.getElementById('archived-users-table-body').innerHTML = doc.getElementById('archived-users-table-body').innerHTML;
-                
-                const countBadge = document.getElementById('archived-users-count');
-                const newCountBadge = doc.getElementById('archived-users-count');
-                if (countBadge && newCountBadge) {
-                    countBadge.textContent = newCountBadge.textContent;
-                }
-            })
-            .catch(err => console.error('Error filtering users:', err));
+        // Submit form and do a normal full-page GET (preserves ?search=&role=&status=)
+        function submitFilter() {
+            // Remove any stale hidden page input so we go back to page 1
+            const stale = filterForm.querySelector('input[name="page"]');
+            if (stale) stale.remove();
+            filterForm.submit();
         }
 
         filterForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            performFilter(true);
+            submitFilter();
         });
 
         searchInput.addEventListener('input', function () {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => performFilter(true), 300);
+            searchTimeout = setTimeout(submitFilter, 400);
         });
 
-        roleSelect.addEventListener('change', () => performFilter(true));
-        statusSelect.addEventListener('change', () => performFilter(true));
+        roleSelect.addEventListener('change', submitFilter);
+        statusSelect.addEventListener('change', submitFilter);
 
-        // Intercept pagination clicks dynamically
-        document.addEventListener('click', function (e) {
-            const pageLink = e.target.closest('#users-pagination-container a');
-            if (pageLink) {
-                e.preventDefault();
-                const urlObj = new URL(pageLink.href);
-                const page = urlObj.searchParams.get('page');
-                
-                let pageInput = filterForm.querySelector('input[name="page"]');
-                if (!pageInput) {
-                    pageInput = document.createElement('input');
-                    pageInput.type = 'hidden';
-                    pageInput.name = 'page';
-                    filterForm.appendChild(pageInput);
+        // ── Archive User Modal wiring ───────────────────────────────────────
+        const deleteModal    = document.getElementById('deleteUserModal');
+        const deleteForm     = document.getElementById('deleteUserForm');
+        const deleteComment  = document.getElementById('deleteUserComment');
+        const deleteErrMsg   = document.getElementById('deleteCommentError');
+
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (e) {
+                const btn = e.relatedTarget;
+                deleteForm.action          = btn.dataset.actionUrl;
+                document.getElementById('deleteUserName').textContent = btn.dataset.userName;
+                document.getElementById('deleteUserRole').textContent = btn.dataset.userRole;
+                deleteComment.value        = '';
+                deleteErrMsg.style.display = 'none';
+                deleteComment.classList.remove('is-invalid');
+            });
+            deleteModal.addEventListener('hidden.bs.modal', function () {
+                deleteComment.value        = '';
+                deleteErrMsg.style.display = 'none';
+                deleteComment.classList.remove('is-invalid');
+            });
+            deleteForm.addEventListener('submit', function (e) {
+                if (!deleteComment.value.trim()) {
+                    e.preventDefault();
+                    deleteErrMsg.style.display = 'block';
+                    deleteComment.classList.add('is-invalid');
+                    deleteComment.focus();
                 }
-                pageInput.value = page;
-                performFilter(false);
-            }
-        });
+            });
+        }
+
+        // ── Restore User Modal wiring ───────────────────────────────────────
+        const restoreModal   = document.getElementById('restoreUserModal');
+        const restoreForm    = document.getElementById('restoreUserForm');
+        const restoreComment = document.getElementById('restoreUserComment');
+        const restoreErrMsg  = document.getElementById('restoreCommentError');
+
+        if (restoreModal) {
+            restoreModal.addEventListener('show.bs.modal', function (e) {
+                const btn = e.relatedTarget;
+                restoreForm.action           = btn.dataset.actionUrl;
+                document.getElementById('restoreUserName').textContent = btn.dataset.userName;
+                document.getElementById('restoreUserRole').textContent = btn.dataset.userRole;
+                restoreComment.value         = '';
+                restoreErrMsg.style.display  = 'none';
+                restoreComment.classList.remove('is-invalid');
+            });
+            restoreModal.addEventListener('hidden.bs.modal', function () {
+                restoreComment.value         = '';
+                restoreErrMsg.style.display  = 'none';
+                restoreComment.classList.remove('is-invalid');
+            });
+            restoreForm.addEventListener('submit', function (e) {
+                if (!restoreComment.value.trim()) {
+                    e.preventDefault();
+                    restoreErrMsg.style.display = 'block';
+                    restoreComment.classList.add('is-invalid');
+                    restoreComment.focus();
+                }
+            });
+        }
     });
 </script>
 @endpush

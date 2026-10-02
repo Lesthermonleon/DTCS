@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureOtpVerified;
+use App\Http\Middleware\EnsureSessionUnlocked;
 use App\Http\Middleware\EnsureSingleSessionActive;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
@@ -25,14 +27,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 | SymfonyRequest::HEADER_X_FORWARDED_PROTO
         );
 
-        // Enforce single active session check on web requests
+        // Enforce single active session & session inactivity lock checks on web requests
         $middleware->web(append: [
             EnsureSingleSessionActive::class,
+            EnsureSessionUnlocked::class,
         ]);
 
-        // Register the 'role' middleware alias for use in routes
+        // Register route middleware aliases
         $middleware->alias([
-            'role' => RoleMiddleware::class,
+            'role'         => RoleMiddleware::class,
+            'otp.verified' => EnsureOtpVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

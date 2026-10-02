@@ -351,19 +351,6 @@
             </div>
             <div class="card-body">
                 <div class="balanced-grid balanced-grid-3 admin-tools-grid">
-                    {{-- Tile 1: New Patient --}}
-                    <a href="{{ route('patients.create') }}"
-                       class="card border border-light-subtle shadow-xs h-100 p-3 bg-white text-decoration-none admin-tool-tile">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="icon-shape bg-success bg-opacity-10 text-success rounded-3 p-2 me-2 d-flex align-items-center justify-content-center transition-all" style="width: 36px; height: 36px;">
-                                <i class="bi bi-person-plus-fill fs-5"></i>
-                            </div>
-                            <div class="fw-bold text-dark small">New Patient</div>
-                        </div>
-                        <p class="text-muted mb-0" style="font-size: 11px; line-height: 1.3;">
-                            Register a new patient record
-                        </p>
-                    </a>
 
                     {{-- Tile 2: New Lab Request --}}
                     <a href="{{ route('lab.requests.create') }}"

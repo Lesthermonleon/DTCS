@@ -5,9 +5,11 @@ use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\OtpVerificationController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\SessionLockController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +28,7 @@ Route::middleware('guest')->group(function () {
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:5,1')
         ->name('password.email');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
@@ -35,7 +38,20 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
+// ── OTP Two-Factor Verification ────────────────────────────────────────────────
+// These routes are not behind 'auth' or 'guest' middleware.
+// Access is controlled by the controller via the 'otp_pending_user_id' session key.
+Route::get('otp/verify',  [OtpVerificationController::class, 'show'])->name('otp.verify');
+Route::post('otp/verify', [OtpVerificationController::class, 'verify'])->name('otp.verify.submit')->middleware('throttle:10,1');
+Route::post('otp/resend', [OtpVerificationController::class, 'resend'])->name('otp.resend')->middleware('throttle:5,1');
+
 Route::middleware('auth')->group(function () {
+    // ── Session Inactivity Lock Routes ──────────────────────────────────────────
+    Route::post('session/lock',        [SessionLockController::class, 'lock'])->name('session.lock');
+    Route::get('session/lock-status',  [SessionLockController::class, 'status'])->name('session.lock-status');
+    Route::get('session/locked',       [SessionLockController::class, 'showLocked'])->name('session.locked');
+    Route::post('session/unlock',      [SessionLockController::class, 'unlock'])->name('session.unlock');
+
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

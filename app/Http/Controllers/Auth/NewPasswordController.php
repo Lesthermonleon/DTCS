@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
@@ -17,10 +18,20 @@ use Illuminate\View\View;
 class NewPasswordController extends Controller
 {
     /**
-     * Display the password reset view.
+     * Display the password reset view if token is valid and unexpired (<= 5 minutes).
      */
-    public function create(Request $request): View
+    public function create(Request $request): View|RedirectResponse
     {
+        $token = $request->route('token');
+        $email = $request->query('email');
+
+        $user = $email ? User::where('email', $email)->first() : null;
+
+        if (!$user || !$token || !Password::getRepository()->exists($user, $token)) {
+            return redirect()->route('password.request')
+                ->with('status', 'This password reset link has expired or is invalid. Please request a new password reset link.');
+        }
+
         return view('auth.reset-password', ['request' => $request]);
     }
 
@@ -32,32 +43,46 @@ class NewPasswordController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
+            'token'    => ['required'],
+            'email'    => ['required', 'email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
+        // Attempt to reset the user's password using Laravel's password broker.
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user) use ($request) {
                 $user->forceFill([
-                    'password' => Hash::make($request->password),
+                    'password'       => Hash::make($request->password),
                     'remember_token' => Str::random(60),
                 ])->save();
+
+                // Clear active session registration so any open sessions across browsers/devices are invalidated
+                $user->clearActiveSession();
+
+                // Log audit event
+                ActivityLog::create([
+                    'user_id'     => $user->id,
+                    'action'      => 'Password Reset Completed',
+                    'module'      => 'Authentication',
+                    'severity'    => ActivityLog::SEVERITY_INFO,
+                    'result'      => ActivityLog::RESULT_SUCCESS,
+                    'description' => "Password reset successfully completed for account [{$user->email}].",
+                    'ip_address'  => $request->ip(),
+                    'logged_at'   => now(),
+                ]);
 
                 event(new PasswordReset($user));
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        return $status == Password::PASSWORD_RESET
-                    ? redirect()->route('login')->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        // If successful, redirect to login page with status message (no auto-auth, no OTP bypass)
+        if ($status === Password::PASSWORD_RESET) {
+            return redirect()->route('login')
+                ->with('status', 'Your password has been reset successfully. Please sign in with your new password.');
+        }
+
+        return redirect()->route('password.request')
+            ->with('status', 'This password reset link has expired or is invalid. Please request a new password reset link.');
     }
 }

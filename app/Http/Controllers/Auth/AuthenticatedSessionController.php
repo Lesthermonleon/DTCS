@@ -5,20 +5,26 @@ namespace App\Http\Controllers\Auth;
 use App\Events\SessionReplaced;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Mail\OtpNotificationMail;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Services\OtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
+    public function __construct(
+        private readonly OtpService $otpService,
+    ) {}
     /**
      * Display the login view.
      */
@@ -34,6 +40,17 @@ class AuthenticatedSessionController extends Controller
      * When a user logs in from another browser or device, the new login proceeds normally,
      * becomes the active session, and broadcasts a SessionReplaced event to immediately
      * terminate the previous active session.
+     */
+    /**
+     * Handle an incoming authentication request.
+     *
+     * IMPORTANT: Auth::login() is NOT called here. Credentials are validated,
+     * an OTP is generated and emailed, and only 'otp_pending_user_id' is stored
+     * in session. The full authenticated session is established only after the
+     * user successfully verifies the OTP in OtpVerificationController::verify().
+     *
+     * This preserves all existing lockout, single-session, RBAC, and audit
+     * functionality — they all fire after OTP verification, not before.
      */
     public function store(LoginRequest $request): RedirectResponse|View|Response
     {
@@ -53,89 +70,64 @@ class AuthenticatedSessionController extends Controller
             }
         }
 
-        // 3. Verify credentials with Hash check before logging in
+        // 3. Verify credentials with Hash check before proceeding
         if (! $user || ! Hash::check($request->input('password'), $user->password) || ! $user->is_active) {
             // Trigger standard Breeze lockout handling for invalid credentials
             $request->authenticate();
         }
 
-        // 4. User credentials are VALID. Authenticate user.
-        Auth::login($user, $request->boolean('remember'));
+        // 4. Password is VALID — check OTP policy before full authentication
+        if (config('otp.policy') === 'every_login') {
+            // ── OTP required for every login ──────────────────────────────
 
-        // Handle Remember Account email persistence cookie (30 days)
-        if ($request->boolean('remember')) {
-            cookie()->queue('remember_hims_email', $user->email, 43200);
-        } else {
-            cookie()->queue(cookie()->forget('remember_hims_email'));
-        }
-
-        // Prevent session fixation by regenerating the session ID on login.
-        $request->session()->regenerate();
-        $newSessionId = $request->session()->getId();
-
-        $hadPreviousSession = false;
-
-        DB::transaction(function () use ($user, $newSessionId, &$hadPreviousSession) {
-            // Lock user record for update to eliminate simultaneous login race conditions
-            $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
-            if ($lockedUser) {
-                if (! empty($lockedUser->active_session_id) && $lockedUser->active_session_id !== $newSessionId) {
-                    $hadPreviousSession = true;
-                }
-                $lockedUser->setActiveSession($newSessionId);
+            // Check send rate limit (max 5 OTPs in 15 minutes)
+            if ($this->otpService->isRateLimited($user)) {
+                return back()->withErrors([
+                    'email' => 'Too many verification code requests. Please wait before trying again.',
+                ])->onlyInput('email');
             }
-        });
 
-        // Broadcast real-time SessionReplaced event so the old device/browser logs out immediately via WebSockets
-        if ($hadPreviousSession) {
+            // Generate OTP and send email
+            $plainOtp   = $this->otpService->generate($user);
+            $expMinutes = config('otp.expires_minutes', 3);
+
             try {
-                broadcast(new SessionReplaced($user->id))->toOthers();
+                Mail::to($user->email)->send(new OtpNotificationMail($plainOtp, $expMinutes));
             } catch (\Throwable $e) {
-                // Log broadcasting error gracefully without crashing the login flow if Reverb server is offline
-                logger()->warning('Failed to broadcast SessionReplaced event (Reverb server might be offline): ' . $e->getMessage());
+                logger()->error('OTP email delivery failed for account [' . $user->email . ']: ' . $e->getMessage());
+                return back()->withErrors([
+                    'email' => 'Failed to send verification code. Please try again.',
+                ])->onlyInput('email');
             }
 
+            // Store temporary pending state (NOT a full login)
+            // The session holds only the user ID — no credentials, no tokens
+            $request->session()->put('otp_pending_user_id', $user->id);
+
+            // Handle Remember-email cookie at this stage so it is set regardless of OTP outcome
+            if ($request->boolean('remember')) {
+                cookie()->queue('remember_hims_email', $user->email, 43200);
+            } else {
+                cookie()->queue(cookie()->forget('remember_hims_email'));
+            }
+
+            // Audit: OTP generated
             ActivityLog::create([
-                'user_id'      => $user->id,
-                'action'       => 'Session Replaced',
-                'module'       => 'Authentication',
-                'severity'     => ActivityLog::SEVERITY_WARNING,
-                'result'       => ActivityLog::RESULT_SUCCESS,
-                'description'  => "Account {$user->email} logged in on a new device/browser. Previous active session was replaced.",
-                'ip_address'   => $request->ip(),
-                'logged_at'    => now(),
+                'user_id'     => $user->id,
+                'action'      => 'OTP Generated',
+                'module'      => 'Authentication',
+                'severity'    => ActivityLog::SEVERITY_INFO,
+                'result'      => ActivityLog::RESULT_SUCCESS,
+                'description' => "Login verification code generated and sent to account [{$user->email}].",
+                'ip_address'  => $request->ip(),
+                'logged_at'   => now(),
             ]);
+
+            return redirect()->route('otp.verify');
         }
 
-        ActivityLog::create([
-            'user_id'     => $user->id,
-            'action'      => 'Login',
-            'module'      => 'Authentication',
-            'severity'    => ActivityLog::SEVERITY_INFO,
-            'result'      => ActivityLog::RESULT_SUCCESS,
-            'description' => "User [{$user->email}] logged in successfully.",
-            'ip_address'  => $request->ip(),
-            'logged_at'   => now(),
-        ]);
-
-        // Generate encrypted login token
-        $plainToken     = Str::random(64);
-        $encryptedToken = encrypt($plainToken);
-
-        $user->update([
-            'login_token' => $encryptedToken,
-        ]);
-
-        // Reset any previous failed attempts
-        $user->resetLoginAttempts();
-
-        // Resolve the target route from the user's primary role record
-        $role           = $user->roles()->first();
-        $dashboardRoute = $role?->dashboard_route;
-
-        if ($dashboardRoute && Route::has($dashboardRoute)) {
-            return redirect()->route($dashboardRoute);
-        }
+        // ── Future: non-OTP policy paths would go here ────────────────────
+        // (No trusted-device or skip-OTP policy is implemented at this stage)
 
         return redirect()->route('dashboard');
     }

@@ -82,25 +82,6 @@ class PatientAuthorizationTest extends TestCase
 
         $this->actingAs($admin)->get(route('patients.index'))->assertStatus(200);
         $this->actingAs($admin)->get(route('patients.show', $patient))->assertStatus(200);
-        $this->actingAs($admin)->get(route('patients.create'))->assertStatus(200);
-        $this->actingAs($admin)->get(route('patients.edit', $patient))->assertStatus(200);
-
-        $this->actingAs($admin)->post(route('patients.store'), [
-            'first_name'    => 'Jane',
-            'last_name'     => 'Smith',
-            'date_of_birth' => '1995-05-05',
-            'gender'        => 'Female',
-            'patient_type'  => 'Inpatient',
-        ])->assertRedirect(route('patients.index'));
-
-        $this->actingAs($admin)->put(route('patients.update', $patient), [
-            'first_name'    => 'John',
-            'last_name'     => 'Updated',
-            'date_of_birth' => '1990-01-01',
-            'gender'        => 'Male',
-            'patient_type'  => 'Outpatient',
-        ])->assertRedirect(route('patients.show', $patient));
-
         $this->actingAs($admin)->delete(route('patients.destroy', $patient))->assertRedirect(route('patients.index'));
     }
 
@@ -113,25 +94,6 @@ class PatientAuthorizationTest extends TestCase
 
         $this->actingAs($doctor)->get(route('patients.index'))->assertStatus(200);
         $this->actingAs($doctor)->get(route('patients.show', $patient))->assertStatus(200);
-        $this->actingAs($doctor)->get(route('patients.create'))->assertStatus(200);
-        $this->actingAs($doctor)->get(route('patients.edit', $patient))->assertStatus(200);
-
-        $this->actingAs($doctor)->post(route('patients.store'), [
-            'first_name'    => 'Alice',
-            'last_name'     => 'Brown',
-            'date_of_birth' => '1988-08-08',
-            'gender'        => 'Female',
-            'patient_type'  => 'Outpatient',
-        ])->assertRedirect(route('patients.index'));
-
-        $this->actingAs($doctor)->put(route('patients.update', $patient), [
-            'first_name'    => 'John',
-            'last_name'     => 'DoctorEdit',
-            'date_of_birth' => '1990-01-01',
-            'gender'        => 'Male',
-            'patient_type'  => 'Outpatient',
-        ])->assertRedirect(route('patients.show', $patient));
-
         $this->actingAs($doctor)->delete(route('patients.destroy', $patient))->assertRedirect(route('patients.index'));
     }
 
@@ -159,49 +121,6 @@ class PatientAuthorizationTest extends TestCase
         }
     }
 
-    public function test_unauthorized_roles_cannot_create_patient(): void
-    {
-        foreach ($this->unauthorizedRoles() as $roleSlug) {
-            $user = $this->createUserWithRole($roleSlug);
-
-            $this->actingAs($user)
-                 ->get(route('patients.create'))
-                 ->assertStatus(403);
-
-            $this->actingAs($user)
-                 ->post(route('patients.store'), [
-                     'first_name'    => 'Hacker',
-                     'last_name'     => 'Attempt',
-                     'date_of_birth' => '2000-01-01',
-                     'gender'        => 'Male',
-                     'patient_type'  => 'Outpatient',
-                 ])
-                 ->assertStatus(403);
-        }
-    }
-
-    public function test_unauthorized_roles_cannot_update_patient(): void
-    {
-        $patient = $this->createPatient();
-
-        foreach ($this->unauthorizedRoles() as $roleSlug) {
-            $user = $this->createUserWithRole($roleSlug);
-
-            $this->actingAs($user)
-                 ->get(route('patients.edit', $patient))
-                 ->assertStatus(403);
-
-            $this->actingAs($user)
-                 ->put(route('patients.update', $patient), [
-                     'first_name'    => 'John',
-                     'last_name'     => 'Hacked',
-                     'date_of_birth' => '1990-01-01',
-                     'gender'        => 'Male',
-                     'patient_type'  => 'Outpatient',
-                 ])
-                 ->assertStatus(403);
-        }
-    }
 
     public function test_unauthorized_roles_cannot_delete_patient(): void
     {

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePatientRequest;
 use App\Models\ActivityLog;
 use App\Models\Patient;
 use Illuminate\Http\RedirectResponse;
@@ -11,7 +10,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * PatientController — CRUD operations for patient records.
+ * PatientController — manages the Patient Information module.
+ * Patient records originate from the upstream patient data / registration system.
+ * This controller supports read, search, view, and archive (soft-delete) only.
+ * Creating or editing patient records from within this subsystem is intentionally disabled.
+ *
  * Access restricted exclusively to System Administrator and Doctor.
  */
 class PatientController extends Controller
@@ -42,39 +45,6 @@ class PatientController extends Controller
         return view('patients.index', compact('patients'));
     }
 
-    public function create(): View
-    {
-        $this->authorize('create', Patient::class);
-
-        return view('patients.create');
-    }
-
-    public function store(StorePatientRequest $request): RedirectResponse
-    {
-        $this->authorize('create', Patient::class);
-
-        // Auto-generate patient number
-        $count = Patient::withTrashed()->count() + 1;
-        $data  = $request->validated();
-        $data['patient_no'] = 'P-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-
-        $patient = Patient::create($data);
-
-        ActivityLog::create([
-            'user_id'       => Auth::id(),
-            'action'        => 'Patient Created',
-            'module'        => 'Patient Records',
-            'description'   => "Patient record [{$patient->patient_no}] {$patient->last_name}, {$patient->first_name} was created.",
-            'loggable_type' => Patient::class,
-            'loggable_id'   => $patient->id,
-            'ip_address'    => request()->ip(),
-            'logged_at'     => now(),
-        ]);
-
-        return redirect()->route('patients.index')
-                         ->with('success', 'Patient record created successfully.');
-    }
-
     public function show(Patient $patient): View
     {
         $this->authorize('view', $patient);
@@ -90,33 +60,6 @@ class PatientController extends Controller
         return view('patients.show', compact('patient'));
     }
 
-    public function edit(Patient $patient): View
-    {
-        $this->authorize('update', $patient);
-
-        return view('patients.edit', compact('patient'));
-    }
-
-    public function update(StorePatientRequest $request, Patient $patient): RedirectResponse
-    {
-        $this->authorize('update', $patient);
-
-        $patient->update($request->validated());
-
-        ActivityLog::create([
-            'user_id'       => Auth::id(),
-            'action'        => 'Patient Updated',
-            'module'        => 'Patient Records',
-            'description'   => "Patient record [{$patient->patient_no}] {$patient->last_name}, {$patient->first_name} was updated.",
-            'loggable_type' => Patient::class,
-            'loggable_id'   => $patient->id,
-            'ip_address'    => request()->ip(),
-            'logged_at'     => now(),
-        ]);
-
-        return redirect()->route('patients.show', $patient)
-                         ->with('success', 'Patient record updated successfully.');
-    }
 
     public function destroy(Patient $patient): RedirectResponse
     {
@@ -142,4 +85,3 @@ class PatientController extends Controller
                          ->with('success', 'Patient record archived successfully.');
     }
 }
-

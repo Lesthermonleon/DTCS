@@ -254,5 +254,13 @@ class User extends Authenticatable
             'last_activity_at' => now(),
         ]);
     }
+
+    /**
+     * Send password reset notification using DTCS HIMS custom notification & Gmail SMTP.
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
 }
 

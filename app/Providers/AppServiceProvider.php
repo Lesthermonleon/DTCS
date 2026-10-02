@@ -15,7 +15,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Services\Pharmacy\Contracts\MedicationStockProviderInterface::class,
+            function ($app) {
+                $provider = config('pharmacy.stock_provider', 'mock');
+                return match ($provider) {
+                    'mock' => $app->make(\App\Services\Pharmacy\MockMedicationStockProvider::class),
+                    default => $app->make(\App\Services\Pharmacy\MockMedicationStockProvider::class),
+                };
+            }
+        );
     }
 
     /**

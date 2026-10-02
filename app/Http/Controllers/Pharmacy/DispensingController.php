@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Pharmacy;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDispensingRecordRequest;
+use App\Models\ActivityLog;
 use App\Models\DispensingRecord;
 use App\Models\Prescription;
 use App\Models\PrescriptionItem;
 use App\Models\User;
+use App\Services\Pharmacy\Contracts\MedicationStockProviderInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +21,9 @@ use Illuminate\View\View;
  */
 class DispensingController extends Controller
 {
+    public function __construct(
+        protected MedicationStockProviderInterface $stockProvider
+    ) {}
     public function index(Request $request): View
     {
         $query = DispensingRecord::with([
@@ -80,7 +85,15 @@ class DispensingController extends Controller
             }
         }
 
-        return view('pharmacy.dispensing.create', compact('prescriptions', 'selectedPrescription', 'selectedItem'));
+        // Retrieve stock provider integration data for all prescription items
+        $stockDataMap = [];
+        if ($selectedPrescription) {
+            foreach ($selectedPrescription->items as $item) {
+                $stockDataMap[$item->id] = $this->stockProvider->getMedicationStock($item);
+            }
+        }
+
+        return view('pharmacy.dispensing.create', compact('prescriptions', 'selectedPrescription', 'selectedItem', 'stockDataMap'));
     }
 
     public function store(StoreDispensingRecordRequest $request): RedirectResponse
@@ -89,41 +102,214 @@ class DispensingController extends Controller
         $user = Auth::user();
         abort_if(! $user?->hasRole('pharmacist'), 403, 'Only pharmacists can dispense medications.');
 
-        $item = PrescriptionItem::with('prescription')->findOrFail($request->prescription_item_id);
+        // 1. Gather selected item payloads
+        $selectedPayloads = [];
 
-        if ($item->status === 'Dispensed') {
-            return back()->with('error', 'This medication item has already been dispensed.')
+        if ($itemsPayload = $request->input('items')) {
+            foreach ($itemsPayload as $key => $itemData) {
+                if (is_array($itemData)) {
+                    $itemId = !empty($itemData['id']) ? $itemData['id'] : (is_numeric($key) ? $key : null);
+                    if ($itemId) {
+                        $selectedPayloads[$itemId] = [
+                            'id'                 => $itemId,
+                            'quantity_dispensed' => $itemData['quantity_dispensed'] ?? null,
+                            'lot_number'         => $itemData['lot_number'] ?? null,
+                            'expiry_date'        => $itemData['expiry_date'] ?? null,
+                            'notes'              => $itemData['notes'] ?? null,
+                        ];
+                    }
+                }
+            }
+        } elseif ($itemIds = $request->input('prescription_item_ids')) {
+            foreach ((array)$itemIds as $id) {
+                $selectedPayloads[$id] = [
+                    'id'                 => $id,
+                    'quantity_dispensed' => null,
+                    'lot_number'         => null,
+                    'expiry_date'        => null,
+                    'notes'              => null,
+                ];
+            }
+        } elseif ($singleId = $request->input('prescription_item_id')) {
+            $selectedPayloads[$singleId] = [
+                'id'                 => $singleId,
+                'quantity_dispensed' => $request->input('quantity_dispensed'),
+                'lot_number'         => $request->input('lot_number'),
+                'expiry_date'        => $request->input('expiry_date'),
+                'notes'              => $request->input('notes'),
+            ];
+        }
+
+        if (empty($selectedPayloads) && $rxId = $request->input('prescription_id')) {
+            $pendingItems = PrescriptionItem::where('prescription_id', $rxId)
+                ->where('status', 'Pending')
+                ->get();
+
+            if ($pendingItems->isEmpty()) {
+                return back()->with('error', 'All prescribed medications for this prescription have already been dispensed.')
+                             ->withInput();
+            }
+
+            foreach ($pendingItems as $pItem) {
+                $selectedPayloads[$pItem->id] = [
+                    'id'                 => $pItem->id,
+                    'quantity_dispensed' => null,
+                    'lot_number'         => null,
+                    'expiry_date'        => null,
+                    'notes'              => null,
+                ];
+            }
+        }
+
+        if (empty($selectedPayloads)) {
+            return back()->with('error', 'Please select at least one prescription item to dispense.')
                          ->withInput();
         }
 
-        $record = DB::transaction(function () use ($request, $item) {
-            // 1. Create dispensing record
-            $dispensing = DispensingRecord::create([
-                'prescription_item_id' => $item->id,
-                'pharmacist_id'        => Auth::id(),
-                'quantity_dispensed'   => $request->quantity_dispensed,
-                'lot_number'           => $request->lot_number,
-                'expiry_date'          => $request->expiry_date,
-                'notes'                => $request->notes,
-                'dispensed_at'         => now(),
-            ]);
+        // 2. Fetch and validate items
+        /** @var \Illuminate\Database\Eloquent\Collection<int, PrescriptionItem> $items */
+        $items = PrescriptionItem::with('prescription.patient')
+            ->whereIn('id', array_keys($selectedPayloads))
+            ->get();
 
-            // 2. Mark item as dispensed
-            $item->update(['status' => 'Dispensed']);
+        if ($items->isEmpty()) {
+            return back()->with('error', 'The selected prescription items could not be found.')
+                         ->withInput();
+        }
 
-            // 3. Recalculate parent prescription status
-            $prescription = $item->prescription;
-            $pendingItems = $prescription->items()->where('status', 'Pending')->count();
+        // Verify all items belong to the same prescription
+        $prescriptionIds = $items->pluck('prescription_id')->unique();
+        if ($prescriptionIds->count() > 1) {
+            return back()->with('error', 'All items in a batch dispensing request must belong to the same prescription.')
+                         ->withInput();
+        }
 
-            $newStatus = $pendingItems === 0 ? 'Dispensed' : 'Partially Dispensed';
+        // Verify prescription validation & items status
+        /** @var PrescriptionItem $firstItem */
+        $firstItem = $items->first();
+        $prescription = $firstItem->prescription;
+
+        // Verify prescription status is eligible
+        if (!in_array($prescription->status, ['Verified', 'Partially Dispensed', 'Pending'])) {
+            return back()->with('error', "Prescription [{$prescription->prescription_no}] is currently {$prescription->status} and cannot be dispensed.")
+                         ->withInput();
+        }
+
+        // Verify no items are already dispensed
+        $alreadyDispensed = $items->filter(fn($i) => $i->status === 'Dispensed');
+        if ($alreadyDispensed->isNotEmpty()) {
+            $names = $alreadyDispensed->pluck('medication_name')->implode(', ');
+            return back()->with('error', "The following medication(s) have already been dispensed: {$names}.")
+                         ->withInput();
+        }
+
+        // Verify quantities, lot numbers, and expiry dates per item via MedicationStockProviderInterface
+        $todayStr = date('Y-m-d');
+        /** @var PrescriptionItem $item */
+        foreach ($items as $item) {
+            $payload = $selectedPayloads[$item->id] ?? [];
+            $requestedQty = !empty($payload['quantity_dispensed']) ? (int)$payload['quantity_dispensed'] : (int)$request->input('quantity_dispensed', $item->quantity);
+            if ($requestedQty > $item->quantity) {
+                return back()->with('error', "Dispensing quantity for {$item->medication_name} ({$requestedQty}) exceeds prescribed quantity ({$item->quantity}).")
+                             ->withInput();
+            }
+
+            // Query stock availability & batch data from inventory stock provider
+            $stockData = $this->stockProvider->getMedicationStock($item);
+
+            if (! $stockData->isAvailable) {
+                $errDetail = $stockData->errorMessage ?: 'Inventory stock data unavailable.';
+                return back()->with('error', "Stock information unavailable for medication [{$item->medication_name}]: {$errDetail}")
+                             ->withInput();
+            }
+
+            if (! $stockData->hasSufficientStock($requestedQty)) {
+                return back()->with('error', "Insufficient stock for medication [{$item->medication_name}]. Prescribed: {$requestedQty} units, Available in Stock: {$stockData->availableQuantity} units.")
+                             ->withInput();
+            }
+
+            $lot = !empty($payload['lot_number']) ? $payload['lot_number'] : (!empty($request->input('lot_number')) ? $request->input('lot_number') : $stockData->lotNumber);
+            $exp = !empty($payload['expiry_date']) ? $payload['expiry_date'] : (!empty($request->input('expiry_date')) ? $request->input('expiry_date') : $stockData->expiryDate);
+
+            if (empty($lot)) {
+                return back()->with('error', "Lot / Batch number is missing for medication [{$item->medication_name}].")
+                             ->withInput();
+            }
+
+            if (empty($exp) || strtotime($exp) <= strtotime($todayStr) || ! $stockData->isUnexpired()) {
+                return back()->with('error', "Medication [{$item->medication_name}] stock batch is expired or has an invalid expiry date ({$exp}).")
+                             ->withInput();
+            }
+
+            $selectedPayloads[$item->id]['resolved_lot'] = $lot;
+            $selectedPayloads[$item->id]['resolved_exp'] = $exp;
+            $selectedPayloads[$item->id]['resolved_qty'] = $requestedQty;
+        }
+
+        // 3. Process dispensing batch inside a DB Transaction
+        $firstRecord = DB::transaction(function () use ($items, $selectedPayloads, $request, $prescription) {
+            $createdRecords = [];
+
+            /** @var PrescriptionItem $item */
+            foreach ($items as $item) {
+                $payload = $selectedPayloads[$item->id] ?? [];
+
+                $qty  = $payload['resolved_qty'] ?? (!empty($payload['quantity_dispensed']) ? (int)$payload['quantity_dispensed'] : (int)$request->input('quantity_dispensed', $item->quantity));
+                $lot  = $payload['resolved_lot'] ?? (!empty($payload['lot_number']) ? $payload['lot_number'] : $request->input('lot_number'));
+                $exp  = $payload['resolved_exp'] ?? (!empty($payload['expiry_date']) ? $payload['expiry_date'] : $request->input('expiry_date'));
+                $note = !empty($payload['notes']) ? $payload['notes'] : $request->input('notes');
+
+                // Create dispensing record
+                $dispensing = DispensingRecord::create([
+                    'prescription_item_id' => $item->id,
+                    'pharmacist_id'        => Auth::id(),
+                    'quantity_dispensed'   => $qty,
+                    'lot_number'           => $lot,
+                    'expiry_date'          => $exp,
+                    'notes'                => $note,
+                    'dispensed_at'         => now(),
+                ]);
+
+                // Mark item as dispensed
+                $item->update(['status' => 'Dispensed']);
+
+                // Audit log entry per item
+                ActivityLog::create([
+                    'user_id'       => Auth::id(),
+                    'action'        => 'Medication Dispensed',
+                    'module'        => 'Pharmacy',
+                    'description'   => "Dispensed [{$item->medication_name}] (Qty: {$qty}, Lot: {$lot}) for Prescription [{$prescription->prescription_no}].",
+                    'loggable_type' => DispensingRecord::class,
+                    'loggable_id'   => $dispensing->id,
+                    'ip_address'    => request()->ip(),
+                    'logged_at'     => now(),
+                ]);
+
+                $createdRecords[] = $dispensing;
+            }
+
+            // 4. Recalculate parent prescription status
+            $pendingItemsCount = $prescription->items()->where('status', 'Pending')->count();
+            $newStatus = ($pendingItemsCount === 0) ? 'Dispensed' : 'Partially Dispensed';
             $prescription->update(['status' => $newStatus]);
 
-            return $dispensing;
+            return reset($createdRecords);
         });
 
-        return redirect()->route('pharmacy.dispensing.show', $record)
-                         ->with('success', 'Medication dispensed successfully and inventory batch logged.');
+        $count = count($items);
+        $message = $count === 1
+            ? 'Medication dispensed successfully and inventory batch logged.'
+            : "Successfully batch-dispensed {$count} medications for Prescription #{$prescription->prescription_no}.";
+
+        if ($count === 1 && $firstRecord) {
+            return redirect()->route('pharmacy.dispensing.show', $firstRecord)
+                             ->with('success', $message);
+        }
+
+        return redirect()->route('pharmacy.prescriptions.show', $prescription)
+                         ->with('success', $message);
     }
+
 
     public function show(DispensingRecord $dispensing): View
     {

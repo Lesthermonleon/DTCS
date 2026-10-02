@@ -34,14 +34,14 @@ INSERT INTO `users` (
     `id`, `name`, `email`, `employee_id`, `department`, `phone`, `avatar`, 
     `is_active`, `password`, `created_at`, `updated_at`
 ) VALUES
-(1, 'System Administrator', 'admin@ditc.com',       'EMP-0001', 'Administration',       '09000000001', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(2, 'Dr. Juan Dela Cruz',   'doctor@ditc.com',      'EMP-0002', 'Internal Medicine',    '09000000002', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(3, 'Maria Santos',         'medtech@ditc.com',     'EMP-0003', 'Laboratory',           '09000000003', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(4, 'Jose Reyes',           'radtech@ditc.com',     'EMP-0004', 'Radiology',            '09000000004', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(5, 'Dr. Ana Lim',          'radiologist@ditc.com', 'EMP-0005', 'Radiology',            '09000000005', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(6, 'Pedro Garcia',         'pharmacist@ditc.com',  'EMP-0006', 'Pharmacy',             '09000000006', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(7, 'Rosa Mendoza',         'dietitian@ditc.com',   'EMP-0007', 'Nutrition & Dietetics','09000000007', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
-(8, 'Carlos Torres',        'orcoord@ditc.com',     'EMP-0008', 'Operating Room',       '09000000008', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW())
+(1, 'System Administrator', 'kirito.zoldyck75@gmail.com',       'EMP-0001', 'Administration',       '09000000001', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(2, 'Dr. Juan Dela Cruz',   'heike.hugo101@gmail.com',      'EMP-0002', 'Internal Medicine',    '09000000002', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(3, 'Maria Santos',         'medtech@dtcs.com',     'EMP-0003', 'Laboratory',           '09000000003', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(4, 'Jose Reyes',           'radtech@dtcs.com',     'EMP-0004', 'Radiology',            '09000000004', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(5, 'Dr. Ana Lim',          'radiologist@dtcs.com', 'EMP-0005', 'Radiology',            '09000000005', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(6, 'Pedro Garcia',         'pharmacist@dtcs.com',  'EMP-0006', 'Pharmacy',             '09000000006', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(7, 'Rosa Mendoza',         'dietitian@dtcs.com',   'EMP-0007', 'Nutrition & Dietetics','09000000007', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW()),
+(8, 'Carlos Torres',        'orcoord@dtcs.com',     'EMP-0008', 'Operating Room',       '09000000008', NULL, 1, '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW(), NOW())
 ON DUPLICATE KEY UPDATE 
     `name` = VALUES(`name`),
     `employee_id` = VALUES(`employee_id`),

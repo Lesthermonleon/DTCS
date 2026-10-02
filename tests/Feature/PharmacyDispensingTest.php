@@ -168,4 +168,231 @@ class PharmacyDispensingTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    public function test_pharmacist_can_batch_dispense_multiple_items_in_single_transaction(): void
+    {
+        $prescription = $this->createVerifiedPrescription(3);
+        $itemIds = $prescription->items->pluck('id')->toArray();
+
+        $response = $this->actingAs($this->pharmacist)
+                         ->post(route('pharmacy.dispensing.store'), [
+                             'prescription_id'      => $prescription->id,
+                             'prescription_item_ids'=> $itemIds,
+                             'lot_number'           => 'LOT-BATCH-2026',
+                             'expiry_date'          => now()->addYear()->format('Y-m-d'),
+                             'notes'                => 'Batch dispensed 3 items.',
+                         ]);
+
+        $response->assertRedirect();
+
+        // Assert all 3 items are marked Dispensed
+        foreach ($prescription->items as $item) {
+            $this->assertEquals('Dispensed', $item->fresh()->status);
+            $this->assertDatabaseHas('dispensing_records', [
+                'prescription_item_id' => $item->id,
+                'pharmacist_id'        => $this->pharmacist->id,
+                'lot_number'           => 'LOT-BATCH-2026',
+            ]);
+        }
+
+        // Assert prescription status is now Dispensed
+        $this->assertEquals('Dispensed', $prescription->fresh()->status);
+    }
+
+    public function test_batch_dispense_prevents_re_dispensing_already_dispensed_items(): void
+    {
+        $prescription = $this->createVerifiedPrescription(2);
+        $items = $prescription->items;
+        $item1 = $items->first();
+        $item2 = $items->last();
+
+        // First dispense item 1
+        $this->actingAs($this->pharmacist)
+             ->post(route('pharmacy.dispensing.store'), [
+                 'prescription_item_id' => $item1->id,
+                 'quantity_dispensed'   => 14,
+                 'lot_number'           => 'LOT-PREV-001',
+                 'expiry_date'          => now()->addYear()->format('Y-m-d'),
+             ]);
+
+        // Attempt to batch dispense both item1 and item2
+        $response = $this->actingAs($this->pharmacist)
+                         ->post(route('pharmacy.dispensing.store'), [
+                             'prescription_id'      => $prescription->id,
+                             'prescription_item_ids'=> [$item1->id, $item2->id],
+                             'lot_number'           => 'LOT-PREV-002',
+                             'expiry_date'          => now()->addYear()->format('Y-m-d'),
+                         ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertEquals('Pending', $item2->fresh()->status);
+    }
+
+    public function test_batch_dispense_rejects_items_from_different_prescriptions(): void
+    {
+        $p1 = $this->createVerifiedPrescription(1);
+        $p2 = $this->createVerifiedPrescription(1);
+
+        $response = $this->actingAs($this->pharmacist)
+                         ->post(route('pharmacy.dispensing.store'), [
+                             'prescription_item_ids'=> [$p1->items->first()->id, $p2->items->first()->id],
+                             'lot_number'           => 'LOT-MISMATCH-999',
+                             'expiry_date'          => now()->addYear()->format('Y-m-d'),
+                         ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+    }
+
+    public function test_auto_batch_dispense_by_prescription_id_alone(): void
+    {
+        $prescription = $this->createVerifiedPrescription(3);
+
+        // Submit prescription_id alone without explicit item IDs
+        $response = $this->actingAs($this->pharmacist)
+                         ->post(route('pharmacy.dispensing.store'), [
+                             'prescription_id' => $prescription->id,
+                             'lot_number'      => 'LOT-AUTO-2026',
+                             'expiry_date'     => now()->addYear()->format('Y-m-d'),
+                             'notes'           => 'Auto-dispensed all eligible pending items.',
+                         ]);
+
+        $response->assertRedirect();
+
+        // Assert all items are now Dispensed
+        foreach ($prescription->items as $item) {
+            $this->assertEquals('Dispensed', $item->fresh()->status);
+        }
+
+        $this->assertEquals('Dispensed', $prescription->fresh()->status);
+    }
+
+    public function test_batch_dispense_with_item_specific_lot_numbers_and_expiry_dates(): void
+    {
+        $prescription = $this->createVerifiedPrescription(2);
+        $items = $prescription->items;
+        $item1 = $items->first();
+        $item2 = $items->last();
+
+        $itemsPayload = [
+            $item1->id => [
+                'lot_number'  => 'LOT-PARA-991',
+                'expiry_date' => now()->addYears(2)->format('Y-m-d'),
+            ],
+            $item2->id => [
+                'lot_number'  => 'LOT-SOLM-005',
+                'expiry_date' => now()->addMonths(18)->format('Y-m-d'),
+            ],
+        ];
+
+        $response = $this->actingAs($this->pharmacist)
+                         ->post(route('pharmacy.dispensing.store'), [
+                             'prescription_id' => $prescription->id,
+                             'items'           => $itemsPayload,
+                             'notes'           => 'Dispensed with item-specific lot numbers.',
+                         ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('dispensing_records', [
+            'prescription_item_id' => $item1->id,
+            'lot_number'           => 'LOT-PARA-991',
+        ]);
+
+        $this->assertDatabaseHas('dispensing_records', [
+            'prescription_item_id' => $item2->id,
+            'lot_number'           => 'LOT-SOLM-005',
+        ]);
+
+        $this->assertEquals('Dispensed', $prescription->fresh()->status);
+    }
+
+    public function test_batch_dispense_rejects_expired_medication_item(): void
+    {
+        $prescription = $this->createVerifiedPrescription(2);
+        $items = $prescription->items;
+        $item1 = $items->first();
+        $item2 = $items->last();
+
+        $itemsPayload = [
+            $item1->id => [
+                'lot_number'  => 'LOT-VALID-100',
+                'expiry_date' => now()->addYear()->format('Y-m-d'),
+            ],
+            $item2->id => [
+                'lot_number'  => 'LOT-EXPIRED-999',
+                'expiry_date' => now()->subDay()->format('Y-m-d'), // Expired date
+            ],
+        ];
+
+        $response = $this->actingAs($this->pharmacist)
+                         ->post(route('pharmacy.dispensing.store'), [
+                             'prescription_id' => $prescription->id,
+                             'items'           => $itemsPayload,
+                         ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors();
+        $this->assertEquals('Pending', $item1->fresh()->status);
+        $this->assertEquals('Pending', $item2->fresh()->status);
+    }
+
+    public function test_stock_provider_insufficient_stock_blocks_dispensing(): void
+    {
+        $prescription = $this->createVerifiedPrescription(1);
+        $item = $prescription->items->first();
+        $item->update(['quantity' => 150]); // Prescribed 150, but MockMedicationStockProvider has 100 for Paracetamol or default
+
+        \App\Services\Pharmacy\MockMedicationStockProvider::setMockStock(
+            $item->id,
+            new \App\Services\Pharmacy\DTOs\MedicationStockData(
+                medicationName: $item->medication_name,
+                availableQuantity: 10,
+                lotNumber: 'LOT-LOW-001',
+                expiryDate: now()->addYear()->format('Y-m-d')
+            )
+        );
+
+        $response = $this->actingAs($this->pharmacist)
+                         ->post(route('pharmacy.dispensing.store'), [
+                             'prescription_id' => $prescription->id,
+                         ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertStringContainsString('Insufficient stock', session('error'));
+        $this->assertEquals('Pending', $item->fresh()->status);
+
+        \App\Services\Pharmacy\MockMedicationStockProvider::reset();
+    }
+
+    public function test_stock_provider_expired_batch_blocks_dispensing(): void
+    {
+        $prescription = $this->createVerifiedPrescription(1);
+        $item = $prescription->items->first();
+
+        \App\Services\Pharmacy\MockMedicationStockProvider::setMockStock(
+            $item->id,
+            new \App\Services\Pharmacy\DTOs\MedicationStockData(
+                medicationName: $item->medication_name,
+                availableQuantity: 100,
+                lotNumber: 'LOT-EXP-888',
+                expiryDate: '2020-01-01' // Expired date
+            )
+        );
+
+        $response = $this->actingAs($this->pharmacist)
+                         ->post(route('pharmacy.dispensing.store'), [
+                             'prescription_id' => $prescription->id,
+                         ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertStringContainsString('expired', session('error'));
+        $this->assertEquals('Pending', $item->fresh()->status);
+
+        \App\Services\Pharmacy\MockMedicationStockProvider::reset();
+    }
 }
+

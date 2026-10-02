@@ -17,9 +17,7 @@
             <button class="btn btn-sm d-none" style="background:var(--signal);color:var(--ink);border:none;">Filter</button>
             @if(request()->hasAny(['search','type']))<a href="{{ route('patients.index') }}" class="btn btn-outline-secondary btn-sm" id="filter-clear">Clear</a>@endif
         </form>
-        @if(auth()->user()->hasAnyRole(['admin','doctor']))
-            <a href="{{ route('patients.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>New Patient</a>
-        @endif
+
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -42,9 +40,6 @@
                     <td>
                         <div class="table-actions">
                             <a href="{{ route('patients.show', $p) }}" class="table-action-btn action-view" title="View Patient Details" aria-label="View Patient Details"><i class="bi bi-eye"></i></a>
-                            @if(auth()->user()->hasAnyRole(['admin','doctor']))
-                                <a href="{{ route('patients.edit', $p) }}" class="table-action-btn action-edit" title="Edit Patient Record" aria-label="Edit Patient Record"><i class="bi bi-pencil"></i></a>
-                            @endif
                         </div>
                     </td>
                 </tr>

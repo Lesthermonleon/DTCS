@@ -172,7 +172,8 @@
     .patient-type-pill {
         display: inline-flex;
         align-items: center;
-        gap: 0.3rem;
+        justify-content: center;
+        gap: 0.35rem;
         font-size: 0.72rem;
         font-weight: 600;
         font-family: var(--font-mono);
@@ -182,6 +183,7 @@
         background: #f3f4f6;
         color: #374151;
         border: 1px solid #d1d5db;
+        line-height: 1;
     }
 
     .patient-type-pill.type-inpatient {
@@ -383,7 +385,6 @@
     $surCount         = $patient->surgeryRequests->count();
     $dietCount        = $patient->dietRequests->count();
     $initials         = strtoupper(substr($patient->first_name, 0, 1));
-    $canEdit          = auth()->user()->hasAnyRole(['admin', 'doctor']);
 @endphp
 
 <div class="row g-3">
@@ -393,26 +394,15 @@
 
         {{-- Patient Identity Card --}}
         <div class="card mb-3">
-            <div class="card-body text-center pt-4 pb-3">
+            <div class="card-body text-center pt-4 pb-3 d-flex flex-column align-items-center justify-content-center">
                 <div class="patient-avatar mb-3">{{ $initials }}</div>
-                <div class="patient-name mb-1">
-                    {{ $patient->last_name }}, {{ $patient->first_name }}
-                    @if($patient->middle_name) {{ $patient->middle_name }}@endif
-                </div>
+                <div class="patient-name mb-1">{{ $patient->last_name }}, {{ $patient->first_name }}@if($patient->middle_name) {{ $patient->middle_name }}@endif</div>
                 <div class="patient-id mb-2">{{ $patient->patient_no }}</div>
                 <span class="patient-type-pill type-{{ strtolower($patient->patient_type ?? 'outpatient') }}">
                     <i class="bi bi-person-badge" style="font-size:.7rem;opacity:.7;"></i>
-                    {{ $patient->patient_type }}
+                    <span>{{ $patient->patient_type }}</span>
                 </span>
             </div>
-
-            @if($canEdit)
-            <div class="card-footer bg-transparent py-2 px-3">
-                <a href="{{ route('patients.edit', $patient) }}" class="btn-patient-edit w-100">
-                    <i class="bi bi-pencil" style="font-size:.85rem;"></i> Edit Record
-                </a>
-            </div>
-            @endif
         </div>
 
         {{-- Simple Hospital Patient Data Table --}}

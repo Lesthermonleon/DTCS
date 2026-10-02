@@ -38,7 +38,7 @@ Route::get('/', fn() => redirect()->route('login'));
 // ═══════════════════════════════════════════════════════════════════════
 // AUTHENTICATED ROUTES (all roles must be logged in)
 // ═══════════════════════════════════════════════════════════════════════
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'otp.verified'])->group(function () {
 
     // ── Skeleton System Demo (admin-only developer reference) ─────────
     Route::get('/skeleton-demo', fn() => view('skeleton-demo'))
@@ -86,19 +86,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', fn() => view('settings.index'))->name('settings.index');
 
     // ── Patients ──────────────────────────────────────────────────────
-    // Full Patient Information module — System Administrator & Doctor only
+    // Patient Information module — read-only. Search, view, and archive only.
+    // Patient records are owned by the upstream patient data / registration system.
     Route::prefix('patients')
          ->name('patients.')
          ->middleware('role:admin,doctor')
          ->group(function () {
-             Route::get('/',                  [PatientController::class, 'index'])->name('index');
-             Route::get('/create',            [PatientController::class, 'create'])->name('create');
-             Route::post('/',                 [PatientController::class, 'store'])->name('store');
-             Route::get('/{patient}',         [PatientController::class, 'show'])->name('show');
-             Route::get('/{patient}/edit',    [PatientController::class, 'edit'])->name('edit');
-             Route::put('/{patient}',         [PatientController::class, 'update'])->name('update');
-             Route::patch('/{patient}',       [PatientController::class, 'update']);
-             Route::delete('/{patient}',      [PatientController::class, 'destroy'])->name('destroy');
+             Route::get('/',         [PatientController::class, 'index'])->name('index');
+             Route::get('/{patient}',[PatientController::class, 'show'])->name('show');
+             Route::delete('/{patient}', [PatientController::class, 'destroy'])->name('destroy');
          });
 
     // ═══════════════════════════════════════════════════════════════════
@@ -109,12 +105,12 @@ Route::middleware(['auth'])->group(function () {
          ->name('admin.')
          ->group(function () {
              Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
-             Route::get('/users/print', [UserController::class, 'print'])->name('users.print');
-             Route::resource('users', UserController::class);
+             Route::resource('users', UserController::class)->except(['create', 'store']);
              Route::resource('roles', RoleController::class);
              Route::post('users/{user}/assign-role', [UserController::class, 'assignRole'])->name('users.assign-role');
              Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
              Route::post('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
+             Route::get('users/{id}/archived', [UserController::class, 'showArchived'])->name('users.archived');
              Route::post('users/{user}/unlock', [UserController::class, 'unlockAccount'])->name('users.unlock');
 
              // ── Audit Logs (read-only) ────────────────────────────────

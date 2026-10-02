@@ -19,6 +19,12 @@
                 </dl>
             </div>
         </div>
+        @php
+            $pendingCount = $prescription->items->where('status', 'Pending')->count();
+            $totalCount   = $prescription->items->count();
+            $isFullyDispensed = ($pendingCount === 0 || $prescription->status === 'Dispensed');
+            $isPartiallyDispensed = ($pendingCount > 0 && $pendingCount < $totalCount) || $prescription->status === 'Partially Dispensed';
+        @endphp
         <div class="d-flex flex-column gap-2">
             @if($prescription->status==='Pending' && auth()->user()?->hasRole('pharmacist'))
                 <form method="POST" action="{{ route('pharmacy.prescriptions.verify', $prescription) }}">
@@ -26,8 +32,14 @@
                     <button class="btn btn-success w-100 shadow-sm"><i class="bi bi-shield-check me-1"></i>Verify Prescription</button>
                 </form>
             @endif
-            @if(in_array($prescription->status, ['Verified', 'Partially Dispensed']) && auth()->user()?->hasRole('pharmacist'))
-                <a href="{{ route('pharmacy.dispensing.create') }}?rx={{ $prescription->id }}" class="btn btn-primary shadow-sm"><i class="bi bi-capsule-pill me-1"></i>Dispense Medications</a>
+            @if(in_array($prescription->status, ['Verified', 'Partially Dispensed']) && $pendingCount > 0 && auth()->user()?->hasRole('pharmacist'))
+                <a href="{{ route('pharmacy.dispensing.create') }}?rx={{ $prescription->id }}" class="btn btn-primary shadow-sm fw-bold">
+                    <i class="bi bi-box-arrow-down me-1"></i> {{ $isPartiallyDispensed ? 'Dispense Remaining' : 'Dispense Prescription' }}
+                </a>
+            @elseif($isFullyDispensed)
+                <div class="alert alert-success d-flex align-items-center mb-0 py-2 small fw-semibold shadow-sm">
+                    <i class="bi bi-check-circle-fill me-2 fs-6 text-success"></i> Prescription Fully Dispensed
+                </div>
             @endif
             <a href="{{ route('pharmacy.prescriptions.print', $prescription) }}" target="_blank" class="btn btn-outline-secondary shadow-sm"><i class="bi bi-printer me-1"></i>Print Official Prescription (Rx)</a>
             <a href="{{ route('pharmacy.prescriptions.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back to Prescriptions</a>
@@ -46,8 +58,7 @@
                                 <th>Frequency</th>
                                 <th>Duration</th>
                                 <th>Qty</th>
-                                <th>Status</th>
-                                <th class="text-end pe-3">Action</th>
+                                <th class="pe-3">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -61,29 +72,16 @@
                             <td>{{ $item->frequency }}</td>
                             <td>{{ $item->duration }}</td>
                             <td><span class="fw-bold">{{ $item->quantity }}</span></td>
-                            <td><span class="badge bg-{{ $item->status==='Dispensed'?'success':'warning-subtle text-warning border border-warning' }}">{{ $item->status ?? 'Pending' }}</span></td>
-                            <td class="text-end pe-3">
-                                @if($item->status === 'Pending' && in_array($prescription->status, ['Verified', 'Partially Dispensed']) && auth()->user()?->hasRole('pharmacist'))
-                                    <a href="{{ route('pharmacy.dispensing.create') }}?rx={{ $prescription->id }}&item={{ $item->id }}" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-capsule me-1"></i> Dispense
-                                    </a>
-                                @elseif($item->status === 'Dispensed' && $dispensingRecord)
-                                    <a href="{{ route('pharmacy.dispensing.show', $dispensingRecord) }}" class="btn btn-sm btn-outline-secondary">
-                                        <i class="bi bi-receipt me-1"></i> Receipt
-                                    </a>
-                                @else
-                                    <span class="text-muted small">—</span>
-                                @endif
-                            </td>
+                            <td class="pe-3"><span class="badge bg-{{ $item->status==='Dispensed'?'success':'warning-subtle text-warning border border-warning' }}">{{ $item->status ?? 'Pending' }}</span></td>
                         </tr>
                         @if($item->instructions)
                             <tr>
-                                <td colspan="7" class="text-muted small ps-3 pt-0 pb-2"><i class="bi bi-info-circle me-1"></i><em>Instructions: {{ $item->instructions }}</em></td>
+                                <td colspan="6" class="text-muted small ps-3 pt-0 pb-2"><i class="bi bi-info-circle me-1"></i><em>Instructions: {{ $item->instructions }}</em></td>
                             </tr>
                         @endif
                         @if($dispensingRecord)
                             <tr class="table-light">
-                                <td colspan="7" class="ps-4 small text-success py-2">
+                                <td colspan="6" class="ps-4 small text-success py-2">
                                     <i class="bi bi-check2-square me-1"></i> Dispensed by <strong>{{ $dispensingRecord->pharmacist?->name ?? 'Pharmacist' }}</strong> on {{ $dispensingRecord->dispensed_at?->format('M d, Y H:i') }} &bull; Lot: <code>{{ $dispensingRecord->lot_number }}</code> &bull; Exp: {{ $dispensingRecord->expiry_date?->format('M Y') }}
                                 </td>
                             </tr>

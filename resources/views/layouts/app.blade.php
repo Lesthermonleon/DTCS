@@ -547,6 +547,42 @@
             color: #FFFFFF !important;
         }
 
+        /* ── Dark Mode Button & Action Element Visibility Overrides ── */
+        html[data-theme="dark"] .btn-outline-primary,
+        html[data-bs-theme="dark"] .btn-outline-primary {
+            color: #14C79A !important;
+            border-color: #14C79A !important;
+            background-color: transparent !important;
+        }
+        html[data-theme="dark"] .btn-outline-primary:hover,
+        html[data-bs-theme="dark"] .btn-outline-primary:hover,
+        html[data-theme="dark"] .btn-outline-primary:focus,
+        html[data-bs-theme="dark"] .btn-outline-primary:focus {
+            background-color: #14C79A !important;
+            border-color: #14C79A !important;
+            color: #000000 !important;
+        }
+        html[data-theme="dark"] .card-header .btn.btn-outline-primary,
+        html[data-bs-theme="dark"] .card-header .btn.btn-outline-primary,
+        html[data-theme="dark"] .card-header .btn.btn-sm.btn-outline-primary,
+        html[data-bs-theme="dark"] .card-header .btn.btn-sm.btn-outline-primary,
+        html[data-theme="dark"] #addMedBtn,
+        html[data-bs-theme="dark"] #addMedBtn {
+            color: #14C79A !important;
+            border: 1px solid #14C79A !important;
+            background-color: rgba(20, 199, 154, 0.12) !important;
+        }
+        html[data-theme="dark"] .card-header .btn.btn-outline-primary:hover,
+        html[data-bs-theme="dark"] .card-header .btn.btn-outline-primary:hover,
+        html[data-theme="dark"] .card-header .btn.btn-sm.btn-outline-primary:hover,
+        html[data-bs-theme="dark"] .card-header .btn.btn-sm.btn-outline-primary:hover,
+        html[data-theme="dark"] #addMedBtn:hover,
+        html[data-bs-theme="dark"] #addMedBtn:hover {
+            color: #000000 !important;
+            background-color: #14C79A !important;
+            border-color: #14C79A !important;
+        }
+
         /* ══════════════════════════════════════
            DATA TABLE RECORD-LEVEL ACTION BUTTONS
         ══════════════════════════════════════ */
@@ -3828,11 +3864,7 @@
                         // Patients Pages fallback
                         if (request()->routeIs('patients.*')) {
                             $breadcrumbs[] = ['title' => 'Patients', 'url' => route('patients.index')];
-                            if (request()->routeIs('patients.create')) {
-                                $breadcrumbs[] = ['title' => 'New Patient'];
-                            } elseif (request()->routeIs('patients.edit')) {
-                                $breadcrumbs[] = ['title' => 'Edit Patient'];
-                            } elseif (request()->routeIs('patients.show')) {
+                            if (request()->routeIs('patients.show')) {
                                 $breadcrumbs[] = ['title' => 'Details'];
                             }
                         }
@@ -5344,6 +5376,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     </script>
+
+    {{-- Inactivity Session Lock & Warning Modal --}}
+    @include('partials._session_lock_modal')
 @endauth
 
 @stack('scripts')

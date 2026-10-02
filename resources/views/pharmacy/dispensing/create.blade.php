@@ -92,116 +92,260 @@
 
         {{-- Step 3: Dispensing Form --}}
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-box-seam me-2 text-primary"></i>2. Dispense Item Details</h6>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-box-seam me-2 text-primary"></i>Prescription Items</h6>
+                    @php
+                        $pendingItems = $selectedPrescription->items->where('status', 'Pending');
+                        $pendingItemsCount = $pendingItems->count();
+                        $totalItemsCount = $selectedPrescription->items->count();
+                        $isFullyDispensed = ($pendingItemsCount === 0);
+                        $isPartiallyDispensed = ($pendingItemsCount > 0 && $pendingItemsCount < $totalItemsCount);
+                    @endphp
+                    <div>
+                        <span class="badge bg-{{ $isFullyDispensed ? 'success-subtle text-success border border-success' : ($isPartiallyDispensed ? 'warning-subtle text-warning border border-warning' : 'primary-subtle text-primary border border-primary') }} px-2 py-1">
+                            {{ $pendingItemsCount }} of {{ $totalItemsCount }} Pending
+                        </span>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('pharmacy.dispensing.store') }}">
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ route('pharmacy.dispensing.store') }}" id="dispenseBatchForm">
                         @csrf
+                        <input type="hidden" name="prescription_id" value="{{ $selectedPrescription->id }}">
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-dark">Select Medication Item to Dispense <span class="text-danger">*</span></label>
-                            <div class="list-group">
-                                @forelse($selectedPrescription->items as $item)
-                                    @php
-                                        $isPending = ($item->status === 'Pending');
-                                        $isSelectedItem = ($selectedItem?->id === $item->id) || ($loop->first && $isPending && !$selectedItem);
-                                    @endphp
-                                    <label class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 {{ $isPending ? '' : 'bg-light text-muted' }}">
-                                        <div class="d-flex align-items-start">
-                                            <input class="form-check-input me-3 mt-1" type="radio" name="prescription_item_id"
-                                                   value="{{ $item->id }}" {{ $isPending ? ($isSelectedItem ? 'checked' : '') : 'disabled' }}>
-                                            <div>
-                                                <div class="fw-bold text-dark">{{ $item->medication_name }}</div>
-                                                <div class="small text-muted">
-                                                    Dosage: <strong>{{ $item->dosage }}</strong> &bull;
-                                                    Route: <strong>{{ $item->route ?? 'Oral' }}</strong> &bull;
-                                                    Frequency: <strong>{{ $item->frequency }}</strong> &bull;
-                                                    Duration: <strong>{{ $item->duration }}</strong>
-                                                </div>
-                                                @if($item->instructions)
-                                                    <div class="small text-info mt-1"><i class="bi bi-info-circle me-1"></i>{{ $item->instructions }}</div>
+                        <div class="medication-list" id="medicationListGroup">
+                            @forelse($selectedPrescription->items as $item)
+                                @php
+                                    $isPending = ($item->status === 'Pending');
+                                    $dispensingRec = $item->dispensingRecords->first();
+                                    $stockData = $stockDataMap[$item->id] ?? null;
+                                    $availableQty = $stockData ? $stockData->availableQuantity : 0;
+                                    $lotNumber = old("items.{$item->id}.lot_number", $stockData ? $stockData->lotNumber : '');
+                                    $expiryDate = old("items.{$item->id}.expiry_date", $stockData ? $stockData->expiryDate : '');
+                                    $hasStock = $stockData && $stockData->hasSufficientStock($item->quantity);
+                                @endphp
+                                <div class="medication-item py-3 {{ ! $loop->last ? 'border-bottom' : '' }} {{ $isPending ? 'item-card-pending' : 'opacity-75' }}"
+                                     data-item-id="{{ $item->id }}"
+                                     data-item-name="{{ $item->medication_name }}"
+                                     data-item-qty="{{ $item->quantity }}">
+                                    
+                                    {{-- Item Header & Details --}}
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-1">{{ $item->medication_name }}</h6>
+                                            <div class="small text-muted">
+                                                {{ $item->dosage }} &bull; {{ $item->route ?? 'Oral' }} &bull; {{ $item->frequency }} &bull; {{ $item->duration }}
+                                                <span class="ms-2 text-dark fw-semibold">&bull; Prescribed: {{ $item->quantity }} {{ Str::plural('unit', $item->quantity) }}</span>
+                                                @if($isPending && $stockData)
+                                                    <span class="badge bg-{{ $hasStock ? 'success-subtle text-success border border-success' : 'danger-subtle text-danger border border-danger' }} ms-2">
+                                                        Available: {{ $availableQty }} {{ Str::plural('unit', $availableQty) }}
+                                                    </span>
                                                 @endif
                                             </div>
+                                            @if($item->instructions)
+                                                <div class="small text-muted mt-1"><i class="bi bi-info-circle me-1 text-primary"></i>{{ $item->instructions }}</div>
+                                            @endif
                                         </div>
-                                        <div class="text-end">
-                                            <span class="badge bg-{{ $isPending ? 'warning-subtle text-warning border border-warning' : 'success-subtle text-success border border-success' }} mb-1">
-                                                {{ $item->status }}
+                                        <div class="text-end text-nowrap ms-3">
+                                            <span class="badge bg-{{ $isPending ? 'warning-subtle text-warning border border-warning' : 'success-subtle text-success border border-success' }} px-2 py-1">
+                                                <i class="bi bi-{{ $isPending ? 'clock-history' : 'check-circle-fill' }} me-1"></i>{{ $item->status }}
                                             </span>
-                                            <div class="small text-dark fw-bold">Qty: {{ $item->quantity }}</div>
                                         </div>
-                                    </label>
-                                @empty
-                                    <div class="alert alert-warning mb-0">No items found for this prescription.</div>
-                                @endforelse
-                            </div>
-                            @error('prescription_item_id')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
+                                    </div>
+
+                                    {{-- Batch & Expiry Display Section (From Inventory Integration) --}}
+                                    @if($isPending)
+                                        <div class="mt-3 pt-2 border-top">
+                                            {{-- Hidden form inputs to preserve submission payload --}}
+                                            <input type="hidden" name="items[{{ $item->id }}][lot_number]" id="lot_number_{{ $item->id }}" class="item-lot-input" value="{{ $lotNumber }}">
+                                            <input type="hidden" name="items[{{ $item->id }}][expiry_date]" id="expiry_date_{{ $item->id }}" class="item-expiry-input" value="{{ $expiryDate }}">
+
+                                            <div class="small fw-semibold text-muted mb-2 d-flex align-items-center justify-content-between">
+                                                <div>
+                                                    <i class="bi bi-box-seam me-1 text-primary"></i>Inventory Batch Information
+                                                </div>
+                                                <div class="text-muted extra-small" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-building-check me-1"></i>Stock Integration
+                                                </div>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="small text-muted mb-1">
+                                                        Lot / Batch Number
+                                                    </div>
+                                                    <div class="fw-semibold text-dark">
+                                                        {{ $lotNumber ?: '—' }}
+                                                    </div>
+                                                    @error("items.{$item->id}.lot_number")
+                                                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <div class="small text-muted mb-1">
+                                                        Medication Expiry Date
+                                                    </div>
+                                                    <div class="fw-semibold text-dark">
+                                                        {{ $expiryDate ? \Carbon\Carbon::parse($expiryDate)->format('M d, Y') : '—' }}
+                                                    </div>
+                                                    @error("items.{$item->id}.expiry_date")
+                                                        <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @elseif($dispensingRec)
+                                        <div class="mt-2 small text-success">
+                                            <i class="bi bi-check2-square me-1"></i> Dispensed on {{ $dispensingRec->dispensed_at?->format('M d, Y H:i') }} &bull; Lot: <code>{{ $dispensingRec->lot_number }}</code> &bull; Exp: {{ $dispensingRec->expiry_date?->format('M Y') }}
+                                        </div>
+                                    @endif
+                                </div>
+                            @empty
+                                <div class="alert alert-warning mb-0">No medication items found for this prescription.</div>
+                            @endforelse
                         </div>
+                        @error('prescription_id')
+                            <div class="text-danger small mt-2"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                        @enderror
 
-                        <hr class="my-4">
+                        @if(! $isFullyDispensed)
+                            <div class="pt-3 border-top mt-4">
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-badge me-2 text-primary"></i>Dispensing Pharmacist & Notes</h6>
 
-                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-journal-check me-2 text-primary"></i>Batch & Dispensing Info</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted mb-1">Dispensing Pharmacist</label>
+                                        <div class="d-flex align-items-center bg-light p-2 rounded border">
+                                            <i class="bi bi-person-circle fs-5 me-2 text-primary"></i>
+                                            <div>
+                                                <div class="fw-bold text-dark small mb-0">{{ auth()->user()->name }}</div>
+                                                <div class="text-muted" style="font-size: 0.75rem;">Pharmacist (Authenticated)</div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="quantity_dispensed" class="form-label fw-semibold">Quantity Dispensed <span class="text-danger">*</span></label>
-                                <input type="number" name="quantity_dispensed" id="quantity_dispensed"
-                                       class="form-control @error('quantity_dispensed') is-invalid @enderror"
-                                       value="{{ old('quantity_dispensed', $selectedItem?->quantity ?? 1) }}" min="1" required>
-                                @error('quantity_dispensed')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                    <div class="col-md-6">
+                                        <label for="notes" class="form-label small text-muted mb-1">Pharmacist Notes / Patient Advisory (Optional)</label>
+                                        <textarea name="notes" id="notes" rows="2" class="form-control form-control-sm @error('notes') is-invalid @enderror"
+                                                  placeholder="Enter patient instructions or dispensing notes...">{{ old('notes') }}</textarea>
+                                        @error('notes')
+                                            <div class="invalid-feedback small">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 pt-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                                    <div class="small text-muted">
+                                        <i class="bi bi-info-circle me-1 text-primary"></i>All pending medication items will be processed together.
+                                    </div>
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <a href="{{ route('pharmacy.dispensing.index') }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x-circle me-1"></i> Cancel
+                                        </a>
+                                        <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" id="openConfirmModalBtn" onclick="showConfirmModal()">
+                                            <i class="bi bi-box-arrow-down me-1"></i> {{ $isPartiallyDispensed ? 'Dispense Remaining' : 'Dispense Prescription' }}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-
-                            <div class="col-md-6">
-                                <label for="lot_number" class="form-label fw-semibold">Lot / Batch Number <span class="text-danger">*</span></label>
-                                <input type="text" name="lot_number" id="lot_number"
-                                       class="form-control @error('lot_number') is-invalid @enderror"
-                                       placeholder="e.g. LOT-2026-9812" value="{{ old('lot_number', 'LOT-' . date('Y') . '-' . rand(1000, 9999)) }}" required>
-                                @error('lot_number')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                        @else
+                            <div class="alert alert-success d-flex align-items-center mb-0 mt-4 border-0 shadow-sm p-3">
+                                <i class="bi bi-check-circle-fill fs-4 me-3 text-success"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-1">All prescribed medicines have been dispensed</h6>
+                                    <div class="small">Every item under Prescription <code>{{ $selectedPrescription->prescription_no }}</code> has been dispensed and logged in inventory.</div>
+                                </div>
                             </div>
-
-                            <div class="col-md-6">
-                                <label for="expiry_date" class="form-label fw-semibold">Expiry Date <span class="text-danger">*</span></label>
-                                <input type="date" name="expiry_date" id="expiry_date"
-                                       class="form-control @error('expiry_date') is-invalid @enderror"
-                                       value="{{ old('expiry_date', now()->addYear()->format('Y-m-d')) }}"
-                                       min="{{ now()->addDay()->format('Y-m-d') }}" required>
-                                @error('expiry_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="mt-3 text-end">
+                                <a href="{{ route('pharmacy.prescriptions.show', $selectedPrescription) }}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i> View Prescription Details
+                                </a>
                             </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Dispensing Pharmacist</label>
-                                <input type="text" class="form-control bg-light" value="{{ auth()->user()->name }}" readonly>
-                            </div>
-
-                            <div class="col-12">
-                                <label for="notes" class="form-label fw-semibold">Pharmacist Notes / Patient Advisory</label>
-                                <textarea name="notes" id="notes" rows="3" class="form-control @error('notes') is-invalid @enderror"
-                                          placeholder="Enter any special instructions given to patient or lot remarks...">{{ old('notes') }}</textarea>
-                                @error('notes')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="mt-4 text-end">
-                            <a href="{{ route('pharmacy.dispensing.index') }}" class="btn btn-secondary me-2">Cancel</a>
-                            <button type="submit" class="btn btn-success px-4">
-                                <i class="bi bi-check-lg me-1"></i> Confirm & Dispense Medication
-                            </button>
-                        </div>
+                        @endif
                     </form>
                 </div>
             </div>
         </div>
+
+        {{-- Confirmation Modal --}}
+        @if(! $isFullyDispensed)
+        <div class="modal fade" id="batchDispenseModal" tabindex="-1" aria-labelledby="batchDispenseModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-primary text-white py-3">
+                        <h6 class="modal-title fw-bold" id="batchDispenseModalLabel">
+                            <i class="bi bi-shield-check me-2"></i>{{ $isPartiallyDispensed ? 'Dispense Remaining Medicines' : 'Dispense Prescription' }}
+                        </h6>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-3">
+                            <i class="bi bi-info-circle fs-4 me-3 text-primary"></i>
+                            <div>
+                                Patient: <strong>{{ $selectedPrescription->patient->full_name }}</strong> &bull; Rx: <code>{{ $selectedPrescription->prescription_no }}</code>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-dark small text-uppercase mb-2">Prescription Items Batch & Expiry Summary:</h6>
+                            <ul class="list-group list-group-flush border rounded" id="modalMedicationList">
+                                {{-- Dynamically populated by JS --}}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light py-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success px-4 btn-sm fw-bold" id="submitDispenseBtn" onclick="submitBatchDispensing()">
+                            <i class="bi bi-check-lg me-1"></i> Confirm Dispensing
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function showConfirmModal() {
+                const list = document.getElementById('modalMedicationList');
+                list.innerHTML = '';
+
+                document.querySelectorAll('.item-card-pending').forEach(card => {
+                    const name = card.dataset.itemName;
+                    const qty = card.dataset.itemQty;
+                    const lotInput = card.querySelector('.item-lot-input');
+                    const expInput = card.querySelector('.item-expiry-input');
+
+                    const lot = lotInput ? (lotInput.value || '—') : '—';
+                    const exp = expInput ? (expInput.value || '—') : '—';
+
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item py-2 px-3 small';
+                    li.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span><i class="bi bi-check-lg text-success me-2 fw-bold"></i><strong>${name}</strong></span>
+                            <span class="badge bg-secondary">${qty} unit(s)</span>
+                        </div>
+                        <div class="bg-light p-2 rounded border text-muted d-flex justify-content-between">
+                            <span>Lot/Batch: <strong class="text-dark">${lot}</strong></span>
+                            <span>Expiry: <strong class="text-dark">${exp}</strong></span>
+                        </div>
+                    `;
+                    list.appendChild(li);
+                });
+
+                const modal = new bootstrap.Modal(document.getElementById('batchDispenseModal'));
+                modal.show();
+            }
+
+            function submitBatchDispensing() {
+                const submitBtn = document.getElementById('submitDispenseBtn');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+
+                document.getElementById('dispenseBatchForm').submit();
+            }
+        </script>
+        @endif
+
     @else
         <div class="col-lg-12">
             <div class="card border-0 shadow-sm text-center py-5">

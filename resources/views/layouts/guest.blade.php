@@ -95,6 +95,52 @@
         }
 
         /* ─────────────────────────────────────────
+           Single Auth Card (Centered)
+           ───────────────────────────────────────── */
+        .single-auth-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 28.75rem;
+            margin: 0 auto;
+            border-radius: 1.25rem;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(20,199,154,0.12);
+            animation: rise-in 0.5s ease both;
+        }
+        .single-auth-card .card-form {
+            padding: 2rem;
+        }
+        .single-auth-brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding-bottom: 0.875rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--line);
+        }
+        @media (max-width: 520px) {
+            .single-auth-card {
+                width: calc(100% - 2rem);
+                max-width: 390px;
+            }
+            .single-auth-card .card-form {
+                padding: 1.5rem 1.25rem;
+            }
+        }
+        @media (max-width: 360px) {
+            .single-auth-card {
+                width: calc(100% - 1.25rem);
+                max-width: 330px;
+            }
+            .single-auth-card .card-form {
+                padding: 1.25rem 1rem;
+            }
+        }
+
+        /* ─────────────────────────────────────────
            Split card
            ───────────────────────────────────────── */
         .split-card {
@@ -490,81 +536,108 @@
 {{-- ═══════════ Full-page green + ECG ═══════════ --}}
 <div class="page-bg">
 
-    {{-- ECG heartbeat traces — three rows --}}
-    <svg class="ecg-bg-top" viewBox="0 0 900 50" preserveAspectRatio="none" aria-hidden="true">
-        <polyline class="ecg-bg-line d1" points="0,25 60,25 80,25 95,8 103,42 111,2 119,48 127,25 160,25 220,25 240,25 255,8 263,42 271,2 279,48 287,25 320,25 380,25 400,25 415,8 423,42 431,2 439,48 447,25 480,25 540,25 560,25 575,8 583,42 591,2 599,48 607,25 640,25 700,25 720,25 735,8 743,42 751,2 759,48 767,25 800,25 860,25 880,25 900,25"/>
-        <polyline class="ecg-bg-line d2" points="0,25 60,25 80,25 95,8 103,42 111,2 119,48 127,25 160,25 220,25 240,25 255,8 263,42 271,2 279,48 287,25 320,25 380,25 400,25 415,8 423,42 431,2 439,48 447,25 480,25 540,25 560,25 575,8 583,42 591,2 599,48 607,25 640,25 700,25 720,25 735,8 743,42 751,2 759,48 767,25 800,25 860,25 880,25 900,25"/>
-    </svg>
+    {{-- ECG heartbeat trace — single middle row --}}
     <svg class="ecg-bg-mid" viewBox="0 0 900 50" preserveAspectRatio="none" aria-hidden="true">
         <polyline class="ecg-bg-line d2" points="0,25 60,25 80,25 95,8 103,42 111,2 119,48 127,25 160,25 220,25 240,25 255,8 263,42 271,2 279,48 287,25 320,25 380,25 400,25 415,8 423,42 431,2 439,48 447,25 480,25 540,25 560,25 575,8 583,42 591,2 599,48 607,25 640,25 700,25 720,25 735,8 743,42 751,2 759,48 767,25 800,25 860,25 880,25 900,25"/>
         <polyline class="ecg-bg-line d3" points="0,25 60,25 80,25 95,8 103,42 111,2 119,48 127,25 160,25 220,25 240,25 255,8 263,42 271,2 279,48 287,25 320,25 380,25 400,25 415,8 423,42 431,2 439,48 447,25 480,25 540,25 560,25 575,8 583,42 591,2 599,48 607,25 640,25 700,25 720,25 735,8 743,42 751,2 759,48 767,25 800,25 860,25 880,25 900,25"/>
     </svg>
-    <svg class="ecg-bg-bot" viewBox="0 0 900 50" preserveAspectRatio="none" aria-hidden="true">
-        <polyline class="ecg-bg-line d3" points="0,25 60,25 80,25 95,8 103,42 111,2 119,48 127,25 160,25 220,25 240,25 255,8 263,42 271,2 279,48 287,25 320,25 380,25 400,25 415,8 423,42 431,2 439,48 447,25 480,25 540,25 560,25 575,8 583,42 591,2 599,48 607,25 640,25 700,25 720,25 735,8 743,42 751,2 759,48 767,25 800,25 860,25 880,25 900,25"/>
-        <polyline class="ecg-bg-line d1" points="0,25 60,25 80,25 95,8 103,42 111,2 119,48 127,25 160,25 220,25 240,25 255,8 263,42 271,2 279,48 287,25 320,25 380,25 400,25 415,8 423,42 431,2 439,48 447,25 480,25 540,25 560,25 575,8 583,42 591,2 599,48 607,25 640,25 700,25 720,25 735,8 743,42 751,2 759,48 767,25 800,25 860,25 880,25 900,25"/>
-    </svg>
 
-    {{-- ═══ Split card ═══ --}}
-    <div class="split-card">
-
-        {{-- ── Left: hospital photo brand panel ── --}}
-        <div class="card-brand">
-            <div class="card-brand-photo" aria-hidden="true"></div>
-            <div class="card-brand-overlay" aria-hidden="true"></div>
-            <div class="card-brand-glow" aria-hidden="true"></div>
-
-            {{-- Top: logo --}}
-            <div class="card-brand-top">
-                <svg class="cb-pulse" viewBox="0 0 38 38" aria-hidden="true">
-                    <rect width="38" height="38" rx="9" fill="rgba(5,22,15,0.7)"/>
-                    <polyline points="3,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19"
-                        fill="none" stroke="#14C79A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <div>
-                    <p class="cb-name">DTCS HIMS</p>
-                    <p class="cb-sub">Diagnostic, Treatment &amp; Clinical Services</p>
+    @hasSection('single_card')
+        {{-- ═══ Single centered authentication card ═══ --}}
+        <div class="single-auth-card">
+            <div class="card-form">
+                {{-- Compact DTCS HIMS Header --}}
+                <div class="single-auth-brand-header">
+                    <svg class="cb-pulse" viewBox="0 0 38 38" aria-hidden="true" style="width: 2.25rem; height: 2.25rem;">
+                        <rect width="38" height="38" rx="9" fill="#0d4a2e"/>
+                        <polyline points="3,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19"
+                            fill="none" stroke="#14C79A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div>
+                        <span style="font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink); display: block; line-height: 1.2;">DTCS HIMS</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.58rem; color: var(--soft); text-transform: uppercase; letter-spacing: 0.12em;">Diagnostic, Treatment &amp; Clinical Services</span>
+                    </div>
                 </div>
-            </div>
 
-            {{-- Mid: pitch --}}
-            <div class="card-brand-mid">
-                <h2>One record.<br>Every department.<br><span class="accent">Real time.</span></h2>
-                <p>The hospital information system for Diagnostic, Treatment &amp; Clinical Services — admissions, wards, labs and imaging in a single clinical timeline.</p>
+                <div class="card-head">
+                    <div>
+                        <h2>@yield('card-title', 'Forgot Password')</h2>
+                        <p class="hint">@yield('card-hint', 'Enter your registered email address and we\'ll send you a password reset link.')</p>
+                    </div>
+                    <span class="badge-secured">SECURED ACCESS</span>
+                </div>
+
+                @yield('content')
+
+                <p class="legal">
+                    Protected by session-based authentication &amp; rate limiting.<br>
+                    Unauthorized access is strictly prohibited.
+                </p>
             </div>
         </div>
+    @else
+        {{-- ═══ Split card ═══ --}}
+        <div class="split-card">
 
-        {{-- ── Right: login form ── --}}
-        <div class="card-form">
-            {{-- Mobile-only Brand Header --}}
-            <div class="mobile-brand">
-                <svg class="cb-pulse" viewBox="0 0 38 38" aria-hidden="true" style="width: 2rem; height: 2rem;">
-                    <rect width="38" height="38" rx="9" fill="#0d4a2e"/>
-                    <polyline points="3,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19"
-                        fill="none" stroke="#14C79A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <div>
-                    <span style="font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--ink); display: block; line-height: 1.2;">DTCS HIMS</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.58rem; color: var(--soft); text-transform: uppercase; letter-spacing: 0.12em;">Diagnostic, Treatment &amp; Clinical Services</span>
+            {{-- ── Left: hospital photo brand panel ── --}}
+            <div class="card-brand">
+                <div class="card-brand-photo" aria-hidden="true"></div>
+                <div class="card-brand-overlay" aria-hidden="true"></div>
+                <div class="card-brand-glow" aria-hidden="true"></div>
+
+                {{-- Top: logo --}}
+                <div class="card-brand-top">
+                    <svg class="cb-pulse" viewBox="0 0 38 38" aria-hidden="true">
+                        <rect width="38" height="38" rx="9" fill="rgba(5,22,15,0.7)"/>
+                        <polyline points="3,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19"
+                            fill="none" stroke="#14C79A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div>
+                        <p class="cb-name">DTCS HIMS</p>
+                        <p class="cb-sub">Diagnostic, Treatment &amp; Clinical Services</p>
+                    </div>
+                </div>
+
+                {{-- Mid: pitch --}}
+                <div class="card-brand-mid">
+                    <h2>One record.<br>Every department.<br><span class="accent">Real time.</span></h2>
+                    <p>The hospital information system for Diagnostic, Treatment &amp; Clinical Services.</p>
                 </div>
             </div>
 
-            <div class="card-head">
-                <div>
-                    <h2>@yield('card-title', 'Staff Sign In')</h2>
-                    <p class="hint">@yield('card-hint', 'Use your hospital email to continue.')</p>
+            {{-- ── Right: login form ── --}}
+            <div class="card-form">
+                {{-- Mobile-only Brand Header --}}
+                <div class="mobile-brand">
+                    <svg class="cb-pulse" viewBox="0 0 38 38" aria-hidden="true" style="width: 2rem; height: 2rem;">
+                        <rect width="38" height="38" rx="9" fill="#0d4a2e"/>
+                        <polyline points="3,19 9,19 12,12 14,26 17,8 19,30 21,14 23,22 26,19 35,19"
+                            fill="none" stroke="#14C79A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div>
+                        <span style="font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--ink); display: block; line-height: 1.2;">DTCS HIMS</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.58rem; color: var(--soft); text-transform: uppercase; letter-spacing: 0.12em;">Diagnostic, Treatment &amp; Clinical Services</span>
+                    </div>
                 </div>
-                <span class="badge-secured">SECURED ACCESS</span>
+
+                <div class="card-head">
+                    <div>
+                        <h2>@yield('card-title', 'Staff Sign In')</h2>
+                        <p class="hint">@yield('card-hint', 'Use your hospital email to continue.')</p>
+                    </div>
+                    <span class="badge-secured">SECURED ACCESS</span>
+                </div>
+
+                @yield('content')
+
+                <p class="legal">
+                    Protected by session-based authentication &amp; rate limiting.<br>
+                    Unauthorized access is strictly prohibited.
+                </p>
             </div>
 
-            @yield('content')
-
-            <p class="legal">
-                Protected by session-based authentication &amp; rate limiting.<br>
-                Unauthorized access is strictly prohibited.
-            </p>
-        </div>
-
-    </div>{{-- /split-card --}}
+        </div>{{-- /split-card --}}
+    @endif
 </div>{{-- /page-bg --}}
 
 {{-- Full-screen loader overlay --}}
@@ -631,6 +704,42 @@
     document.addEventListener('invalid', function () {
         hideOverlay();
     }, true);
+
+    /* ── Frontend Browser Interaction Restrictions (Authentication Pages Only) ── */
+    // Disable Right-Click / Context Menu
+    document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+    });
+
+    // Disable DevTools, View Source, and Save Page Shortcuts
+    document.addEventListener('keydown', function (e) {
+        var key = e.key ? e.key.toUpperCase() : '';
+        var keyCode = e.keyCode || e.which;
+        var isCtrlOrCmd = e.ctrlKey || e.metaKey;
+        var isAltOrOpt = e.altKey;
+
+        // F12 Key
+        if (key === 'F12' || keyCode === 123) {
+            e.preventDefault();
+            return;
+        }
+
+        // Ctrl+Shift+I, J, C, K OR Cmd+Option+I, J, C, K (DevTools & Inspector)
+        if ((isCtrlOrCmd && e.shiftKey) || (e.metaKey && isAltOrOpt)) {
+            if (key === 'I' || key === 'J' || key === 'C' || key === 'K') {
+                e.preventDefault();
+                return;
+            }
+        }
+
+        // Ctrl+U / Cmd+U (View Source) & Ctrl+S / Cmd+S (Save Page)
+        if (isCtrlOrCmd && !e.shiftKey && !isAltOrOpt) {
+            if (key === 'U' || key === 'S') {
+                e.preventDefault();
+                return;
+            }
+        }
+    });
 })();
 </script>
 

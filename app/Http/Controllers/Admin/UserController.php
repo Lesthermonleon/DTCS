@@ -10,7 +10,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 /**
@@ -66,52 +65,6 @@ class UserController extends Controller
         $roles = Role::all();
 
         return view('admin.users.index', compact('users', 'archivedUsers', 'roles'));
-    }
-
-    public function create(): View
-    {
-        $roles = Role::all();
-
-        return view('admin.users.create', compact('roles'));
-    }
-
-    public function store(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|email|unique:users,email',
-            'password'    => ['required', Password::defaults()],
-            'employee_id' => 'nullable|string|unique:users,employee_id',
-            'department'  => 'nullable|string|max:100',
-            'phone'       => 'nullable|string|max:20',
-            'role_id'     => 'required|exists:roles,id',
-        ]);
-
-        $user = User::create([
-            'name'        => $data['name'],
-            'email'       => $data['email'],
-            'password'    => Hash::make($data['password']),
-            'employee_id' => $data['employee_id'] ?? null,
-            'department'  => $data['department'] ?? null,
-            'phone'       => $data['phone'] ?? null,
-            'is_active'   => true,
-        ]);
-
-        $user->roles()->attach($data['role_id']);
-
-        ActivityLog::create([
-            'user_id'     => Auth::id(),
-            'action'      => 'User Created',
-            'module'      => 'User Management',
-            'severity'    => ActivityLog::SEVERITY_INFO,
-            'result'      => ActivityLog::RESULT_SUCCESS,
-            'description' => "User account [{$user->email}] ({$user->name}) was created by admin.",
-            'ip_address'  => request()->ip(),
-            'logged_at'   => now(),
-        ]);
-
-        return redirect()->route('admin.users.index')
-                         ->with('success', 'User created successfully.');
     }
 
     public function show(User $user): RedirectResponse
@@ -175,11 +128,21 @@ class UserController extends Controller
                          ->with('success', 'User updated successfully.');
     }
 
-    public function destroy(User $user): RedirectResponse
+    public function destroy(Request $request, User $user): RedirectResponse
     {
         abort_if($user->id === Auth::id(), 403, 'You cannot delete your own account.');
-        $email = $user->email;
-        $name  = $user->name;
+
+        $request->validate([
+            'comment' => ['required', 'string', 'filled', 'max:1000'],
+        ], [
+            'comment.required' => 'A reason / comment is required before archiving a user account.',
+            'comment.filled'   => 'The reason / comment cannot be blank or whitespace only.',
+            'comment.max'      => 'The reason / comment must not exceed 1,000 characters.',
+        ]);
+
+        $comment = trim($request->input('comment'));
+        $email   = $user->email;
+        $name    = $user->name;
         $user->delete();
 
         ActivityLog::create([
@@ -188,8 +151,8 @@ class UserController extends Controller
             'module'      => 'User Management',
             'severity'    => ActivityLog::SEVERITY_WARNING,
             'result'      => ActivityLog::RESULT_SUCCESS,
-            'description' => "User account [{$email}] ({$name}) was archived by admin.",
-            'ip_address'  => request()->ip(),
+            'description' => "User account [{$email}] ({$name}) was archived by admin. Reason: {$comment}",
+            'ip_address'  => $request->ip(),
             'logged_at'   => now(),
         ]);
 
@@ -197,13 +160,54 @@ class UserController extends Controller
                          ->with('success', 'User account archived successfully.');
     }
 
-    public function restore(int|string $id): RedirectResponse
+    public function restore(Request $request, int|string $id): RedirectResponse
     {
-        $user = User::onlyTrashed()->findOrFail($id);
+        $request->validate([
+            'comment' => ['required', 'string', 'filled', 'max:1000'],
+        ], [
+            'comment.required' => 'A reason / comment is required before restoring a user account.',
+            'comment.filled'   => 'The reason / comment cannot be blank or whitespace only.',
+            'comment.max'      => 'The reason / comment must not exceed 1,000 characters.',
+        ]);
+
+        $comment = trim($request->input('comment'));
+        $user    = User::onlyTrashed()->findOrFail($id);
         $user->restore();
+
+        ActivityLog::create([
+            'user_id'     => Auth::id(),
+            'action'      => 'User Restored',
+            'module'      => 'User Management',
+            'severity'    => ActivityLog::SEVERITY_WARNING,
+            'result'      => ActivityLog::RESULT_SUCCESS,
+            'description' => "User account [{$user->email}] ({$user->name}) was restored by admin. Reason: {$comment}",
+            'ip_address'  => $request->ip(),
+            'logged_at'   => now(),
+        ]);
 
         return redirect()->route('admin.users.index')
                          ->with('success', 'User account restored successfully.');
+    }
+
+    public function showArchived(int|string $id): View
+    {
+        $user = User::onlyTrashed()->with('roles')->findOrFail($id);
+
+        // Latest 'User Archived' event for this user — drives the Deletion Information card
+        $deletionLog = ActivityLog::where('action', 'User Archived')
+            ->where('description', 'LIKE', "%[{$user->email}]%")
+            ->with('user')
+            ->latest('logged_at')
+            ->first();
+
+        // Full archive + restore history in reverse chronological order — drives Account History
+        $history = ActivityLog::whereIn('action', ['User Archived', 'User Restored'])
+            ->where('description', 'LIKE', "%[{$user->email}]%")
+            ->with('user')
+            ->latest('logged_at')
+            ->get();
+
+        return view('admin.users.archived', compact('user', 'deletionLog', 'history'));
     }
 
     public function assignRole(Request $request, User $user): RedirectResponse
@@ -269,13 +273,5 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
                          ->with('success', "User account for {$user->name} has been unlocked successfully.");
-    }
-
-    /** Print-friendly view for user governance report. */
-    public function print(): View
-    {
-        $users = User::withTrashed()->with('roles')->latest()->get();
-
-        return view('admin.users.print', compact('users'));
     }
 }

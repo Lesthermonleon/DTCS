@@ -141,23 +141,9 @@
 
 {{-- ── Patients ── --}}
 <div class="sb-nav-label" style="margin-top:.5rem;">Patients</div>
-<button class="nav-link sb-group-toggle {{ $patientsActive ? 'active' : '' }}"
-        data-bs-toggle="collapse" data-bs-target="#grp-patients"
-        aria-expanded="{{ $patientsActive ? 'true' : 'false' }}" aria-controls="grp-patients">
-    <i class="bi bi-people"></i>
-    <span class="sb-group-label">Patients</span>
-    <i class="bi bi-chevron-down sb-chevron"></i>
-</button>
-<div class="collapse {{ $patientsActive ? 'show' : '' }}" id="grp-patients">
-    <div class="sb-group-body">
-        <a href="{{ route('patients.index') }}" class="nav-link sb-sub {{ request()->routeIs('patients.index') || request()->routeIs('patients.show') ? 'active' : '' }}">
-            <i class="bi bi-card-list"></i> Patient Directory
-        </a>
-        <a href="{{ route('patients.create') }}" class="nav-link sb-sub {{ request()->routeIs('patients.create') || request()->routeIs('patients.edit') ? 'active' : '' }}">
-            <i class="bi bi-person-plus"></i> New Patient
-        </a>
-    </div>
-</div>
+<a href="{{ route('patients.index') }}" class="nav-link {{ $patientsActive ? 'active' : '' }}">
+    <i class="bi bi-people"></i> Patient Directory
+</a>
 
 {{-- ── Reports & Analytics ── --}}
 <div class="sb-nav-label" style="margin-top:.5rem;">Reports & Analytics</div>
@@ -327,23 +313,9 @@
 
 {{-- ── Patients ── --}}
 <div class="sb-nav-label" style="margin-top:.5rem;">Patients</div>
-<button class="nav-link sb-group-toggle {{ $patientsActive ? 'active' : '' }}"
-        data-bs-toggle="collapse" data-bs-target="#grp-patients"
-        aria-expanded="{{ $patientsActive ? 'true' : 'false' }}" aria-controls="grp-patients">
-    <i class="bi bi-people"></i>
-    <span class="sb-group-label">Patients</span>
-    <i class="bi bi-chevron-down sb-chevron"></i>
-</button>
-<div class="collapse {{ $patientsActive ? 'show' : '' }}" id="grp-patients">
-    <div class="sb-group-body">
-        <a href="{{ route('patients.index') }}" class="nav-link sb-sub {{ request()->routeIs('patients.index') || request()->routeIs('patients.show') ? 'active' : '' }}">
-            <i class="bi bi-card-list"></i> Patient Directory
-        </a>
-        <a href="{{ route('patients.create') }}" class="nav-link sb-sub {{ request()->routeIs('patients.create') || request()->routeIs('patients.edit') ? 'active' : '' }}">
-            <i class="bi bi-person-plus"></i> New Patient
-        </a>
-    </div>
-</div>
+<a href="{{ route('patients.index') }}" class="nav-link {{ $patientsActive ? 'active' : '' }}">
+    <i class="bi bi-people"></i> Patient Directory
+</a>
 
 {{-- ── Doctor Reports Entry Point ── --}}
 <div class="sb-nav-label" style="margin-top:.5rem;">REPORTS</div>
