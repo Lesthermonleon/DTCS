@@ -485,3 +485,35 @@ CREATE TABLE IF NOT EXISTS `medisense_interactions` (
     CONSTRAINT `medisense_interactions_patient_id_foreign` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL,
     CONSTRAINT `medisense_interactions_user_id_foreign`    FOREIGN KEY (`user_id`)    REFERENCES `users`    (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- OTP TWO-FACTOR AUTHENTICATION
+-- ════════════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS `otp_verifications` (
+    `id`           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id`      BIGINT UNSIGNED NOT NULL,
+    `purpose`      VARCHAR(50)     NOT NULL DEFAULT 'login'
+                   COMMENT 'Intended use of this OTP (e.g. login, password_reset)',
+    `otp_hash`     VARCHAR(255)    NOT NULL
+                   COMMENT 'Bcrypt hash of the plaintext OTP — never store the OTP itself',
+    `attempts`     TINYINT UNSIGNED NOT NULL DEFAULT 0
+                   COMMENT 'Number of failed verification attempts against this OTP',
+    `last_sent_at` TIMESTAMP       NULL DEFAULT NULL
+                   COMMENT 'Timestamp of last OTP generation/resend for cooldown enforcement',
+    `expires_at`   TIMESTAMP       NOT NULL
+                   COMMENT 'Absolute expiry of this OTP — expired OTPs must never be accepted',
+    `verified_at`  TIMESTAMP       NULL DEFAULT NULL
+                   COMMENT 'Set when OTP is successfully verified — prevents replay',
+    `created_at`   TIMESTAMP       NULL DEFAULT NULL,
+    `updated_at`   TIMESTAMP       NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_otp_user_purpose`  (`user_id`, `purpose`),
+    KEY `idx_otp_expires`       (`expires_at`),
+    CONSTRAINT `otp_verifications_user_id_foreign`
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;
+

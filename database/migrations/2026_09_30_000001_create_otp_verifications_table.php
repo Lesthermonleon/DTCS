@@ -10,13 +10,19 @@ return new class extends Migration
      * Run the migrations.
      *
      * Creates the otp_verifications table for Email OTP Two-Factor Authentication.
-     * This table stores hashed OTP records — plaintext OTPs are NEVER stored.
+     * Stores hashed OTP records — plaintext OTPs are NEVER stored.
      *
-     * One active (non-verified) record per user per purpose at a time.
-     * Previous records are deleted when a new OTP is generated.
+     * Guaranteed idempotent across pre-imported schema databases (HostForge C)
+     * and fresh database migrations.
      */
     public function up(): void
     {
+        // If the table already exists (e.g. pre-imported via ditc_hms_schema.sql),
+        // we do not attempt to recreate it or duplicate foreign key constraints.
+        if (Schema::hasTable('otp_verifications')) {
+            return;
+        }
+
         Schema::create('otp_verifications', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
@@ -57,3 +63,4 @@ return new class extends Migration
         Schema::dropIfExists('otp_verifications');
     }
 };
+
