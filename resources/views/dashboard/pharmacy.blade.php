@@ -20,16 +20,13 @@
             <a href="{{ route('pharmacy.prescriptions.index') }}" class="btn btn-sm btn-primary">
                 <i class="bi bi-prescription2 me-1"></i> Prescriptions Queue
             </a>
-            @if(Route::has('pharmacy.dispensing.index'))
+            @if(Route::has('pharmacy.dispensing.index') && (auth()->user()?->hasRole('pharmacist') || auth()->user()?->hasRole('admin')))
             <a href="{{ route('pharmacy.dispensing.index') }}" class="btn btn-sm btn-outline-success">
                 <i class="bi bi-bag-check me-1"></i> Dispensing Records
             </a>
             @endif
-            @if(Route::has('pharmacy.medicines.index'))
-            <a href="{{ route('pharmacy.medicines.index') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-box-seam me-1"></i> Drug Inventory
-            </a>
-            @endif
+
+
         </div>
     </div>
 </div>
@@ -94,28 +91,26 @@
         </div>
     </a>
 
-    {{-- Card 4: Low Stock Alerts --}}
-    @if(Route::has('pharmacy.medicines.index'))
-    <a href="{{ route('pharmacy.medicines.index', ['stock' => 'low']) }}" class="text-decoration-none">
-    @else
-    <a href="{{ route('pharmacy.prescriptions.index') }}" class="text-decoration-none">
-    @endif
+    {{-- Card 4: Pending Dispensing --}}
+    <a href="{{ route('pharmacy.prescriptions.index', ['status' => 'Verified']) }}" class="text-decoration-none">
         <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
             <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small fw-semibold text-uppercase">Low Stock Alert</span>
-                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-2">
-                        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <span class="text-muted small fw-semibold text-uppercase">Pending Dispensing</span>
+                    <div class="bg-info bg-opacity-10 text-info rounded-circle p-2">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['low_stock'] ?? 0) }}</h3>
-                <div class="small text-danger mt-2">
-                    Check Inventory <i class="bi bi-arrow-right"></i>
+                <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['pending_dispensing'] ?? 0) }}</h3>
+                <div class="small text-info mt-2">
+                    Awaiting Dispense <i class="bi bi-arrow-right"></i>
                 </div>
             </div>
         </div>
     </a>
 </div>
+
+
 
 {{-- ── 3. Main Prescription Verification & Dispensing Work Queue Table ── --}}
 <div class="card border-0 shadow-sm mb-4">
@@ -179,7 +174,96 @@
     </div>
 </div>
 
-{{-- ── 4. Operational Metrics & Summary Row ── --}}
+{{-- ── 4. Pharmacy Stock Directory Summary Section ── --}}
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h6 class="fw-bold text-dark mb-1">
+                <i class="bi bi-box-seam me-2 text-success"></i>Pharmacy Stock Directory
+            </h6>
+            <p class="text-muted small mb-0">Read-only medication stock status, lot/batch information, and expiration monitoring.</p>
+        </div>
+
+    </div>
+
+    <div class="balanced-grid balanced-grid-4">
+        {{-- Card 1: Total Monitored --}}
+        <a href="{{ route('pharmacy.medicines.index') }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small fw-semibold text-uppercase">Total Monitored</span>
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2">
+                            <i class="bi bi-capsule fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-0">{{ number_format($stockStats['total_monitored'] ?? 0) }}</h3>
+                    <div class="small text-primary mt-2">
+                        All Medicines <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        {{-- Card 2: In Stock --}}
+        <a href="{{ route('pharmacy.medicines.index', ['stock' => 'in_stock']) }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small fw-semibold text-uppercase">In Stock</span>
+                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-2">
+                            <i class="bi bi-check-circle-fill fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-0">{{ number_format($stockStats['in_stock'] ?? 0) }}</h3>
+                    <div class="small text-success mt-2">
+                        Available Stock <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        {{-- Card 3: Low Stock --}}
+        <a href="{{ route('pharmacy.medicines.index', ['stock' => 'low']) }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small fw-semibold text-uppercase">Low Stock</span>
+                        <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-0">{{ number_format($stockStats['low_stock'] ?? 0) }}</h3>
+                    <div class="small text-warning-emphasis mt-2">
+                        Replenishment Needed <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        {{-- Card 4: Attention Required --}}
+        <a href="{{ route('pharmacy.medicines.index', ['stock' => 'out']) }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small fw-semibold text-uppercase">Attention Required</span>
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-2">
+                            <i class="bi bi-x-circle-fill fs-5"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-0">{{ number_format($stockStats['attention_required'] ?? 0) }}</h3>
+                    <div class="small text-danger mt-2">
+                        Out / Expired / Expiring <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+
+{{-- ── 5. Operational Metrics & Summary Row ── --}}
+
 <div class="row g-3 mb-4">
     {{-- Prescription Funnel Donut --}}
     <div class="col-md-4">

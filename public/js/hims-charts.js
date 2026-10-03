@@ -1,5 +1,6 @@
 /**
- * DITC HIMS — Centralized Chart.js Styling Engine
+ * DTCS HIMS — Centralized Chart.js Styling Engine
+
  * Standardized medical visual design, theme awareness & responsive helpers.
  */
 window.HIMSChart = (function () {

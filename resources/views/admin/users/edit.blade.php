@@ -31,20 +31,9 @@
                         <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}">
                     </div>
                     <div class="col-md-8">
-                        <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
-                        @if($user->id === auth()->id())
-                            <select class="form-select bg-light" disabled>
-                                <option selected>{{ $user->roles->first()?->name ?? 'System Administrator' }}</option>
-                            </select>
-                            <input type="hidden" name="role_id" value="{{ $user->roles->first()?->id }}">
-                        @else
-                            <select name="role_id" class="form-select" required>
-                                <option value="">— Select Role —</option>
-                                @foreach($roles as $r)
-                                    <option value="{{ $r->id }}" {{ (old('role_id', $user->roles->first()?->id)==$r->id)?'selected':'' }}>{{ $r->name }}</option>
-                                @endforeach
-                            </select>
-                        @endif
+                        <label class="form-label fw-semibold">Role</label>
+                        <input type="text" class="form-control bg-light text-muted" value="{{ $user->roles->first()?->name ?? 'No Role' }}" readonly>
+                        <input type="hidden" name="role_id" value="{{ $user->roles->first()?->id }}">
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
                         <div class="form-check form-switch mb-0">

@@ -1,5 +1,6 @@
 -- ============================================================================
--- DITC Hospital Management System — Comprehensive SQL Seeder (seader.sql)
+-- DTCS Hospital Management System — Comprehensive SQL Seeder (seader.sql)
+
 -- MySQL 8.x Compatible · Standard SQL
 -- 
 -- CONTENTS:

@@ -31,8 +31,7 @@
 @section('content')
 
 {{-- ── 1. SYSTEM OVERVIEW KPI CARDS ── --}}
-{{-- ── 1. SYSTEM OVERVIEW KPI CARDS ── --}}
-<div class="balanced-grid balanced-grid-6 mb-4">
+<div class="balanced-grid balanced-grid-4 mb-4">
     {{-- Card 1: Total Users --}}
     <a href="{{ route('admin.users.index') }}" class="text-decoration-none">
         <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
@@ -87,55 +86,19 @@
         </div>
     </a>
 
-    {{-- Card 4: Pending Administrative Tasks --}}
-    <a href="{{ route('admin.users.index') }}" class="text-decoration-none">
+    {{-- Card 4: Inactive Users --}}
+    <a href="{{ route('admin.users.index', ['status' => 'inactive']) }}" class="text-decoration-none">
         <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
             <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small fw-semibold text-uppercase">Pending Tasks</span>
-                    <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2">
-                        <i class="bi bi-list-task fs-5"></i>
+                    <span class="text-muted small fw-semibold text-uppercase">Inactive Users</span>
+                    <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle p-2">
+                        <i class="bi bi-person-x fs-5"></i>
                     </div>
                 </div>
-                <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['pending_admin_tasks']) }}</h3>
-                <div class="small text-warning mt-2">
-                    Review Tasks <i class="bi bi-arrow-right"></i>
-                </div>
-            </div>
-        </div>
-    </a>
-
-    {{-- Card 5: System Alerts --}}
-    <a href="#system-alerts-section" class="text-decoration-none">
-        <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small fw-semibold text-uppercase">System Alerts</span>
-                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-2">
-                        <i class="bi bi-shield-exclamation fs-5"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['system_alerts_count']) }}</h3>
-                <div class="small text-danger mt-2">
-                    Review Warnings <i class="bi bi-arrow-right"></i>
-                </div>
-            </div>
-        </div>
-    </a>
-
-    {{-- Card 6: Today's System Activity --}}
-    <a href="#recent-activity-section" class="text-decoration-none">
-        <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted small fw-semibold text-uppercase">Today Activity</span>
-                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2">
-                        <i class="bi bi-clock-history fs-5"></i>
-                    </div>
-                </div>
-                <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['today_activity_count']) }}</h3>
-                <div class="small text-primary mt-2">
-                    Audit Logs <i class="bi bi-arrow-right"></i>
+                <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['inactive_users']) }}</h3>
+                <div class="small text-secondary mt-2">
+                    View Inactive Users <i class="bi bi-arrow-right"></i>
                 </div>
             </div>
         </div>
@@ -214,20 +177,6 @@
                         </div>
                         <p class="text-muted mb-0" style="font-size: 11px; line-height: 1.3;">
                             Manage system user accounts
-                        </p>
-                    </a>
-
-                    {{-- Tile 3: Roles & Permissions --}}
-                    <a href="{{ route('admin.roles.index') }}"
-                       class="card border border-light-subtle shadow-xs h-100 p-3 bg-white text-decoration-none admin-tool-tile">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="icon-shape bg-success bg-opacity-10 text-success rounded-3 p-2 me-2 d-flex align-items-center justify-content-center transition-all" style="width: 36px; height: 36px;">
-                                <i class="bi bi-shield-lock-fill fs-5"></i>
-                            </div>
-                            <div class="fw-bold text-dark small">Roles & Permissions</div>
-                        </div>
-                        <p class="text-muted mb-0" style="font-size: 11px; line-height: 1.3;">
-                            Manage roles and access permissions
                         </p>
                     </a>
 

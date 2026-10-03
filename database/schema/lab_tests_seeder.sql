@@ -1,5 +1,6 @@
 -- ============================================================================
--- DITC HIMS — Laboratory Test Categories & Tests Data Seeder
+-- DTCS HIMS — Laboratory Test Categories & Tests Data Seeder
+
 -- MySQL 8.x Compatible
 --
 -- PURPOSE:

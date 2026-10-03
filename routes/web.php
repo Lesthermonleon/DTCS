@@ -14,6 +14,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Pharmacy\DispensingController;
+use App\Http\Controllers\Pharmacy\MedicineAvailabilityController;
 use App\Http\Controllers\Pharmacy\PrescriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Radiology\RadiologyReportController;
@@ -25,7 +26,8 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes — DITC Hospital Management System
+| Web Routes — DTCS Hospital Management System
+
 |--------------------------------------------------------------------------
 */
 
@@ -262,7 +264,12 @@ Route::middleware(['auth', 'otp.verified'])->group(function () {
 
              Route::resource('dispensing', DispensingController::class)
                   ->middleware('role:admin,pharmacist');
+
+             Route::get('medicines', [MedicineAvailabilityController::class, 'index'])
+                  ->middleware('role:admin,doctor,pharmacist')
+                  ->name('medicines.index');
          });
+
 
     // ═══════════════════════════════════════════════════════════════════
     // SORS — Surgery & Operating Room Scheduler

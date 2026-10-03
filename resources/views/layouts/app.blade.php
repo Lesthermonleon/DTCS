@@ -3927,8 +3927,9 @@
                 Welcome, {{ auth()->user()->name }}
             </div>
             <div style="font-size:.78rem;color:var(--text-soft);line-height:1.3;">
-                You are logged in to the DITC Hospital
+                You are logged in to the DTCS Hospital
             </div>
+
         </div>
     </div>
     @endif
@@ -4544,6 +4545,11 @@
 
         const link = e.target.closest('a');
         if (!link) return;
+
+        // Skip pagination links or links inside pagination containers
+        if (link.classList.contains('page-link') || link.closest('.pagination') || link.closest('[id$="-pagination-container"]') || link.hasAttribute('data-no-loader')) {
+            return;
+        }
 
         const href = link.getAttribute('href');
         if (!href || href === '#' || href.startsWith('#') || href.startsWith('javascript:') || link.hasAttribute('data-bs-toggle') || link.getAttribute('target') === '_blank' || link.hasAttribute('download')) {

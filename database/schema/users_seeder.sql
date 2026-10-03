@@ -1,5 +1,6 @@
 -- ============================================================================
--- DITC Hospital Management System — User Accounts & Roles SQL Seeder
+-- DTCS Hospital Management System — User Accounts & Roles SQL Seeder
+
 -- MySQL 8.x Compatible · Laravel Synchronized
 -- Generated: 2026-08-16
 -- Default Password for all seeded accounts: "password"

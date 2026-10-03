@@ -15,8 +15,10 @@ use App\Models\Role;
 use App\Models\SurgeryRequest;
 use App\Models\SurgerySchedule;
 use App\Models\User;
+use App\Services\Pharmacy\Contracts\MedicationStockProviderInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * DashboardController — serves role-specific dashboard views.
@@ -40,7 +42,7 @@ class DashboardController extends Controller
 
         // ── 1. Summary Statistics ──
         $unassignedUsersCount = User::whereDoesntHave('roles')->count();
-        $inactiveUsersCount   = User::where('is_active', false)->count();
+        $inactiveUsersCount   = User::where('is_active', false)->whereNull('locked_at')->count();
         $lockedAccountsCount  = User::whereNotNull('locked_at')->count();
         $failedLoginsCount    = (int) User::where('failed_attempts', '>', 0)->sum('failed_attempts');
         $failedUsersCount     = User::where('failed_attempts', '>', 0)->count();
@@ -674,18 +676,79 @@ class DashboardController extends Controller
 
         $verifiedToday = Prescription::where('status', 'Verified')->whereDate('updated_at', $today)->count();
 
+        // Query medication stock provider for stock directory stats
+        $stockStats = [
+            'total_monitored'    => 0,
+            'in_stock'           => 0,
+            'low_stock'          => 0,
+            'attention_required' => 0,
+        ];
+
+        try {
+            /** @var MedicationStockProviderInterface $stockProvider */
+            $stockProvider = app(MedicationStockProviderInterface::class);
+            $allStock = collect($stockProvider->getAllMedicationStock());
+
+            $todayTs = strtotime(date('Y-m-d'));
+            $expiringThresholdTs = strtotime(date('Y-m-d', strtotime('+90 days')));
+
+            $processedItems = $allStock->map(function ($item) use ($todayTs, $expiringThresholdTs) {
+                $qty = $item->availableQuantity;
+
+                if ($qty > 20) {
+                    $stockKey = 'in_stock';
+                } elseif ($qty >= 1 && $qty <= 20) {
+                    $stockKey = 'low';
+                } else {
+                    $stockKey = 'out';
+                }
+
+                $expTs = !empty($item->expiryDate) ? strtotime($item->expiryDate) : null;
+                if (!$expTs || $expTs <= $todayTs) {
+                    $expKey = 'expired';
+                } elseif ($expTs <= $expiringThresholdTs) {
+                    $expKey = 'expiring_soon';
+                } else {
+                    $expKey = 'unexpired';
+                }
+
+                return [
+                    'stock_key' => $stockKey,
+                    'exp_key'   => $expKey,
+                ];
+            });
+
+            $stockStats = [
+                'total_monitored'    => $processedItems->count(),
+                'in_stock'           => $processedItems->where('stock_key', 'in_stock')->where('exp_key', '!=', 'expired')->count(),
+                'low_stock'          => $processedItems->where('stock_key', 'low')->count(),
+                'attention_required' => $processedItems->filter(function ($item) {
+                    return $item['stock_key'] === 'out' 
+                        || $item['exp_key'] === 'expiring_soon' 
+                        || $item['exp_key'] === 'expired';
+                })->count(),
+            ];
+        } catch (\Throwable $e) {
+            Log::error('Pharmacy dashboard stock provider failure: ' . $e->getMessage());
+        }
+
+        $pendingDispensing = Prescription::whereIn('status', ['Verified', 'Partially Dispensed'])->count();
+
         $stats = [
             'total_prescriptions'   => $totalPrescriptions,
             'pending_prescriptions' => $pendingPrescriptions,
             'verified'              => $verifiedPrescriptions,
+            'pending_dispensing'    => $pendingDispensing,
             'dispensed_today'       => $dispensedToday,
             'dispensed_total'       => $dispensedTotal,
             'verified_today'        => $verifiedToday,
-            'low_stock'             => 0,
+            'low_stock'             => $stockStats['low_stock'],
             'pending_rate'          => $totalPrescriptions > 0
                                         ? round(($pendingPrescriptions / $totalPrescriptions) * 100)
                                         : 0,
         ];
+
+
 
         $pendingPrescriptionsList = Prescription::with('patient', 'doctor')
                                         ->whereIn('status', ['Pending', 'Verified'])
@@ -704,8 +767,10 @@ class DashboardController extends Controller
             ['label' => 'Dispensed', 'count' => $stats['dispensed_total']],
         ];
 
-        return view('dashboard.pharmacy', compact('stats', 'pendingPrescriptionsList', 'recentDispensing', 'rxTrend6m', 'rxTrend12m', 'rxStatusBreakdown'));
+        return view('dashboard.pharmacy', compact('stats', 'pendingPrescriptionsList', 'recentDispensing', 'rxTrend6m', 'rxTrend12m', 'rxStatusBreakdown', 'stockStats'));
     }
+
+
 
     /** Surgery / OR Coordinator dashboard. */
     public function surgery()

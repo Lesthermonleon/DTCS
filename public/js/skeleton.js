@@ -1,5 +1,6 @@
 /**
- * DITC HMS — Skeleton Loading System
+ * DTCS HIMS — Skeleton Loading System
+
  *
  * Usage:
  *   SkeletonLoader.show('#my-skeleton');

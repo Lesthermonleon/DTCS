@@ -22,4 +22,12 @@ interface MedicationStockProviderInterface
      * @return array<int, MedicationStockData> Indexed by prescription_item_id
      */
     public function batchGetMedicationStock(iterable $items): array;
+
+    /**
+     * Retrieve stock information for all monitored medications in the inventory system.
+     *
+     * @return array<int, MedicationStockData>
+     */
+    public function getAllMedicationStock(): array;
 }
+

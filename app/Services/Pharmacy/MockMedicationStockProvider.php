@@ -130,4 +130,120 @@ class MockMedicationStockProvider implements MedicationStockProviderInterface
         }
         return $results;
     }
+
+    public function getAllMedicationStock(): array
+    {
+        $today = date('Y-m-d');
+        $expiringSoonDate = date('Y-m-d', strtotime('+45 days'));
+        $expiredDate = date('Y-m-d', strtotime('-30 days'));
+
+        $defaultCatalog = [
+            new MedicationStockData(
+                medicationName: 'Paracetamol 500mg Tablet',
+                availableQuantity: 120,
+                lotNumber: 'PARA-2026-001',
+                expiryDate: '2027-12-31',
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Amoxicillin 500mg Capsule',
+                availableQuantity: 85,
+                lotNumber: 'AMOX-2026-042',
+                expiryDate: '2027-09-30',
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Solmoux 500mg Capsule',
+                availableQuantity: 15,
+                lotNumber: 'SOL-2026-015',
+                expiryDate: '2027-08-31',
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Alaxan FR Tablet',
+                availableQuantity: 75,
+                lotNumber: 'ALA-2026-008',
+                expiryDate: '2028-03-31',
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Cefuroxime 500mg Tablet',
+                availableQuantity: 8,
+                lotNumber: 'CEF-2026-099',
+                expiryDate: $expiringSoonDate,
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Mefenamic Acid 500mg Tablet',
+                availableQuantity: 0,
+                lotNumber: 'MEF-2025-012',
+                expiryDate: '2027-05-15',
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Omeprazole 20mg Capsule',
+                availableQuantity: 200,
+                lotNumber: 'OME-2026-301',
+                expiryDate: date('Y-m-d', strtotime('+20 days')),
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Metformin 500mg Tablet',
+                availableQuantity: 5,
+                lotNumber: 'MET-2025-888',
+                expiryDate: $expiredDate,
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Amlodipine 5mg Tablet',
+                availableQuantity: 0,
+                lotNumber: 'AML-2025-004',
+                expiryDate: date('Y-m-d', strtotime('-60 days')),
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Losartan 50mg Tablet',
+                availableQuantity: 60,
+                lotNumber: 'LOS-2026-112',
+                expiryDate: '2027-11-20',
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Cetirizine 10mg Tablet',
+                availableQuantity: 18,
+                lotNumber: 'CET-2026-077',
+                expiryDate: '2027-10-10',
+                isAvailable: true
+            ),
+            new MedicationStockData(
+                medicationName: 'Azithromycin 500mg Tablet',
+                availableQuantity: 40,
+                lotNumber: 'AZI-2026-204',
+                expiryDate: date('Y-m-d', strtotime('+60 days')),
+                isAvailable: true
+            ),
+        ];
+
+        // Apply test overrides if set
+        if (!empty(self::$overrides)) {
+            foreach (self::$overrides as $key => $overrideData) {
+                if ($overrideData instanceof MedicationStockData) {
+                    $found = false;
+                    foreach ($defaultCatalog as $idx => $stock) {
+                        if (strcasecmp($stock->medicationName, (string)$key) === 0 || strcasecmp($stock->medicationName, $overrideData->medicationName) === 0) {
+                            $defaultCatalog[$idx] = $overrideData;
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if (!$found) {
+                        $defaultCatalog[] = $overrideData;
+                    }
+                }
+            }
+        }
+
+        return $defaultCatalog;
+    }
 }
+

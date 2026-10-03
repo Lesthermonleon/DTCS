@@ -1,5 +1,6 @@
 -- ============================================================================
--- DITC Hospital Management System — Complete Database Schema
+-- DTCS Hospital Management System — Complete Database Schema
+
 -- MySQL 8.x Compatible · Laravel Synchronized
 -- Generated: 2026-08-16
 --

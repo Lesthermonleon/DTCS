@@ -20,11 +20,6 @@
             <a href="{{ route('lab.requests.index') }}" class="btn btn-sm btn-primary">
                 <i class="bi bi-list-task me-1"></i> View Lab Requests Queue
             </a>
-            @if(Route::has('lab.requests.create'))
-            <a href="{{ route('lab.requests.create') }}" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-plus-circle me-1"></i> Create Lab Request
-            </a>
-            @endif
         </div>
     </div>
 </div>

@@ -89,8 +89,12 @@
         <a href="{{ route('pharmacy.dispensing.index') }}" class="nav-link sb-sub {{ request()->routeIs('pharmacy.dispensing.*') ? 'active' : '' }}">
             <i class="bi bi-bag-plus"></i> Dispensing
         </a>
+        <a href="{{ route('pharmacy.medicines.index') }}" class="nav-link sb-sub {{ request()->routeIs('pharmacy.medicines.*') ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i> Medicine Availability
+        </a>
     </div>
 </div>
+
 
 {{-- ── Surgery (SORS) ── --}}
 <button class="nav-link sb-group-toggle {{ $sorActive ? 'active' : '' }}"
@@ -183,7 +187,6 @@
 {{-- ── Administration ── --}}
 <div class="sb-nav-label" style="margin-top:.5rem;">ADMINISTRATION</div>
 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"><i class="bi bi-person-badge"></i> Users</a>
-<a href="{{ route('admin.roles.index') }}" class="nav-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}"><i class="bi bi-key"></i> Roles & Permissions</a>
 <a href="{{ route('admin.audit-logs.index') }}" class="nav-link {{ request()->routeIs('admin.audit-logs.*') ? 'active' : '' }}"><i class="bi bi-journal-text"></i> System Audit Logs</a>
 
 
@@ -261,8 +264,12 @@
         <a href="{{ route('pharmacy.prescriptions.index') }}" class="nav-link sb-sub {{ request()->routeIs('pharmacy.prescriptions.*') ? 'active' : '' }}">
             <i class="bi bi-prescription2"></i> Prescriptions
         </a>
+        <a href="{{ route('pharmacy.medicines.index') }}" class="nav-link sb-sub {{ request()->routeIs('pharmacy.medicines.*') ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i> Medicine Availability
+        </a>
     </div>
 </div>
+
 
 {{-- ── Surgery (SORS) ── --}}
 <button class="nav-link sb-group-toggle {{ $sorActive ? 'active' : '' }}"
@@ -366,10 +373,14 @@
 <a href="{{ route('pharmacy.dispensing.index') }}" class="nav-link {{ request()->routeIs('pharmacy.dispensing.*') ? 'active' : '' }}">
     <i class="bi bi-bag-plus"></i> Dispensing
 </a>
+<a href="{{ route('pharmacy.medicines.index') }}" class="nav-link {{ request()->routeIs('pharmacy.medicines.*') ? 'active' : '' }}">
+    <i class="bi bi-box-seam"></i> Medicine Availability
+</a>
 <a href="{{ route('reports.pharmacy.activity') }}" class="nav-link {{ request()->routeIs('reports.pharmacy.*') ? 'active' : '' }}">
     <i class="bi bi-file-earmark-bar-graph"></i> Pharmacy Reports
 </a>
 @endif
+
 
 @if($role === 'or-coordinator')
 <a href="{{ route('surgery.requests.index') }}" class="nav-link {{ request()->routeIs('surgery.requests.*') ? 'active' : '' }}">

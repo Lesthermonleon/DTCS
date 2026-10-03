@@ -61,23 +61,34 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const searchInput = document.getElementById('filter-search');
-        const typeSelect = document.getElementById('filter-type');
-        const filterForm = document.getElementById('filter-form');
+        const typeSelect  = document.getElementById('filter-type');
+        const filterForm  = document.getElementById('filter-form');
         
         let searchTimeout;
 
         function performFilter(resetPage = true) {
-            if (resetPage) {
-                let pageInput = filterForm.querySelector('input[name="page"]');
-                if (pageInput) {
-                    pageInput.value = '1';
+            let pageInput = filterForm.querySelector('input[name="page"]');
+            if (resetPage && pageInput) {
+                pageInput.value = '1';
+            }
+
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams();
+
+            for (const [key, value] of formData.entries()) {
+                const val = value.toString().trim();
+                if (val !== '') {
+                    if (key === 'page' && val === '1') {
+                        continue;
+                    }
+                    params.append(key, val);
                 }
             }
-            const formData = new FormData(filterForm);
-            const params = new URLSearchParams(formData);
-            const newUrl = `${window.location.pathname}?${params.toString()}`;
-            
-            window.history.replaceState(null, '', newUrl);
+
+            const queryString = params.toString();
+            const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+
+            window.history.pushState({ path: newUrl }, '', newUrl);
 
             fetch(newUrl, {
                 headers: {
@@ -88,11 +99,17 @@
             .then(html => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                
-                document.getElementById('patients-table-body').innerHTML = doc.getElementById('patients-table-body').innerHTML;
-                document.getElementById('patients-pagination-container').innerHTML = doc.getElementById('patients-pagination-container').innerHTML;
-                
-                // Keep Clear button in sync if present
+
+                const newTableBody = doc.getElementById('patients-table-body');
+                const newPagination = doc.getElementById('patients-pagination-container');
+
+                if (newTableBody) {
+                    document.getElementById('patients-table-body').innerHTML = newTableBody.innerHTML;
+                }
+                if (newPagination) {
+                    document.getElementById('patients-pagination-container').innerHTML = newPagination.innerHTML;
+                }
+
                 const clearBtn = document.getElementById('filter-clear');
                 const newClearBtn = doc.getElementById('filter-clear');
                 if (clearBtn && !newClearBtn) {
@@ -102,7 +119,11 @@
                     setupClearListener();
                 }
             })
-            .catch(err => console.error('Error filtering patients:', err));
+            .catch(err => console.error('Error filtering patients:', err))
+            .finally(() => {
+                const overlay = document.getElementById('cardio-loader-overlay');
+                if (overlay) overlay.style.display = 'none';
+            });
         }
 
         function setupClearListener() {
@@ -130,24 +151,52 @@
         typeSelect.addEventListener('change', () => performFilter(true));
         setupClearListener();
 
-        // Intercept pagination clicks dynamically
+        // Dynamic pagination click interception
         document.addEventListener('click', function (e) {
             const pageLink = e.target.closest('#patients-pagination-container a');
-            if (pageLink) {
+            if (pageLink && pageLink.href) {
                 e.preventDefault();
-                const urlObj = new URL(pageLink.href);
-                const page = urlObj.searchParams.get('page');
-                
-                let pageInput = filterForm.querySelector('input[name="page"]');
-                if (!pageInput) {
-                    pageInput = document.createElement('input');
-                    pageInput.type = 'hidden';
-                    pageInput.name = 'page';
-                    filterForm.appendChild(pageInput);
+                try {
+                    const urlObj = new URL(pageLink.href);
+                    const page = urlObj.searchParams.get('page') || '1';
+                    
+                    let pageInput = filterForm.querySelector('input[name="page"]');
+                    if (!pageInput) {
+                        pageInput = document.createElement('input');
+                        pageInput.type = 'hidden';
+                        pageInput.name = 'page';
+                        filterForm.appendChild(pageInput);
+                    }
+                    pageInput.value = page;
+                    performFilter(false);
+                } catch (err) {
+                    window.location.href = pageLink.href;
                 }
-                pageInput.value = page;
-                performFilter(false);
             }
+        });
+
+        // Handle browser Back / Forward history navigation
+        window.addEventListener('popstate', function () {
+            const params = new URLSearchParams(window.location.search);
+            searchInput.value = params.get('search') || '';
+            typeSelect.value  = params.get('type') || '';
+            
+            let pageInput = filterForm.querySelector('input[name="page"]');
+            if (pageInput) {
+                pageInput.value = params.get('page') || '1';
+            }
+            
+            fetch(window.location.href, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.text())
+            .then(html => {
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const newTableBody = doc.getElementById('patients-table-body');
+                const newPagination = doc.getElementById('patients-pagination-container');
+                if (newTableBody) document.getElementById('patients-table-body').innerHTML = newTableBody.innerHTML;
+                if (newPagination) document.getElementById('patients-pagination-container').innerHTML = newPagination.innerHTML;
+            });
         });
     });
 </script>

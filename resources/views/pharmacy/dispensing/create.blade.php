@@ -29,11 +29,11 @@
             <div class="card-header bg-white py-3">
                 <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-search me-2 text-primary"></i>1. Select Verified Prescription</h6>
             </div>
-            <div class="card-body">
-                <form method="GET" action="{{ route('pharmacy.dispensing.create') }}" class="row g-3 align-items-center">
+            <div class="card-body py-3">
+                <form method="GET" action="{{ route('pharmacy.dispensing.create') }}" class="row g-2 align-items-end">
                     <div class="col-md-9">
-                        <label class="form-label small text-muted">Select from Pending / Partially Dispensed Prescriptions:</label>
-                        <select name="rx" class="form-select form-select-lg" onchange="this.form.submit()">
+                        <label for="rxSelect" class="form-label small text-muted fw-semibold mb-1">Select from Pending / Partially Dispensed Prescriptions:</label>
+                        <select id="rxSelect" name="rx" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="">-- Choose a Verified Prescription --</option>
                             @foreach($prescriptions as $rxOption)
                                 <option value="{{ $rxOption->id }}" {{ ($selectedPrescription?->id == $rxOption->id) ? 'selected' : '' }}>
@@ -42,11 +42,14 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary btn-lg w-100"><i class="bi bi-check2-circle me-1"></i> Load Prescription</button>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-check2-circle me-1"></i> Load Prescription
+                        </button>
                     </div>
                 </form>
             </div>
+
         </div>
     </div>
 

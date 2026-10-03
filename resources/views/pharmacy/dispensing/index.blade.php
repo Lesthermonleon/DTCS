@@ -18,60 +18,56 @@
 </div>
 
 {{-- Summary Stats Row --}}
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
-                    <i class="bi bi-capsule fs-3"></i>
-                </div>
-                <div>
-                    <h6 class="text-muted text-uppercase fw-semibold small mb-1">Dispensed Today</h6>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($stats['dispensed_today']) }}</h3>
+<div class="balanced-grid balanced-grid-4 mb-4">
+    <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small fw-semibold text-uppercase">Dispensed Today</span>
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2">
+                    <i class="bi bi-capsule fs-5"></i>
                 </div>
             </div>
+            <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['dispensed_today']) }}</h3>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="flex-shrink-0 bg-success bg-opacity-10 text-success rounded-3 p-3 me-3">
-                    <i class="bi bi-calendar-check fs-3"></i>
-                </div>
-                <div>
-                    <h6 class="text-muted text-uppercase fw-semibold small mb-1">Dispensed This Month</h6>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($stats['dispensed_month']) }}</h3>
+
+    <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small fw-semibold text-uppercase">Dispensed This Month</span>
+                <div class="bg-success bg-opacity-10 text-success rounded-circle p-2">
+                    <i class="bi bi-calendar-check fs-5"></i>
                 </div>
             </div>
+            <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['dispensed_month']) }}</h3>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="flex-shrink-0 bg-warning bg-opacity-10 text-warning rounded-3 p-3 me-3">
-                    <i class="bi bi-hourglass-split fs-3"></i>
-                </div>
-                <div>
-                    <h6 class="text-muted text-uppercase fw-semibold small mb-1">Ready to Dispense</h6>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($stats['ready_to_dispense']) }}</h3>
+
+    <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small fw-semibold text-uppercase">Ready to Dispense</span>
+                <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2">
+                    <i class="bi bi-hourglass-split fs-5"></i>
                 </div>
             </div>
+            <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['ready_to_dispense']) }}</h3>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="flex-shrink-0 bg-info bg-opacity-10 text-info rounded-3 p-3 me-3">
-                    <i class="bi bi-receipt fs-3"></i>
-                </div>
-                <div>
-                    <h6 class="text-muted text-uppercase fw-semibold small mb-1">Total Records</h6>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($stats['total_dispensings']) }}</h3>
+
+    <div class="card border-0 shadow-sm h-100 card-hover-elevate transition-all">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small fw-semibold text-uppercase">Total Records</span>
+                <div class="bg-info bg-opacity-10 text-info rounded-circle p-2">
+                    <i class="bi bi-receipt fs-5"></i>
                 </div>
             </div>
+            <h3 class="fw-bold text-dark mb-0">{{ number_format($stats['total_dispensings']) }}</h3>
         </div>
     </div>
 </div>
+
 
 {{-- Main Card --}}
 <div class="card border-0 shadow-sm">
@@ -79,20 +75,26 @@
         <form method="GET" action="{{ route('pharmacy.dispensing.index') }}" class="row g-2 align-items-center">
             <div class="col-md-6 col-lg-5">
                 <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" name="search" class="form-control border-start-0 bg-light"
+                    <input type="text" name="search" class="form-control bg-light"
                            placeholder="Search by Rx #, Patient Name, Medication, or Lot #"
                            value="{{ request('search') }}">
                 </div>
+
             </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-secondary">Filter</button>
+            <div class="col-auto d-flex gap-2">
+                <button type="submit" class="btn btn-secondary">
+                    <i class="bi bi-search me-1"></i> Search
+                </button>
+
                 @if(request('search'))
-                    <a href="{{ route('pharmacy.dispensing.index') }}" class="btn btn-outline-secondary">Clear</a>
+                    <a href="{{ route('pharmacy.dispensing.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg me-1"></i> Clear
+                    </a>
                 @endif
             </div>
         </form>
     </div>
+
 
     <div class="card-body p-0">
         <div class="table-responsive">

@@ -32,16 +32,27 @@ class DispensingController extends Controller
             'pharmacist'
         ]);
 
-        if ($search = $request->input('search')) {
+        if ($search = trim($request->input('search') ?? '')) {
             $query->where(function ($q) use ($search) {
-                $q->whereHas('prescriptionItem.prescription', fn($p) => $p->where('prescription_no', 'like', "%{$search}%"))
-                  ->orWhereHas('prescriptionItem.prescription.patient', fn($pt) => $pt->where('first_name', 'like', "%{$search}%")
-                                                                                      ->orWhere('last_name', 'like', "%{$search}%")
-                                                                                      ->orWhere('patient_no', 'like', "%{$search}%"))
+                // Search by Dispensing Record ID (e.g., #DSP-00001, DSP-00001, or numeric ID)
+                if (preg_match('/^#?DSP-(\d+)$/i', $search, $matches)) {
+                    $q->where('id', (int) $matches[1]);
+                } elseif (is_numeric($search)) {
+                    $q->where('id', (int) $search);
+                }
+
+                $q->orWhereHas('prescriptionItem.prescription', fn($p) => $p->where('prescription_no', 'like', "%{$search}%"))
+                  ->orWhereHas('prescriptionItem.prescription.patient', function ($pt) use ($search) {
+                      $pt->where('first_name', 'like', "%{$search}%")
+                         ->orWhere('last_name', 'like', "%{$search}%")
+                         ->orWhere('patient_no', 'like', "%{$search}%")
+                         ->orWhere(DB::raw("CONCAT(first_name, ' ', last_name)"), 'like', "%{$search}%");
+                  })
                   ->orWhereHas('prescriptionItem', fn($item) => $item->where('medication_name', 'like', "%{$search}%"))
                   ->orWhere('lot_number', 'like', "%{$search}%");
             });
         }
+
 
         $records = $query->latest('dispensed_at')->paginate(15)->withQueryString();
 
