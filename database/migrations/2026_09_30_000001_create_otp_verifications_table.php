@@ -19,10 +19,7 @@ return new class extends Migration
     {
         Schema::create('otp_verifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete()
-                  ->cascadeOnUpdate();
+            $table->unsignedBigInteger('user_id');
             $table->string('purpose', 50)->default('login')
                   ->comment('Intended use of this OTP (e.g. login, password_reset)');
             $table->string('otp_hash')
@@ -41,6 +38,14 @@ return new class extends Migration
             $table->index(['user_id', 'purpose'], 'idx_otp_user_purpose');
             // Index for cleanup of expired records
             $table->index('expires_at', 'idx_otp_expires');
+
+            if (Schema::hasTable('users')) {
+                $table->foreign('user_id')
+                      ->references('id')
+                      ->on('users')
+                      ->cascadeOnDelete()
+                      ->cascadeOnUpdate();
+            }
         });
     }
 
